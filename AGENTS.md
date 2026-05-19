@@ -175,8 +175,8 @@ Les erreurs doivent être structurées :
 ## 8. Instructions pour l'agent IA (Roadmap)
 
 ### Phase 0 — Recherche & Spécifications
-- [ ] Parser les normes AFNOR XP Z12-012/013.
-- [ ] Extraire les schémas XSD et Schematrons depuis FNFE-MPE.
+- [x] Parser les normes AFNOR XP Z12-012/013.
+- [x] Extraire les schémas XSD et Schematrons depuis FNFE-MPE.
 
 ### Phase 1 — Fondations (Go)
 - [ ] Init projet, CI/CD GitHub Actions.
