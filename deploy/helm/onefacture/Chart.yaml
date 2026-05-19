@@ -1,0 +1,11 @@
+apiVersion: v2
+name: onefacture
+description: A unified API gateway for French electronic invoicing (Factur-X)
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+icon: https://raw.githubusercontent.com/yawo/onefacture/main/docs/assets/logo.png
+sources:
+  - https://github.com/yawo/onefacture
+maintainers:
+  - name: onefacture maintainers

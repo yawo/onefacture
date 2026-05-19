@@ -1,0 +1,52 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: onefacture
+      POSTGRES_PASSWORD: onefacture
+      POSTGRES_DB: onefacture
+    ports: ["5432:5432"]
+    volumes: ["pgdata:/var/lib/postgresql/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U onefacture"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  redis:
+    image: redis:7-alpine
+    ports: ["6379:6379"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      retries: 20
+
+  sidecar:
+    build:
+      context: ../sidecar
+    environment:
+      ONEFACTURE_SIDECAR_LOG_LEVEL: INFO
+      ONEFACTURE_SPECS_ROOT: /specs
+    volumes:
+      - ../docs/specs/validation:/specs
+    ports: ["8081:8081"]
+
+  api:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    environment:
+      ONEFACTURE_ENV: development
+      ONEFACTURE_HTTP_ADDR: ":8080"
+      ONEFACTURE_DB_DSN: postgres://onefacture:onefacture@postgres:5432/onefacture?sslmode=disable
+      ONEFACTURE_REDIS_ADDR: redis:6379
+      ONEFACTURE_SIDECAR_URL: http://sidecar:8081
+      ONEFACTURE_HASH_PEPPER: dev-pepper-change-me
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis: { condition: service_healthy }
+      sidecar: { condition: service_started }
+    ports: ["8080:8080"]
+
+volumes:
+  pgdata:

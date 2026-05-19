@@ -1,0 +1,8 @@
+DROP TABLE IF EXISTS webhook_deliveries;
+DROP TABLE IF EXISTS webhook_endpoints;
+DROP TABLE IF EXISTS audit_log;
+DROP TABLE IF EXISTS lifecycle_events;
+DROP TABLE IF EXISTS invoices;
+DROP TABLE IF EXISTS api_keys;
+DROP TABLE IF EXISTS organizations;
+DROP TYPE IF EXISTS invoice_status;

@@ -1,0 +1,46 @@
+image:
+  repository: ghcr.io/yawo/onefacture-api
+  tag: latest
+  pullPolicy: IfNotPresent
+
+replicaCount: 2
+
+sidecar:
+  image:
+    repository: ghcr.io/yawo/onefacture-sidecar
+    tag: latest
+
+postgres:
+  dsn: ""  # required: postgres://user:pass@host:5432/db?sslmode=require
+redis:
+  addr: redis:6379
+  password: ""
+
+env:
+  ONEFACTURE_ENV: production
+
+resources:
+  api:
+    requests: { cpu: 100m, memory: 128Mi }
+    limits:   { cpu: 500m, memory: 512Mi }
+  sidecar:
+    requests: { cpu: 100m, memory: 256Mi }
+    limits:   { cpu: 500m, memory: 768Mi }
+
+service:
+  type: ClusterIP
+  port: 80
+
+ingress:
+  enabled: false
+  className: nginx
+  hosts:
+    - host: api.onefacture.local
+      paths: ["/"]
+
+serviceMonitor:
+  enabled: false
+
+podAnnotations:
+  prometheus.io/scrape: "true"
+  prometheus.io/port: "8080"

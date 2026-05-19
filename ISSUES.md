@@ -1,13 +1,18 @@
 # ISSUES.md — Backlog GitHub pour onefacture
 
 Ce fichier est le backlog officiel. Chaque issue est conçue pour être créée sur GitHub avec ses labels et critères d'acceptation.
-**Stack cible :** Go 1.23+ (Fiber/Chi), PostgreSQL, Python Sidecar (lxml), NATS/Redis.
+**Stack cible :** Go 1.23+ (Chi), PostgreSQL, Python Sidecar (lxml), Redis Streams.
+
+> **Statut global** (mai 2026) : EPIC 0–5 livrés en première itération (squelette complet,
+> mock adapter fonctionnel, sidecar opérationnel). EPIC 6 (SDKs publiés) et l'intégration
+> live des PA réelles (Chorus, Pennylane, Docaposte) restent à brancher sur les sandboxes
+> respectives. Voir les statuts par issue ci-dessous.
 
 ---
 
 ## EPIC 0 — Fondations & Qualité
 
-### ISSUE-001 · Initialisation du Monorepo Go
+### ISSUE-001 · Initialisation du Monorepo Go ✅ Closed
 **Labels** : `infra`, `good first issue`
 **Description** :
 - Initialiser `go.mod` et la structure : `cmd/api`, `internal/core`, `internal/gateway`, `internal/adapters`, `pkg/`.
@@ -16,7 +21,7 @@ Ce fichier est le backlog officiel. Chaque issue est conçue pour être créée 
 - Configurer `golangci-lint` avec des règles strictes.
 **Critères d'acceptation** : `make test` et `make lint` passent. `go run cmd/api/main.go` démarre un serveur minimal.
 
-### ISSUE-002 · CI/CD GitHub Actions
+### ISSUE-002 · CI/CD GitHub Actions ✅ Closed
 **Labels** : `infra`
 **Description** :
 - Créer `.github/workflows/ci.yml`.
@@ -28,7 +33,7 @@ Ce fichier est le backlog officiel. Chaque issue est conçue pour être créée 
 
 ## EPIC 1 — Core Domain & Validation
 
-### ISSUE-003 · Modèle Invoice unifié (Factur-X / EN 16931)
+### ISSUE-003 · Modèle Invoice unifié (Factur-X / EN 16931) ✅ Closed
 **Labels** : `core`
 **Description** :
 - Définir les structs Go pour `Invoice`, `Party`, `Line`, `Totals`, `Status`.
@@ -36,7 +41,7 @@ Ce fichier est le backlog officiel. Chaque issue est conçue pour être créée 
 - Tags JSON complets et validation `validator/v10`.
 **Critères d'acceptation** : Sérialisation JSON robuste. Tests unitaires couvrant tous les profils.
 
-### ISSUE-004 · Pipeline de Validation (avec Sidecar Python)
+### ISSUE-004 · Pipeline de Validation (avec Sidecar Python) ✅ Closed
 **Labels** : `core`, `validation`
 **Description** :
 - Implémenter le service de validation en Go.
@@ -45,7 +50,7 @@ Ce fichier est le backlog officiel. Chaque issue est conçue pour être créée 
 - Mapper les erreurs au format RFC 7807.
 **Critères d'acceptation** : Validation complète d'une facture Factur-X avec retour d'erreurs précis (XPath).
 
-### ISSUE-005 · Génération Factur-X
+### ISSUE-005 · Génération Factur-X 🟡 Partial (XML CII OK, PDF/A-3 stubbé)
 **Labels** : `core`
 **Description** :
 - Génération du XML CII (CrossIndustryInvoice) depuis le modèle Go.
@@ -57,7 +62,7 @@ Ce fichier est le backlog officiel. Chaque issue est conçue pour être créée 
 
 ## EPIC 2 — Persistence & Multi-tenancy
 
-### ISSUE-006 · PostgreSQL & Migrations
+### ISSUE-006 · PostgreSQL & Migrations ✅ Closed
 **Labels** : `infra`, `core`
 **Description** :
 - Configurer PostgreSQL avec `golang-migrate` ou `sqlc`.
@@ -65,7 +70,7 @@ Ce fichier est le backlog officiel. Chaque issue est conçue pour être créée 
 - Multi-tenancy : colonne `organization_id` obligatoire sur toutes les tables.
 **Critères d'acceptation** : Migrations idempotentes. Isolation des données vérifiée par tests.
 
-### ISSUE-007 · Audit Trail & Historique de Cycle de Vie
+### ISSUE-007 · Audit Trail & Historique de Cycle de Vie ✅ Closed
 **Labels** : `core`, `security`
 **Description** :
 - Table `audit_log` immuable pour chaque action.
@@ -77,7 +82,7 @@ Ce fichier est le backlog officiel. Chaque issue est conçue pour être créée 
 
 ## EPIC 3 — API Gateway
 
-### ISSUE-008 · Auth API Key & Middleware
+### ISSUE-008 · Auth API Key & Middleware ✅ Closed
 **Labels** : `api`, `security`
 **Description** :
 - Authentification par header `X-API-Key` (stockage haché en DB).
@@ -85,7 +90,7 @@ Ce fichier est le backlog officiel. Chaque issue est conçue pour être créée 
 - Rate limiting par organisation (Redis).
 **Critères d'acceptation** : 401 si clé invalide. 429 si dépassement quota.
 
-### ISSUE-009 · Endpoints CRUD Invoices
+### ISSUE-009 · Endpoints CRUD Invoices ✅ Closed
 **Labels** : `api`
 **Description** :
 - `POST /v1/invoices` : Créer et valider.
@@ -94,7 +99,7 @@ Ce fichier est le backlog officiel. Chaque issue est conçue pour être créée 
 - `GET /v1/inbox` : Factures reçues.
 **Critères d'acceptation** : Conforme aux specs OpenAPI 3.1 définies dans `AGENTS.md`.
 
-### ISSUE-010 · Documentation Scalar & OpenAPI
+### ISSUE-010 · Documentation Scalar & OpenAPI ✅ Closed
 **Labels** : `api`, `dx`
 **Description** :
 - Générer automatiquement `openapi.json` depuis le code Go.
@@ -106,7 +111,7 @@ Ce fichier est le backlog officiel. Chaque issue est conçue pour être créée 
 
 ## EPIC 4 — Adapters Plateformes Agréées (PA)
 
-### ISSUE-011 · Interface PAAdapter & Registry
+### ISSUE-011 · Interface PAAdapter & Registry ✅ Closed
 **Labels** : `adapter`, `core`
 **Description** :
 - Définir l'interface `PAAdapter` en Go (Submit, GetStatus, Webhook).
@@ -114,7 +119,7 @@ Ce fichier est le backlog officiel. Chaque issue est conçue pour être créée 
 - Créer un `MockPAAdapter` pour le développement local.
 **Critères d'acceptation** : Injection de dépendance fonctionnelle. Tests d'intégration avec le Mock.
 
-### ISSUE-012 · Adapter Chorus Pro / PPF
+### ISSUE-012 · Adapter Chorus Pro / PPF 🟡 Stubbed (needs PISTE sandbox credentials)
 **Labels** : `adapter`
 **Description** :
 - Implémenter l'intégration avec l'API PISTE (OAuth2).
@@ -122,7 +127,7 @@ Ce fichier est le backlog officiel. Chaque issue est conçue pour être créée 
 - Support du E-reporting.
 **Critères d'acceptation** : Succès des tests sur la sandbox Chorus Pro.
 
-### ISSUE-013 · Adapters Partenaires (Pennylane, Docaposte, Qonto)
+### ISSUE-013 · Adapters Partenaires (Pennylane, Docaposte, Qonto) 🟡 Stubbed
 **Labels** : `adapter`
 **Description** :
 - Implémenter les adaptateurs pour les PA prioritaires.
@@ -133,14 +138,14 @@ Ce fichier est le backlog officiel. Chaque issue est conçue pour être créée 
 
 ## EPIC 5 — Async, Events & Webhooks
 
-### ISSUE-014 · Bus d'événements (NATS/Redis) & Workers
+### ISSUE-014 · Bus d'événements (NATS/Redis) & Workers ✅ Closed (Redis Streams)
 **Labels** : `infra`, `core`
 **Description** :
 - Mettre en place NATS ou Redis Streams pour le traitement asynchrone.
 - Workers pour le polling des statuts PA et l'envoi des webhooks.
 **Critères d'acceptation** : Traitement robuste aux pannes (retry avec backoff).
 
-### ISSUE-015 · Webhooks sortants
+### ISSUE-015 · Webhooks sortants ✅ Closed
 **Labels** : `api`, `dx`
 **Description** :
 - Permettre aux clients de configurer une URL de webhook.
@@ -152,14 +157,14 @@ Ce fichier est le backlog officiel. Chaque issue est conçue pour être créée 
 
 ## EPIC 6 — DX & SDKs
 
-### ISSUE-016 · SDK Python & TypeScript
+### ISSUE-016 · SDK Python & TypeScript 🟡 Scaffolding only (publish pipeline pending)
 **Labels** : `dx`
 **Description** :
 - Générer et publier les SDKs depuis la spec OpenAPI.
 - Ajouter des wrappers haut-niveau pour simplifier l'intégration.
 **Critères d'acceptation** : Installation via `pip` et `npm` fonctionnelle.
 
-### ISSUE-017 · Sandbox & Playground
+### ISSUE-017 · Sandbox & Playground 🟡 docker-compose works locally; public sandbox pending hosting
 **Labels** : `dx`, `docs`
 **Description** :
 - Déployer une instance de test publique avec des PA mockées.
@@ -170,14 +175,14 @@ Ce fichier est le backlog officiel. Chaque issue est conçue pour être créée 
 
 ## EPIC 7 — Sécurité, Compliance & Infra
 
-### ISSUE-018 · Conformité RGPD & Chiffrement
+### ISSUE-018 · Conformité RGPD & Chiffrement 🟡 Export/erase endpoints OK; at-rest encryption pending KMS choice
 **Labels** : `security`
 **Description** :
 - Endpoints d'export et de suppression de données.
 - Chiffrement "at-rest" des données sensibles (AES-256).
 **Critères d'acceptation** : DPO-friendly. Audit de sécurité passé.
 
-### ISSUE-019 · Helm Charts & Déploiement Cloud
+### ISSUE-019 · Helm Charts & Déploiement Cloud 🟡 Chart skeleton in deploy/helm; observability stack pending
 **Labels** : `infra`
 **Description** :
 - Créer les charts Helm pour Kubernetes.

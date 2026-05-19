@@ -67,37 +67,53 @@ graph LR
 Nous sommes en plein développement actif pour respecter les échéances réglementaires de 2026.
 
 - [x] **Phase 0 :** Recherche & Spécifications (Extraction des normes AFNOR, mapping XSD/Schematron).
-- [ ] **Phase 1 :** Fondations Core (Modèles Go, PostgreSQL, Sidecar de validation Python).
-- [ ] **Phase 2 :** API Gateway (CRUD Factures, définitions OpenAPI 3.1).
-- [ ] **Phase 3 :** Adaptateurs PA (Chorus Pro/PPF, Docaposte, Pennylane, Cegid).
-- [ ] **Phase 4 :** Workers Asynchrones (Webhooks, suivi du cycle de vie via NATS).
-- [ ] **Phase 5 :** Expérience Développeur (Sandbox publique, SDKs Python/TS).
+- [x] **Phase 1 :** Fondations Core (Modèles Go, PostgreSQL, Sidecar de validation Python).
+- [x] **Phase 2 :** API Gateway (CRUD Factures, définitions OpenAPI 3.1, Scalar docs).
+- [x] **Phase 3 :** Adaptateurs PA — interface, registre et mock fonctionnel ; Chorus/Pennylane/Docaposte à brancher sur leurs sandboxes.
+- [x] **Phase 4 :** Workers Asynchrones (Redis Streams, webhooks signés HMAC, polling lifecycle).
+- [ ] **Phase 5 :** Expérience Développeur (Sandbox publique, SDKs Python/TS — scaffolding en place).
 
 *(Consultez [ISSUES.md](./ISSUES.md) pour le backlog détaillé).*
 
 ---
 
-## 🚀 Démarrage rapide (Bientôt disponible)
-
-*Note : Le projet est actuellement dans sa phase de configuration initiale. Voici un aperçu de l'expérience développeur cible.*
+## 🚀 Démarrage rapide
 
 ### 1. Lancer via Docker Compose
 ```bash
 git clone https://github.com/your-org/onefacture.git
 cd onefacture
-make dev # Démarre la Gateway Go, le Sidecar Python, Postgres et Redis
+make dev          # Gateway Go + sidecar Python + Postgres + Redis
+make migrate-up   # Applique les migrations
 ```
+
+API : http://localhost:8080 · Docs Scalar : http://localhost:8080/docs · OpenAPI : http://localhost:8080/openapi.json
 
 ### 2. Émettre votre première Factur-X
 ```bash
-curl -X POST http://localhost:8080/v1/invoices \
-  -H "X-API-Key: VOTRE_CLE_API_TEST" \
+curl -X POST "http://localhost:8080/v1/invoices?submit=true" \
+  -H "X-API-Key: $ONEFACTURE_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
     "profile": "EN16931",
-    "seller": { "siren": "123456789", "name": "Acme Corp" },
-    "buyer": { "siren": "987654321", "name": "Globex Inc" },
-    "totals": { "tax_exclusive_amount": 100.00, "tax_amount": 20.00 }
+    "type_code": "380",
+    "number": "INV-0001",
+    "currency": "EUR",
+    "issue_date": "2026-03-01",
+    "seller": {
+      "name": "Acme Corp",
+      "siren": "732829320",
+      "address": { "line1": "1 rue Cler", "postal_code": "75007", "city": "Paris", "country_code": "FR" }
+    },
+    "buyer": {
+      "name": "Globex Inc",
+      "siren": "552120222",
+      "address": { "line1": "2 av Foch", "postal_code": "75116", "city": "Paris", "country_code": "FR" }
+    },
+    "lines": [{
+      "description": "Consulting", "quantity": 10, "unit_code": "HUR",
+      "unit_price": 150.00, "tax_rate": 20, "tax_category": "S"
+    }]
   }'
 ```
 
