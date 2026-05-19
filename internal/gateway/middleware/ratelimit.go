@@ -13,8 +13,8 @@ import (
 // RateLimit applies a per-organization, per-minute rate limit using a fixed-window
 // counter in Redis. If the Redis client is nil, the middleware is a no-op.
 type RateLimit struct {
-	rdb     *redis.Client
-	perMin  int
+	rdb    *redis.Client
+	perMin int
 }
 
 func NewRateLimit(rdb *redis.Client, perMin int) *RateLimit {

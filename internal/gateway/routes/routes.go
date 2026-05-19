@@ -61,8 +61,8 @@ func Ready(store *storage.Store, bus *events.Bus) http.HandlerFunc {
 func ListPlatforms(deps Dependencies) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		type entry struct {
-			Name   string `json:"name"`
-			Healthy bool  `json:"healthy"`
+			Name    string `json:"name"`
+			Healthy bool   `json:"healthy"`
 		}
 		out := []entry{}
 		for _, name := range deps.Registry.Names() {
@@ -341,11 +341,11 @@ func DirectoryLookup(deps Dependencies) http.HandlerFunc {
 		}
 		// Stubbed: a real implementation queries the official DGFiP directory API.
 		writeJSON(w, http.StatusOK, map[string]any{
-			"siren":     siren,
-			"pa_id":     "mock",
-			"resolved":  false,
-			"source":    "stub",
-			"note":      "directory lookup not yet integrated with DGFiP",
+			"siren":    siren,
+			"pa_id":    "mock",
+			"resolved": false,
+			"source":   "stub",
+			"note":     "directory lookup not yet integrated with DGFiP",
 		})
 	}
 }

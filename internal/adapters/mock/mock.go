@@ -15,9 +15,9 @@ import (
 )
 
 type submission struct {
-	inv      *invoice.Invoice
-	status   invoice.Status
-	updated  time.Time
+	inv     *invoice.Invoice
+	status  invoice.Status
+	updated time.Time
 }
 
 // Adapter implements PAAdapter without leaving the process.

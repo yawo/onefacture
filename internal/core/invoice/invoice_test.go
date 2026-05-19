@@ -16,18 +16,18 @@ func sampleInvoice() *Invoice {
 		Currency:  "EUR",
 		Status:    StatusDraft,
 		Seller: Party{
-			Name:  "Acme Corp",
-			SIREN: "123456789",
+			Name:    "Acme Corp",
+			SIREN:   "123456789",
 			Address: Address{Line1: "1 rue Cler", PostalCode: "75007", City: "Paris", CountryCode: "FR"},
 		},
 		Buyer: Party{
-			Name:  "Globex Inc",
-			SIREN: "987654321",
+			Name:    "Globex Inc",
+			SIREN:   "987654321",
 			Address: Address{Line1: "2 av Foch", PostalCode: "75116", City: "Paris", CountryCode: "FR"},
 		},
 		Lines: []Line{
 			{Description: "Consulting", Quantity: 10, UnitCode: "HUR", UnitPrice: 150, TaxRate: 20, TaxCategory: "S"},
-			{Description: "Travel",     Quantity: 1,  UnitCode: "C62", UnitPrice: 250, TaxRate: 10, TaxCategory: "S"},
+			{Description: "Travel", Quantity: 1, UnitCode: "C62", UnitPrice: 250, TaxRate: 10, TaxCategory: "S"},
 		},
 	}
 }
