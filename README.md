@@ -1,60 +1,60 @@
 <h1 align="center">
-  <img src="https://raw.githubusercontent.com/your-org/onefacture/main/docs/assets/logo.svg" alt="onefacture logo" width="200" onerror="this.src='https://via.placeholder.com/200x50?text=onefacture';">
+  <img src="https://raw.githubusercontent.com/your-org/onefacture/main/docs/assets/logo.svg" alt="Logo onefacture" width="200" onerror="this.src='https://via.placeholder.com/200x50?text=onefacture';">
   <br>
   onefacture
 </h1>
 
-<h4 align="center">The Open Source API Gateway for French E-Invoicing (2026 Mandate)</h4>
+<h4 align="center">La passerelle API Open Source pour la Facturation Électronique Française (Réforme 2026)</h4>
 
 <p align="center">
-  <a href="#vision--the-problem">Vision</a> •
-  <a href="#how-it-works">How it Works</a> •
+  <a href="#vision--le-problème">Vision</a> •
+  <a href="#la-solution--onefacture">La Solution</a> •
   <a href="#architecture">Architecture</a> •
-  <a href="#roadmap">Roadmap</a> •
-  <a href="#getting-started">Getting Started</a>
+  <a href="#feuille-de-route-roadmap">Roadmap</a> •
+  <a href="#démarrage-rapide">Démarrage rapide</a>
 </p>
 
 ---
 
-## 🇫🇷 Vision : The Problem
+## 🇫🇷 Vision : Le Problème
 
-Starting **September 1, 2026**, the French government mandates that all B2B transactions subject to VAT must be issued, transmitted, and received electronically. This is not a simple PDF exchange; it involves strict data formats (Factur-X, UBL, CII) and routing through a complex network of **Plateformes de Dématérialisation Partenaires (PDP)** and the **Portail Public de Facturation (PPF)** via a "Y" schema.
+À partir du **1er septembre 2026**, l'État français rend obligatoire l'émission, la transmission et la réception de factures au format électronique pour toutes les transactions B2B nationales assujetties à la TVA. Il ne s'agit pas d'un simple échange de PDF : cela implique des formats de données stricts (Factur-X, UBL, CII) et un routage via un réseau complexe de **Plateformes de Dématérialisation Partenaires (PDP)** et du **Portail Public de Facturation (PPF)** (le fameux "schéma en Y").
 
-For ERPs, SaaS platforms, and internal enterprise systems, this presents a nightmare:
-- **Fragmentation:** There are over 70+ accredited PDPs (Sage, Pennylane, Docaposte, Cegid, etc.), each with its own proprietary API.
-- **Complexity:** Generating compliant Factur-X PDFs with embedded XML and validating them against hundreds of Schematron business rules is technically daunting.
-- **Vendor Lock-in:** Connecting directly to a single PDP ties your system's core invoicing logic to their specific infrastructure.
+Pour les éditeurs d'ERP, les plateformes SaaS et les systèmes d'information internes, cela représente un cauchemar technique :
+- **Fragmentation :** Il existe plus de 70 PDP immatriculées (Sage, Pennylane, Docaposte, Cegid, etc.), chacune imposant sa propre API propriétaire.
+- **Complexité :** Générer des fichiers PDF/A-3 conformes avec XML embarqué (Factur-X) et les valider face à des centaines de règles métier (Schematron / AFNOR) est un défi majeur.
+- **Enfermement propriétaire (Vendor Lock-in) :** Se connecter directement à une seule PDP lie la logique de facturation de votre système à leur infrastructure spécifique.
 
-## 💡 The Solution: onefacture
+## 💡 La Solution : onefacture
 
-**onefacture** is a unified, open-source API gateway that abstracts the entire complexity of the French e-invoicing ecosystem. 
+**onefacture** est une API Gateway unifiée et open source qui abstrait l'intégralité de la complexité de l'écosystème de facturation électronique français.
 
-Instead of building dozens of point-to-point integrations, your application talks to **one single, elegant REST API**. We handle the heavy lifting: Factur-X generation, strict EN 16931 validation, PDP routing, and lifecycle status tracking.
+Au lieu de développer des dizaines d'intégrations point-à-point, votre application communique avec **une seule API REST élégante**. Nous gérons le travail difficile : génération de Factur-X, validation stricte EN 16931, routage dynamique vers les PDP, et suivi du cycle de vie.
 
-### Key Features
+### Fonctionnalités Clés
 
-- 🔌 **Unified API:** A single, developer-friendly OpenAPI 3.1 interface for all your invoicing needs.
-- 🚦 **Smart Routing:** Send an invoice; `onefacture` automatically queries the national directory (Annuaire) and routes it to the recipient's chosen PDP.
-- 🛡️ **Ironclad Validation:** Built-in 6-layer validation pipeline (XSD + Schematron) ensures your invoices are never rejected by the tax authority.
-- 📄 **Factur-X Native:** Generate compliant PDF/A-3 files with embedded XML (MINIMUM, BASIC, EN16931, EXTENDED profiles) on the fly.
-- 🔄 **Standardized Webhooks:** Receive normalized lifecycle events (e.g., `invoice.submitted`, `invoice.paid`) regardless of the underlying PDP's quirks.
+- 🔌 **API Unifiée :** Une seule interface OpenAPI 3.1 orientée développeur pour tous vos besoins de facturation.
+- 🚦 **Routage Intelligent :** Envoyez une facture ; `onefacture` interroge automatiquement l'Annuaire national et la route vers la PDP choisie par le destinataire.
+- 🛡️ **Validation Blindée :** Un pipeline de validation intégré à 6 couches (XSD + Schematron) garantit que vos factures ne seront jamais rejetées par l'administration fiscale.
+- 📄 **Natif Factur-X :** Génération à la volée de fichiers PDF/A-3 conformes avec XML embarqué (profils MINIMUM, BASIC, EN16931, EXTENDED).
+- 🔄 **Webhooks Standardisés :** Recevez des événements de cycle de vie normalisés (ex: `invoice.submitted`, `invoice.paid`) quelles que soient les spécificités de la PDP sous-jacente.
 
 ---
 
 ## 🏗️ Architecture
 
-`onefacture` is built for high throughput, low latency, and rock-solid reliability, adhering to the **AFNOR XP Z12-013** connectivity standards.
+`onefacture` est conçu pour offrir un haut débit, une faible latence et une fiabilité à toute épreuve, en respectant les standards de connectivité **AFNOR XP Z12-013**.
 
-**Core Stack:**
-*   **Gateway (Go 1.23+):** The highly concurrent API layer, routing, and state management (Fiber/Chi).
-*   **Validation Engine (Python Sidecar):** Handles complex XML manipulation and Schematron validation via `lxml`, ensuring strict adherence to AFNOR XP Z12-012.
-*   **Database:** PostgreSQL with `pgvector` for immutable audit trails and multi-tenant data isolation.
-*   **Messaging:** NATS/Redis Streams for async webhook delivery and PDP status polling.
+**Stack Technique :**
+*   **Gateway (Go 1.23+) :** La couche API hautement concurrente, le routage et la gestion des états (basée sur Fiber/Chi).
+*   **Moteur de Validation (Sidecar Python) :** Gère la manipulation complexe du XML et la validation Schematron via `lxml`, assurant le respect strict de la norme AFNOR XP Z12-012.
+*   **Base de données :** PostgreSQL avec `pgvector` pour les pistes d'audit immuables et l'isolation des données multi-tenants.
+*   **Messagerie (Async) :** NATS ou Redis Streams pour la livraison asynchrone des webhooks et le polling des statuts PDP.
 
 ```mermaid
 graph LR
-    A[Your ERP / SaaS] -->|REST / JSON| B(onefacture Gateway)
-    B <--> C{Validation Sidecar}
+    A[Votre ERP / SaaS] -->|REST / JSON| B(onefacture Gateway)
+    B <--> C{Validation Sidecar Python}
     B -->|Adapter: Chorus Pro| D[PPF]
     B -->|Adapter: Pennylane| E[PDP 1]
     B -->|Adapter: Docaposte| F[PDP 2]
@@ -62,36 +62,36 @@ graph LR
 
 ---
 
-## 🛣️ Roadmap
+## 🛣️ Feuille de route (Roadmap)
 
-We are currently in active development to meet the 2026 mandate deadlines.
+Nous sommes en plein développement actif pour respecter les échéances réglementaires de 2026.
 
-- [x] **Phase 0:** Research & Specifications (AFNOR extraction, XSD/Schematron mapping).
-- [ ] **Phase 1:** Core Foundations (Go models, PostgreSQL, Python Validation Sidecar).
-- [ ] **Phase 2:** API Gateway (Invoicing CRUD, OpenAPI 3.1 definitions).
-- [ ] **Phase 3:** Adapters (Chorus Pro/PPF, Docaposte, Pennylane, Cegid).
-- [ ] **Phase 4:** Async Workers (Webhooks, Lifecycle tracking via NATS).
-- [ ] **Phase 5:** Developer Experience (Public Sandbox, Python/TS SDKs).
+- [x] **Phase 0 :** Recherche & Spécifications (Extraction des normes AFNOR, mapping XSD/Schematron).
+- [ ] **Phase 1 :** Fondations Core (Modèles Go, PostgreSQL, Sidecar de validation Python).
+- [ ] **Phase 2 :** API Gateway (CRUD Factures, définitions OpenAPI 3.1).
+- [ ] **Phase 3 :** Adaptateurs PA (Chorus Pro/PPF, Docaposte, Pennylane, Cegid).
+- [ ] **Phase 4 :** Workers Asynchrones (Webhooks, suivi du cycle de vie via NATS).
+- [ ] **Phase 5 :** Expérience Développeur (Sandbox publique, SDKs Python/TS).
 
-*(See [ISSUES.md](./ISSUES.md) for the detailed, actionable backlog).*
+*(Consultez [ISSUES.md](./ISSUES.md) pour le backlog détaillé).*
 
 ---
 
-## 🚀 Getting Started (Coming Soon)
+## 🚀 Démarrage rapide (Bientôt disponible)
 
-*Note: The project is currently in the initial setup phase. The following is a preview of the developer experience.*
+*Note : Le projet est actuellement dans sa phase de configuration initiale. Voici un aperçu de l'expérience développeur cible.*
 
-### 1. Run via Docker Compose
+### 1. Lancer via Docker Compose
 ```bash
 git clone https://github.com/your-org/onefacture.git
 cd onefacture
-make dev # Starts Go Gateway, Python Sidecar, Postgres, and Redis
+make dev # Démarre la Gateway Go, le Sidecar Python, Postgres et Redis
 ```
 
-### 2. Issue your first Factur-X
+### 2. Émettre votre première Factur-X
 ```bash
 curl -X POST http://localhost:8080/v1/invoices \
-  -H "X-API-Key: YOUR_TEST_KEY" \
+  -H "X-API-Key: VOTRE_CLE_API_TEST" \
   -H "Content-Type: application/json" \
   -d '{
     "profile": "EN16931",
@@ -103,12 +103,12 @@ curl -X POST http://localhost:8080/v1/invoices \
 
 ---
 
-## 🤝 Contributing
+## 🤝 Contribuer
 
-We welcome contributions! Whether you are building an adapter for a specific PDP, improving the validation engine, or enhancing the documentation, your help is essential to democratize French e-invoicing.
+Les contributions sont les bienvenues ! Que ce soit pour construire un adaptateur pour une PDP spécifique, améliorer le moteur de validation, ou enrichir la documentation, votre aide est essentielle pour démocratiser la facturation électronique en France.
 
-Please read our [Contributing Guidelines](./CONTRIBUTING.md) (Drafting in progress) to get started.
+Veuillez lire notre [Guide de contribution](./CONTRIBUTING.md) (en cours de rédaction) pour commencer.
 
-## 📄 License
+## 📄 Licence
 
-This project is licensed under the **Apache License 2.0** - see the `LICENSE` file for details.
+Ce projet est sous licence **Apache 2.0** - voir le fichier `LICENSE` pour plus de détails.
