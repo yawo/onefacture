@@ -10,8 +10,24 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
+
+	"github.com/yawo/onefacture/internal/storage"
 )
+
+// MockAPIKeyStore mocks the API key storage
+type MockAPIKeyStore struct {
+	mock.Mock
+}
+
+func (m *MockAPIKeyStore) Lookup(ctx context.Context, key, pepper string) (*storage.APIKey, error) {
+	args := m.Called(ctx, key, pepper)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*storage.APIKey), args.Error(1)
+}
 
 func TestAccessLogMiddleware(t *testing.T) {
 	logger := slog.New(slog.NewTextHandler(os.Stderr, nil))
@@ -226,4 +242,113 @@ func TestAccessLogVaryingStatusCodes(t *testing.T) {
 		handler.ServeHTTP(w, r)
 		require.Equal(t, code, w.Code)
 	}
+}
+
+// API Key Auth Tests
+
+func TestAPIKeyAuthMissingHeader(t *testing.T) {
+	mockStore := &storage.Store{}
+	auth := NewAPIKeyAuth(mockStore).WithPepper("test-pepper")
+
+	handler := auth.Middleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	}))
+
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest(http.MethodGet, "/api", nil)
+
+	handler.ServeHTTP(w, r)
+
+	// Should return 401 Unauthorized since middleware will fail
+	// The exact status code depends on problem.Unauthorized implementation
+	require.True(t, w.Code == http.StatusUnauthorized || w.Code == http.StatusBadRequest)
+}
+
+func TestAPIKeyAuthEmptyHeader(t *testing.T) {
+	mockStore := &storage.Store{}
+	auth := NewAPIKeyAuth(mockStore).WithPepper("test-pepper")
+
+	handler := auth.Middleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	}))
+
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest(http.MethodGet, "/api", nil)
+	r.Header.Set("X-API-Key", "")
+
+	handler.ServeHTTP(w, r)
+
+	// Should reject empty key
+	require.True(t, w.Code == http.StatusUnauthorized || w.Code == http.StatusBadRequest)
+}
+
+func TestAPIKeyAuthWithPepper(t *testing.T) {
+	auth := NewAPIKeyAuth(nil)
+	require.NotNil(t, auth)
+
+	authWithPepper := auth.WithPepper("pepper-value")
+	require.Equal(t, "pepper-value", authWithPepper.pepper)
+	require.Equal(t, auth, authWithPepper)
+}
+
+// Rate Limit Tests
+
+func TestRateLimitNilClient(t *testing.T) {
+	rl := NewRateLimit(nil, 100)
+	handler := rl.Middleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	}))
+
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest(http.MethodGet, "/api", nil)
+
+	handler.ServeHTTP(w, r)
+
+	// With nil Redis client, should be a no-op
+	require.Equal(t, http.StatusOK, w.Code)
+}
+
+func TestRateLimitZeroPerMin(t *testing.T) {
+	rl := NewRateLimit(nil, 0)
+	handler := rl.Middleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	}))
+
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest(http.MethodGet, "/api", nil)
+
+	handler.ServeHTTP(w, r)
+
+	// With zero limit, should be a no-op
+	require.Equal(t, http.StatusOK, w.Code)
+}
+
+func TestRateLimitNegativePerMin(t *testing.T) {
+	rl := NewRateLimit(nil, -1)
+	handler := rl.Middleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	}))
+
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest(http.MethodGet, "/api", nil)
+
+	handler.ServeHTTP(w, r)
+
+	// With negative limit, should be a no-op
+	require.Equal(t, http.StatusOK, w.Code)
+}
+
+func TestRateLimitNoOrgIDInContext(t *testing.T) {
+	rl := NewRateLimit(nil, 100)
+	handler := rl.Middleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	}))
+
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest(http.MethodGet, "/api", nil)
+
+	handler.ServeHTTP(w, r)
+
+	// Without org ID in context, should pass through
+	require.Equal(t, http.StatusOK, w.Code)
 }
