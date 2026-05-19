@@ -11,8 +11,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/go-chi/chi/v5"
-	"github.com/go-playground/validator/v10"
+	chi "github.com/go-chi/chi/v5"
+	validator "github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
 
 	"github.com/yawo/onefacture/internal/adapters"
