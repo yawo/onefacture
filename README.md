@@ -1,5 +1,5 @@
 <h1 align="center">
-  <img src="https://raw.githubusercontent.com/your-org/onefacture/main/docs/assets/logo.svg" alt="Logo onefacture" width="200" onerror="this.src='https://via.placeholder.com/200x50?text=onefacture';">
+  <img src="https://raw.githubusercontent.com/yawo/onefacture/main/docs/assets/logo.png" alt="Logo onefacture" width="200" onerror="this.src='https://via.placeholder.com/200x50?text=onefacture';">
   <br>
   onefacture
 </h1>
