@@ -20,19 +20,19 @@ type PAAdapter interface {
 
 // SubmitResult is the response from a PA after submitting an invoice.
 type SubmitResult struct {
-	PARef      string    `json:"pa_ref"`
+	PARef      string         `json:"pa_ref"`
 	Status     invoice.Status `json:"status"`
-	AcceptedAt time.Time `json:"accepted_at"`
-	Raw        []byte    `json:"-"`
+	AcceptedAt time.Time      `json:"accepted_at"`
+	Raw        []byte         `json:"-"`
 }
 
 // LifecycleEvent is the normalised PA-side status update.
 type LifecycleEvent struct {
-	PARef       string         `json:"pa_ref"`
-	Status      invoice.Status `json:"status"`
-	PACode      string         `json:"pa_code,omitempty"`
-	PAMessage   string         `json:"pa_message,omitempty"`
-	OccurredAt  time.Time      `json:"occurred_at"`
+	PARef      string         `json:"pa_ref"`
+	Status     invoice.Status `json:"status"`
+	PACode     string         `json:"pa_code,omitempty"`
+	PAMessage  string         `json:"pa_message,omitempty"`
+	OccurredAt time.Time      `json:"occurred_at"`
 }
 
 // WebhookEvent is the normalised inbound event from a PA webhook.
