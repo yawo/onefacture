@@ -1,0 +1,1080 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>onefacture — L'API unifiée pour la facturation électronique</title>
+<meta name="description" content="Une seule API pour toutes les plateformes agréées. Intégrez la facturation électronique française une fois, connectez-vous partout.">
+
+<link rel="preconnect" href="https://api.fontshare.com">
+<link href="https://api.fontshare.com/v2/css?f[]=zodiak@400,500,700&f[]=satoshi@300,400,500,700&display=swap" rel="stylesheet">
+
+<style>
+/* ═══════════════════════════════════════════════
+   ART DIRECTION
+   Concept: fintech B2B sobre, précision technique
+   Palette: ivoire, beige, chocolat, noir chaud
+   Typography: Zodiak (display) + Satoshi (body)
+   Density: spacieux, autorité
+════════════════════════════════════════════════ */
+
+:root {
+  --font-display: 'Zodiak', 'Georgia', serif;
+  --font-body: 'Satoshi', 'Helvetica Neue', sans-serif;
+
+  /* Type scale */
+  --text-xs:   clamp(0.75rem,  0.7rem  + 0.25vw, 0.875rem);
+  --text-sm:   clamp(0.875rem, 0.8rem  + 0.35vw, 1rem);
+  --text-base: clamp(1rem,     0.95rem + 0.25vw, 1.125rem);
+  --text-lg:   clamp(1.125rem, 1rem    + 0.75vw, 1.5rem);
+  --text-xl:   clamp(1.5rem,   1.2rem  + 1.25vw, 2.25rem);
+  --text-2xl:  clamp(2rem,     1.2rem  + 2.5vw,  3.5rem);
+  --text-3xl:  clamp(2.5rem,   1rem    + 4vw,    5rem);
+
+  /* Spacing */
+  --space-1: 0.25rem; --space-2: 0.5rem; --space-3: 0.75rem;
+  --space-4: 1rem;    --space-5: 1.25rem; --space-6: 1.5rem;
+  --space-8: 2rem;    --space-10: 2.5rem; --space-12: 3rem;
+  --space-16: 4rem;   --space-20: 5rem;   --space-24: 6rem;
+
+  /* Radius */
+  --radius-sm: 0.25rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.875rem;
+  --radius-xl: 1.25rem;
+  --radius-full: 9999px;
+
+  /* Transition */
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --transition: 220ms var(--ease);
+
+  /* Content */
+  --content-narrow: 640px;
+  --content-default: 960px;
+  --content-wide: 1200px;
+}
+
+/* ── LIGHT PALETTE ── */
+:root, [data-theme="light"] {
+  --bg:             #faf9f6;
+  --surface:        #f5f2ec;
+  --surface-2:      #ede8df;
+  --surface-dark:   #2b1d0e;
+  --surface-choco:  #3d2610;
+
+  --text:           #1a1510;
+  --text-muted:     #6b5a47;
+  --text-faint:     #b0a090;
+  --text-inv:       #faf9f6;
+
+  --accent:         #7c4a1a;
+  --accent-hover:   #5e3511;
+  --accent-light:   #e8d5c0;
+
+  --border:         oklch(from #1a1510 l c h / 0.10);
+  --border-strong:  oklch(from #1a1510 l c h / 0.18);
+
+  --shadow-sm: 0 1px 3px oklch(0.15 0.05 40 / 0.08);
+  --shadow-md: 0 4px 16px oklch(0.15 0.05 40 / 0.10);
+  --shadow-lg: 0 16px 48px oklch(0.15 0.05 40 / 0.14);
+}
+
+/* ── DARK PALETTE ── */
+[data-theme="dark"] {
+  --bg:             #120d08;
+  --surface:        #1c1410;
+  --surface-2:      #261c14;
+  --surface-dark:   #f5f2ec;
+  --surface-choco:  #e8d5c0;
+
+  --text:           #e8e0d4;
+  --text-muted:     #9e8d7a;
+  --text-faint:     #5c4e3e;
+  --text-inv:       #1a1510;
+
+  --accent:         #c4813a;
+  --accent-hover:   #d9955a;
+  --accent-light:   #2e1e0a;
+
+  --border:         oklch(from #e8e0d4 l c h / 0.10);
+  --border-strong:  oklch(from #e8e0d4 l c h / 0.18);
+
+  --shadow-sm: 0 1px 3px oklch(0 0 0 / 0.25);
+  --shadow-md: 0 4px 16px oklch(0 0 0 / 0.35);
+  --shadow-lg: 0 16px 48px oklch(0 0 0 / 0.50);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    --bg: #120d08; --surface: #1c1410; --surface-2: #261c14;
+    --surface-dark: #f5f2ec; --surface-choco: #e8d5c0;
+    --text: #e8e0d4; --text-muted: #9e8d7a; --text-faint: #5c4e3e;
+    --text-inv: #1a1510; --accent: #c4813a; --accent-hover: #d9955a;
+    --accent-light: #2e1e0a;
+    --border: oklch(from #e8e0d4 l c h / 0.10);
+    --border-strong: oklch(from #e8e0d4 l c h / 0.18);
+    --shadow-sm: 0 1px 3px oklch(0 0 0 / 0.25);
+    --shadow-md: 0 4px 16px oklch(0 0 0 / 0.35);
+    --shadow-lg: 0 16px 48px oklch(0 0 0 / 0.50);
+  }
+}
+
+/* ═══ BASE RESET ═══ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  scroll-behavior: smooth;
+  scroll-padding-top: var(--space-16);
+}
+body {
+  min-height: 100dvh;
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  line-height: 1.65;
+  color: var(--text);
+  background: var(--bg);
+}
+img, svg { display: block; max-width: 100%; }
+ul[role="list"] { list-style: none; }
+h1,h2,h3,h4 { text-wrap: balance; line-height: 1.15; font-family: var(--font-display); }
+p, li { text-wrap: pretty; max-width: 68ch; }
+::selection { background: oklch(from var(--accent) l c h / 0.20); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: var(--radius-sm); }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
+a, button { transition: color var(--transition), background var(--transition), border-color var(--transition), box-shadow var(--transition), opacity var(--transition); }
+button { cursor: pointer; background: none; border: none; font: inherit; color: inherit; }
+
+/* ═══ LAYOUT UTILITIES ═══ */
+.container { max-width: var(--content-default); margin-inline: auto; padding-inline: var(--space-6); }
+.container--wide { max-width: var(--content-wide); margin-inline: auto; padding-inline: var(--space-6); }
+
+/* ═══ NAV ═══ */
+.nav {
+  position: sticky; top: 0; z-index: 100;
+  background: color-mix(in oklab, var(--bg) 90%, transparent);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+}
+.nav__inner {
+  max-width: var(--content-wide); margin-inline: auto; padding-inline: var(--space-6);
+  height: 64px; display: flex; align-items: center; justify-content: space-between; gap: var(--space-8);
+}
+.nav__logo { display: flex; align-items: center; gap: var(--space-3); text-decoration: none; color: var(--text); }
+.nav__logo-text { font-family: var(--font-display); font-size: var(--text-lg); font-weight: 600; letter-spacing: -0.02em; }
+.nav__links { display: flex; align-items: center; gap: var(--space-6); list-style: none; }
+.nav__links a {
+  font-size: var(--text-sm); font-weight: 500; color: var(--text-muted);
+  text-decoration: none; letter-spacing: 0.01em;
+}
+.nav__links a:hover { color: var(--text); }
+.nav__actions { display: flex; align-items: center; gap: var(--space-3); }
+.nav__menu-btn { display: none; padding: var(--space-2); color: var(--text-muted); border-radius: var(--radius-sm); }
+.nav__menu-btn:hover { color: var(--text); background: var(--surface); }
+
+/* ═══ BUTTONS ═══ */
+.btn {
+  display: inline-flex; align-items: center; gap: var(--space-2);
+  padding: 0.65em 1.4em; border-radius: var(--radius-md);
+  font-size: var(--text-sm); font-weight: 600; letter-spacing: 0.01em;
+  text-decoration: none; cursor: pointer; white-space: nowrap;
+  border: 1px solid transparent;
+}
+.btn--primary {
+  background: var(--accent); color: var(--text-inv);
+  border-color: var(--accent);
+}
+.btn--primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+.btn--ghost {
+  background: transparent; color: var(--text-muted);
+  border-color: var(--border-strong);
+}
+.btn--ghost:hover { color: var(--text); background: var(--surface); border-color: var(--border-strong); }
+.btn--dark {
+  background: var(--surface-dark); color: var(--text-inv);
+  border-color: var(--surface-dark);
+}
+.btn--dark:hover { opacity: 0.88; }
+.btn--lg { padding: 0.8em 2em; font-size: var(--text-base); border-radius: var(--radius-lg); }
+
+/* ═══ THEME TOGGLE ═══ */
+.theme-toggle {
+  width: 38px; height: 38px; display: flex; align-items: center; justify-content: center;
+  border-radius: var(--radius-full); color: var(--text-muted);
+  border: 1px solid var(--border);
+}
+.theme-toggle:hover { color: var(--text); background: var(--surface); }
+
+/* ═══ BADGE ═══ */
+.badge {
+  display: inline-flex; align-items: center; gap: var(--space-2);
+  padding: 0.3em 0.85em; border-radius: var(--radius-full);
+  font-size: var(--text-xs); font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase;
+  background: var(--accent-light); color: var(--accent);
+  border: 1px solid oklch(from var(--accent) l c h / 0.20);
+}
+[data-theme="dark"] .badge { color: var(--accent); }
+
+/* ═══ HERO ═══ */
+.hero {
+  padding-block: clamp(var(--space-16), 10vw, var(--space-24));
+  position: relative; overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse 80% 60% at 50% -10%, color-mix(in oklab, var(--accent) 8%, transparent), transparent 70%);
+  pointer-events: none;
+}
+.hero__inner {
+  max-width: var(--content-default); margin-inline: auto; padding-inline: var(--space-6);
+  text-align: center;
+}
+.hero__eyebrow { margin-bottom: var(--space-6); }
+.hero__title {
+  font-family: var(--font-display);
+  font-size: var(--text-3xl);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--text);
+  margin-bottom: var(--space-6);
+  line-height: 1.05;
+}
+.hero__title em { font-style: italic; color: var(--accent); }
+.hero__subtitle {
+  font-size: var(--text-lg); color: var(--text-muted); font-weight: 400;
+  max-width: 52ch; margin-inline: auto; margin-bottom: var(--space-10);
+  line-height: 1.6;
+}
+.hero__cta { display: flex; gap: var(--space-3); justify-content: center; flex-wrap: wrap; margin-bottom: var(--space-12); }
+.hero__deadline {
+  display: inline-flex; align-items: center; gap: var(--space-2);
+  font-size: var(--text-xs); color: var(--text-muted); letter-spacing: 0.03em;
+}
+.hero__deadline-dot {
+  width: 6px; height: 6px; border-radius: var(--radius-full);
+  background: #c25b2a; display: inline-block;
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+@keyframes pulse-dot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.6;transform:scale(1.3)} }
+
+/* ═══ CODE PREVIEW ═══ */
+.hero__code-preview {
+  margin-top: var(--space-16);
+  max-width: 680px; margin-inline: auto;
+}
+.code-window {
+  background: #1a1510; border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg), 0 0 0 1px oklch(0.9 0.01 60 / 0.06);
+  overflow: hidden;
+}
+[data-theme="dark"] .code-window { background: #0d0a07; box-shadow: var(--shadow-lg), 0 0 0 1px oklch(0.9 0.01 60 / 0.12); }
+.code-window__bar {
+  background: #241a12; padding: var(--space-3) var(--space-4);
+  display: flex; align-items: center; gap: var(--space-3);
+  border-bottom: 1px solid oklch(1 0 0 / 0.06);
+}
+.code-window__dots { display: flex; gap: var(--space-2); }
+.code-window__dot {
+  width: 12px; height: 12px; border-radius: var(--radius-full);
+}
+.dot-r { background: #ff5f57; } .dot-y { background: #febc2e; } .dot-g { background: #28c840; }
+.code-window__label { font-size: var(--text-xs); color: #786050; font-family: 'Courier New', monospace; margin-left: auto; }
+.code-window__body { padding: var(--space-6); overflow-x: auto; }
+pre { font-family: 'Courier New', 'Consolas', monospace; font-size: 0.82rem; line-height: 1.7; color: #d4c4b0; text-align: left; }
+.c-key   { color: #b8956a; }
+.c-str   { color: #a8c080; }
+.c-val   { color: #8ab4d4; }
+.c-punct { color: #786050; }
+.c-comm  { color: #5c4e3e; font-style: italic; }
+.c-meth  { color: #c4813a; font-weight: 600; }
+
+/* ═══ LOGOS STRIP ═══ */
+.logos-strip {
+  padding-block: var(--space-10) var(--space-12);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+.logos-strip__label {
+  text-align: center; font-size: var(--text-xs); color: var(--text-faint);
+  text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: var(--space-6);
+}
+.logos-strip__grid {
+  display: flex; align-items: center; justify-content: center;
+  gap: var(--space-8); flex-wrap: wrap;
+}
+.pa-chip {
+  display: flex; align-items: center; gap: var(--space-2);
+  padding: var(--space-2) var(--space-4); border-radius: var(--radius-full);
+  border: 1px solid var(--border);
+  font-size: var(--text-xs); font-weight: 600; color: var(--text-muted);
+  letter-spacing: 0.03em; background: var(--surface);
+}
+.pa-chip__dot { width: 8px; height: 8px; border-radius: var(--radius-full); background: var(--accent); opacity: 0.6; }
+
+/* ═══ PROBLEM SECTION ═══ */
+.section {
+  padding-block: clamp(var(--space-12), 7vw, var(--space-24));
+}
+.section--dark {
+  background: var(--surface-dark); color: var(--text-inv);
+}
+.section--beige { background: var(--surface); }
+.section__label {
+  font-size: var(--text-xs); font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.1em; color: var(--accent); margin-bottom: var(--space-3);
+}
+.section--dark .section__label { color: var(--accent-light); }
+[data-theme="dark"] .section--dark .section__label { color: var(--accent); }
+
+.section__title {
+  font-family: var(--font-display);
+  font-size: var(--text-2xl); font-weight: 600;
+  letter-spacing: -0.025em; line-height: 1.1;
+  margin-bottom: var(--space-5);
+}
+.section__subtitle {
+  font-size: var(--text-base); line-height: 1.7;
+  color: var(--text-muted); max-width: 54ch;
+  margin-bottom: var(--space-10);
+}
+.section--dark .section__subtitle { color: #b0a090; }
+
+/* ═══ PROBLEM GRID ═══ */
+.problem-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr));
+  gap: var(--space-4);
+}
+.problem-card {
+  padding: var(--space-6);
+  background: color-mix(in oklab, white 5%, var(--surface-dark));
+  border: 1px solid oklch(1 0 0 / 0.08);
+  border-radius: var(--radius-lg);
+}
+.problem-card__num {
+  font-family: var(--font-display); font-size: var(--text-xl);
+  font-weight: 700; color: #5c4030; margin-bottom: var(--space-3);
+}
+.problem-card__title { font-size: var(--text-base); font-weight: 600; color: #e8e0d4; margin-bottom: var(--space-2); }
+.problem-card__body { font-size: var(--text-sm); color: #9e8d7a; line-height: 1.6; }
+
+/* ═══ SOLUTION / HOW IT WORKS ═══ */
+.how-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-12);
+  align-items: center;
+}
+@media (max-width: 768px) { .how-grid { grid-template-columns: 1fr; } }
+
+.flow-steps { display: flex; flex-direction: column; gap: 0; }
+.flow-step {
+  display: grid; grid-template-columns: 48px 1fr; gap: var(--space-4);
+  padding-bottom: var(--space-6); position: relative;
+}
+.flow-step:not(:last-child)::after {
+  content: '';
+  position: absolute; left: 23px; top: 48px; bottom: 0;
+  width: 2px; background: var(--border-strong);
+}
+.flow-step__num {
+  width: 48px; height: 48px; border-radius: var(--radius-full);
+  background: var(--accent); color: var(--text-inv);
+  display: flex; align-items: center; justify-content: center;
+  font-size: var(--text-sm); font-weight: 700;
+  flex-shrink: 0; position: relative; z-index: 1;
+}
+.flow-step__title { font-size: var(--text-base); font-weight: 600; margin-bottom: var(--space-1); padding-top: var(--space-3); }
+.flow-step__body { font-size: var(--text-sm); color: var(--text-muted); line-height: 1.6; }
+
+.arch-visual {
+  background: var(--surface-2); border-radius: var(--radius-xl);
+  padding: var(--space-6); border: 1px solid var(--border);
+  box-shadow: var(--shadow-md);
+}
+.arch-layer {
+  border-radius: var(--radius-lg); padding: var(--space-4) var(--space-5);
+  margin-bottom: var(--space-3);
+  display: flex; align-items: center; gap: var(--space-3);
+}
+.arch-layer--client { background: var(--accent); color: var(--text-inv); }
+.arch-layer--api { background: var(--surface-dark); color: var(--text-inv); }
+[data-theme="light"] .arch-layer--api { background: #2b1d0e; }
+[data-theme="dark"] .arch-layer--api { background: #3d2610; }
+.arch-layer--pa { background: var(--surface); border: 1px solid var(--border); gap: var(--space-2); flex-wrap: wrap; justify-content: center; }
+.arch-layer__label { font-size: var(--text-xs); font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; opacity: 0.7; }
+.arch-layer__name { font-size: var(--text-sm); font-weight: 600; }
+.arch-arrow { text-align: center; font-size: var(--text-sm); color: var(--text-faint); margin-bottom: var(--space-3); line-height: 1; }
+.pa-tag {
+  padding: 0.25em 0.6em; border-radius: var(--radius-sm);
+  font-size: var(--text-xs); font-weight: 600; color: var(--text-muted);
+  background: var(--bg); border: 1px solid var(--border);
+}
+
+/* ═══ FEATURES (BENTO) ═══ */
+.bento-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: var(--space-4);
+}
+.bento-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-xl); padding: var(--space-8);
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow var(--transition), transform var(--transition);
+}
+.bento-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+.bento-card--span-8 { grid-column: span 8; }
+.bento-card--span-4 { grid-column: span 4; }
+.bento-card--span-6 { grid-column: span 6; }
+.bento-card--span-12 { grid-column: span 12; }
+@media (max-width: 900px) {
+  .bento-card--span-8, .bento-card--span-4,
+  .bento-card--span-6 { grid-column: span 12; }
+}
+.bento-card__icon {
+  width: 40px; height: 40px; margin-bottom: var(--space-5);
+  color: var(--accent);
+}
+.bento-card__title {
+  font-family: var(--font-display); font-size: var(--text-lg);
+  font-weight: 600; letter-spacing: -0.02em;
+  margin-bottom: var(--space-3);
+}
+.bento-card__body { font-size: var(--text-sm); color: var(--text-muted); line-height: 1.65; }
+.bento-card--accent {
+  background: var(--accent); color: var(--text-inv);
+  border-color: transparent;
+}
+.bento-card--accent .bento-card__body { color: oklch(from var(--text-inv) l c h / 0.75); }
+.bento-card--dark {
+  background: var(--surface-dark); color: var(--text-inv);
+  border-color: transparent;
+}
+[data-theme="light"] .bento-card--dark { background: #2b1d0e; }
+.bento-card--dark .bento-card__body { color: #9e8d7a; }
+.bento-card--dark .bento-card__title { color: #e8e0d4; }
+
+/* ═══ STATUTS TABLE ═══ */
+.status-table {
+  width: 100%; border-collapse: collapse; margin-top: var(--space-8);
+  font-size: var(--text-sm);
+}
+.status-table th {
+  text-align: left; padding: var(--space-3) var(--space-4);
+  font-size: var(--text-xs); text-transform: uppercase;
+  letter-spacing: 0.06em; color: var(--text-faint);
+  border-bottom: 1px solid var(--border);
+}
+.status-table td {
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--border);
+  color: var(--text-muted);
+}
+.status-table tr:last-child td { border-bottom: none; }
+.status-badge {
+  display: inline-flex; align-items: center; gap: var(--space-1);
+  padding: 0.2em 0.65em; border-radius: var(--radius-full);
+  font-size: var(--text-xs); font-weight: 600;
+}
+.st-green { background: #d4f0c8; color: #2a6010; }
+.st-amber { background: #fde8c0; color: #7a4a00; }
+.st-red   { background: #fad4d4; color: #8a1010; }
+[data-theme="dark"] .st-green { background: #1a3010; color: #8dcc60; }
+[data-theme="dark"] .st-amber { background: #2e1e08; color: #e0a050; }
+[data-theme="dark"] .st-red   { background: #2a0e0e; color: #e07070; }
+
+/* ═══ OPEN SOURCE ═══ */
+.oss-inner {
+  display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-12); align-items: center;
+}
+@media (max-width: 768px) { .oss-inner { grid-template-columns: 1fr; } }
+.oss-pillars { display: flex; flex-direction: column; gap: var(--space-4); }
+.oss-pillar {
+  display: flex; gap: var(--space-4); align-items: flex-start;
+  padding: var(--space-5); background: var(--bg);
+  border: 1px solid var(--border); border-radius: var(--radius-lg);
+}
+.oss-pillar__icon { color: var(--accent); flex-shrink: 0; margin-top: 2px; }
+.oss-pillar__title { font-weight: 600; font-size: var(--text-sm); margin-bottom: var(--space-1); }
+.oss-pillar__body { font-size: var(--text-sm); color: var(--text-muted); line-height: 1.6; }
+
+/* ═══ CTA SECTION ═══ */
+.cta-section {
+  padding-block: clamp(var(--space-16), 10vw, var(--space-24));
+  background: var(--surface-dark); color: var(--text-inv);
+  text-align: center; position: relative; overflow: hidden;
+}
+[data-theme="light"] .cta-section { background: #2b1d0e; }
+.cta-section::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse 60% 80% at 50% 50%, color-mix(in oklab, var(--accent) 15%, transparent), transparent 70%);
+  pointer-events: none;
+}
+.cta-section__inner { position: relative; z-index: 1; max-width: var(--content-narrow); margin-inline: auto; padding-inline: var(--space-6); }
+.cta-section__title {
+  font-family: var(--font-display); font-size: var(--text-2xl);
+  font-weight: 700; letter-spacing: -0.025em; margin-bottom: var(--space-5);
+  color: #f5f2ec;
+}
+.cta-section__sub { font-size: var(--text-base); color: #9e8d7a; margin-bottom: var(--space-10); line-height: 1.7; max-width: 44ch; margin-inline: auto; }
+.cta-section__actions { display: flex; gap: var(--space-3); justify-content: center; flex-wrap: wrap; }
+.cta-section .btn--primary { background: var(--accent); border-color: var(--accent); color: white; }
+[data-theme="dark"] .cta-section .btn--primary { background: var(--accent); }
+
+/* ═══ FOOTER ═══ */
+footer {
+  padding-block: var(--space-12);
+  border-top: 1px solid var(--border);
+}
+.footer-inner {
+  max-width: var(--content-wide); margin-inline: auto; padding-inline: var(--space-6);
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--space-6);
+}
+.footer-logo { font-family: var(--font-display); font-weight: 600; font-size: var(--text-lg); color: var(--text); }
+.footer-links { display: flex; gap: var(--space-6); list-style: none; }
+.footer-links a { font-size: var(--text-sm); color: var(--text-muted); text-decoration: none; }
+.footer-links a:hover { color: var(--text); }
+.footer-copy { font-size: var(--text-xs); color: var(--text-faint); }
+
+/* ═══ SCROLL REVEAL ═══ */
+.reveal {
+  opacity: 0; transform: translateY(24px);
+  transition: opacity 0.7s var(--ease), transform 0.7s var(--ease);
+}
+.reveal.visible { opacity: 1; transform: translateY(0); }
+
+/* ═══ MOBILE ═══ */
+@media (max-width: 640px) {
+  .nav__links { display: none; }
+  .nav__menu-btn { display: flex; }
+  .hero__cta .btn--ghost { display: none; }
+}
+</style>
+</head>
+
+<body>
+<!-- a href="#main-content" class="sr-only">Aller au contenu principal</a -->
+
+<!-- ═══ NAV ═══ -->
+<nav class="nav" aria-label="Navigation principale">
+  <div class="nav__inner">
+    <a href="#" class="nav__logo" aria-label="onefacture — accueil">
+      <svg aria-hidden="true" width="28" height="28" viewBox="0 0 28 28" fill="none">
+        <rect x="2" y="2" width="24" height="24" rx="5" fill="currentColor" opacity="0.12"/>
+        <rect x="6" y="7" width="10" height="1.5" rx="0.75" fill="currentColor"/>
+        <rect x="6" y="11" width="16" height="1.5" rx="0.75" fill="currentColor"/>
+        <rect x="6" y="15" width="12" height="1.5" rx="0.75" fill="currentColor"/>
+        <rect x="6" y="19" width="8" height="1.5" rx="0.75" fill="currentColor"/>
+        <circle cx="21" cy="19.5" r="4" fill="currentColor"/>
+        <path d="M19.5 19.5l1.2 1.2 2-2" stroke="white" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span class="nav__logo-text">(O)nefacture</span>
+    </a>
+
+    <ul class="nav__links" role="list">
+      <li><a href="#probleme">Pourquoi</a></li>
+      <li><a href="#solution">Comment</a></li>
+      <li><a href="#fonctionnalites">Fonctionnalités</a></li>
+      <li><a href="#open-source">Open Source</a></li>
+      <li><a href="https://github.com/onefacture" target="_blank" rel="noopener noreferrer">GitHub</a></li>
+    </ul>
+
+    <div class="nav__actions">
+      <button class="theme-toggle" data-theme-toggle aria-label="Basculer le thème">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        </svg>
+      </button>
+      <a href="#" class="btn btn--ghost" style="display:none;" aria-hidden="true">Docs</a>
+      <a href="#cta" class="btn btn--primary">Démarrer</a>
+    </div>
+
+    <button class="nav__menu-btn" aria-label="Menu mobile">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M3 6h18M3 12h18M3 18h18"/>
+      </svg>
+    </button>
+  </div>
+</nav>
+
+<!-- ═══ MAIN ═══ -->
+<main id="main-content">
+
+  <!-- HERO -->
+  <section class="hero" aria-labelledby="hero-title">
+    <div class="hero__inner">
+      <div class="hero__eyebrow">
+        <span class="badge">
+          <span aria-hidden="true">●</span>
+          Réforme e-invoicing · Septembre 2026
+        </span>
+      </div>
+
+      <h1 class="hero__title" id="hero-title">
+        Une API.<br>
+        <em>Toutes les plateformes.</em>
+      </h1>
+
+      <p class="hero__subtitle">
+        onefacture absorbe la complexité des APIs propriétaires des Plateformes Agréées françaises.
+        Intégrez une seule fois, connectez-vous partout.
+      </p>
+
+      <div class="hero__cta">
+        <a href="#solution" class="btn btn--primary btn--lg">Voir comment ça marche</a>
+        <a href="https://github.com/onefacture" class="btn btn--ghost btn--lg" target="_blank" rel="noopener noreferrer">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/>
+          </svg>
+          GitHub open source
+        </a>
+      </div>
+
+      <p class="hero__deadline">
+        <span class="hero__deadline-dot" aria-hidden="true"></span>
+        Obligation d'émission progressive à partir du 1er septembre 2026
+      </p>
+
+      <!-- Code preview -->
+      <div class="hero__code-preview">
+        <div class="code-window" role="img" aria-label="Exemple d'appel API onefacture en JSON">
+          <div class="code-window__bar" aria-hidden="true">
+            <div class="code-window__dots">
+              <div class="code-window__dot dot-r"></div>
+              <div class="code-window__dot dot-y"></div>
+              <div class="code-window__dot dot-g"></div>
+            </div>
+            <span class="code-window__label">POST /v1/invoices</span>
+          </div>
+          <div class="code-window__body">
+<pre><span class="c-comm">// Émettez une facture vers n'importe quelle PA</span>
+<span class="c-meth">fetch</span><span class="c-punct">(</span><span class="c-str">"https://api.onefacture.fr/v1/invoices"</span><span class="c-punct">, {</span>
+  <span class="c-key">method</span><span class="c-punct">:</span> <span class="c-str">"POST"</span><span class="c-punct">,</span>
+  <span class="c-key">headers</span><span class="c-punct">: {</span>
+    <span class="c-str">"Authorization"</span><span class="c-punct">:</span> <span class="c-str">"Bearer &lt;votre_clé&gt;"</span><span class="c-punct">,</span>
+    <span class="c-str">"Content-Type"</span><span class="c-punct">:</span> <span class="c-str">"application/json"</span>
+  <span class="c-punct">},</span>
+  <span class="c-key">body</span><span class="c-punct">: </span><span class="c-meth">JSON.stringify</span><span class="c-punct">({</span>
+    <span class="c-key">profile</span><span class="c-punct">:</span>   <span class="c-str">"EN_16931"</span><span class="c-punct">,</span>
+    <span class="c-key">routing</span><span class="c-punct">: {</span> <span class="c-key">pa</span><span class="c-punct">:</span> <span class="c-str">"auto"</span> <span class="c-punct">},</span>  <span class="c-comm">// ou "docaposte", "pennylane"…</span>
+    <span class="c-key">seller</span><span class="c-punct">:   { </span><span class="c-key">siret</span><span class="c-punct">:</span> <span class="c-str">"12345678900010"</span><span class="c-punct">, </span><span class="c-key">name</span><span class="c-punct">:</span> <span class="c-str">"Ma Société SAS"</span> <span class="c-punct">},</span>
+    <span class="c-key">buyer</span><span class="c-punct">:    { </span><span class="c-key">siret</span><span class="c-punct">:</span> <span class="c-str">"98765432100011"</span><span class="c-punct">, </span><span class="c-key">name</span><span class="c-punct">:</span> <span class="c-str">"Client SARL"</span> <span class="c-punct">},</span>
+    <span class="c-key">totals</span><span class="c-punct">:   { </span><span class="c-key">ht</span><span class="c-punct">:</span> <span class="c-val">1000</span><span class="c-punct">, </span><span class="c-key">vat</span><span class="c-punct">:</span> <span class="c-val">200</span><span class="c-punct">, </span><span class="c-key">ttc</span><span class="c-punct">:</span> <span class="c-val">1200</span> <span class="c-punct">}</span>
+  <span class="c-punct">})</span>
+<span class="c-punct">});</span>
+<span class="c-comm">// → { id: "inv_01J…", status: "SUBMITTED", pa: "docaposte" }</span></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- LOGOS STRIP -->
+  <div class="logos-strip">
+    <div class="container--wide">
+      <p class="logos-strip__label">Plateformes agréées supportées</p>
+      <div class="logos-strip__grid" role="list">
+        <div class="pa-chip" role="listitem"><span class="pa-chip__dot" aria-hidden="true"></span>Docaposte</div>
+        <div class="pa-chip" role="listitem"><span class="pa-chip__dot" aria-hidden="true"></span>Pennylane</div>
+        <div class="pa-chip" role="listitem"><span class="pa-chip__dot" aria-hidden="true"></span>Cegid</div>
+        <div class="pa-chip" role="listitem"><span class="pa-chip__dot" aria-hidden="true"></span>Qonto</div>
+        <div class="pa-chip" role="listitem"><span class="pa-chip__dot" aria-hidden="true"></span>B2Brouter</div>
+        <div class="pa-chip" role="listitem"><span class="pa-chip__dot" aria-hidden="true"></span>Agena3000</div>
+        <div class="pa-chip" role="listitem" style="opacity:0.5; font-style:italic;">+100 en cours…</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROBLÈME -->
+  <section class="section section--dark" id="probleme" aria-labelledby="probleme-title">
+    <div class="container--wide">
+      <p class="section__label">Le problème</p>
+      <h2 class="section__title" id="probleme-title" style="color:#f5f2ec;">
+        100+ plateformes agréées.<br>100+ APIs incompatibles.
+      </h2>
+      <p class="section__subtitle">
+        La réforme impose de passer par une PA — mais chaque PA parle sa propre langue.
+        Le résultat : complexité en cascade pour chaque acteur de la chaîne.
+      </p>
+
+      <div class="problem-grid">
+        <article class="problem-card">
+          <p class="problem-card__num">01</p>
+          <h3 class="problem-card__title">Coût d'apprentissage multiplié</h3>
+          <p class="problem-card__body">Les consultants doivent maîtriser une API différente pour chaque client selon sa PA. Chaque nouveau contrat est une remise à zéro.</p>
+        </article>
+        <article class="problem-card">
+          <p class="problem-card__num">02</p>
+          <h3 class="problem-card__title">Duplication des intégrations</h3>
+          <p class="problem-card__body">Les entreprises multi-entités avec des PA différentes maintiennent N connecteurs en parallèle. Les bugs se multiplient à l'identique.</p>
+        </article>
+        <article class="problem-card">
+          <p class="problem-card__num">03</p>
+          <h3 class="problem-card__title">Migration impossible</h3>
+          <p class="problem-card__body">Changer de PA oblige à réécrire entièrement l'intégration. Les clients restent captifs même quand leur PA augmente ses tarifs.</p>
+        </article>
+        <article class="problem-card">
+          <p class="problem-card__num">04</p>
+          <h3 class="problem-card__title">Vendor lock-in structurel</h3>
+          <p class="problem-card__body">La PA devient pivot stratégique : roadmap, tarifs, fonctionnalités. Le client subit sans pouvoir négocier ni innover.</p>
+        </article>
+        <article class="problem-card">
+          <p class="problem-card__num">05</p>
+          <h3 class="problem-card__title">Innovation plafonnée</h3>
+          <p class="problem-card__body">Construire des fonctions avancées (analytics, IA, automatisation) exige de dupliquer l'effort par PA. L'abstraction n'existe pas.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- SOLUTION -->
+  <section class="section" id="solution" aria-labelledby="solution-title">
+    <div class="container--wide">
+      <div class="how-grid">
+        <div>
+          <p class="section__label">La solution</p>
+          <h2 class="section__title" id="solution-title">
+            Une couche d'abstraction<br>basée sur la norme.
+          </h2>
+          <p class="section__subtitle">
+            onefacture traduit votre JSON unifié vers chaque PA.
+            Vous ne parlez qu'à la norme. Nous parlons à tout le monde.
+          </p>
+
+          <div class="flow-steps" role="list">
+            <div class="flow-step" role="listitem">
+              <div class="flow-step__num" aria-hidden="true">1</div>
+              <div>
+                <p class="flow-step__title">Vous envoyez un JSON Factur-X</p>
+                <p class="flow-step__body">Un seul format stable, documenté, conforme EN 16931. Profils MINIMUM à EXTENDED selon votre besoin.</p>
+              </div>
+            </div>
+            <div class="flow-step" role="listitem">
+              <div class="flow-step__num" aria-hidden="true">2</div>
+              <div>
+                <p class="flow-step__title">onefacture valide et route</p>
+                <p class="flow-step__body">Validation schematron EN 16931, sélection automatique ou explicite de la PA, génération PDF/A-3 + XML embarqué.</p>
+              </div>
+            </div>
+            <div class="flow-step" role="listitem">
+              <div class="flow-step__num" aria-hidden="true">3</div>
+              <div>
+                <p class="flow-step__title">L'adaptateur PA prend le relais</p>
+                <p class="flow-step__body">Chaque connecteur traduit vers l'API propriétaire, gère l'authentification, les retries et les statuts DGFiP.</p>
+              </div>
+            </div>
+            <div class="flow-step" role="listitem">
+              <div class="flow-step__num" aria-hidden="true">4</div>
+              <div>
+                <p class="flow-step__title">Vous recevez des webhooks normalisés</p>
+                <p class="flow-step__body">14 statuts de cycle de vie unifiés, signature HMAC, retry exponentiel. Peu importe la PA source.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Architecture visuelle -->
+        <div class="arch-visual" aria-label="Schéma d'architecture onefacture">
+          <div class="arch-layer arch-layer--client">
+            <div>
+              <p class="arch-layer__label">Votre app</p>
+              <p class="arch-layer__name">ERP · SaaS · CLI · SDK</p>
+            </div>
+          </div>
+          <div class="arch-arrow" aria-hidden="true">↕ JSON Factur-X (EN 16931)</div>
+          <div class="arch-layer arch-layer--api">
+            <div>
+              <p class="arch-layer__label">onefacture API</p>
+              <p class="arch-layer__name" style="color:#e8d5c0;">Validation · Routing · Normalisation · Webhooks</p>
+            </div>
+          </div>
+          <div class="arch-arrow" aria-hidden="true">↕ APIs propriétaires</div>
+          <div class="arch-layer arch-layer--pa">
+            <span class="pa-tag">Docaposte</span>
+            <span class="pa-tag">Pennylane</span>
+            <span class="pa-tag">Cegid</span>
+            <span class="pa-tag">Qonto</span>
+            <span class="pa-tag">+N</span>
+          </div>
+          <div class="arch-arrow" aria-hidden="true" style="margin-top:var(--space-3);">↕ Données fiscales</div>
+          <div class="arch-layer" style="background:var(--surface-2); border:1px solid var(--border); border-radius:var(--radius-lg); padding:var(--space-3) var(--space-4); justify-content:center;">
+            <span style="font-size:var(--text-xs); font-weight:600; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.06em;">DGFiP — PPF</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FONCTIONNALITÉS BENTO -->
+  <section class="section section--beige" id="fonctionnalites" aria-labelledby="features-title">
+    <div class="container--wide">
+      <p class="section__label">Fonctionnalités</p>
+      <h2 class="section__title" id="features-title">
+        Tout ce qu'attend un intégrateur exigeant.
+      </h2>
+      <p class="section__subtitle">
+        Chaque fonctionnalité a été pensée pour supprimer une friction réelle dans votre quotidien d'intégration.
+      </p>
+
+      <div class="bento-grid">
+
+        <!-- Grande carte gauche -->
+        <article class="bento-card bento-card--span-8">
+          <svg class="bento-card__icon" viewBox="0 0 40 40" fill="none" aria-hidden="true">
+            <rect x="4" y="6" width="24" height="28" rx="3" stroke="currentColor" stroke-width="1.5"/>
+            <path d="M10 14h12M10 19h8M10 24h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            <circle cx="30" cy="30" r="7" fill="currentColor" opacity="0.12"/>
+            <path d="M27.5 30l2 2 3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <h3 class="bento-card__title">Validation EN 16931 native</h3>
+          <p class="bento-card__body">Chaque facture est validée par schematron officiel avant émission — règles BR-01 à BR-65, codelists UNTDID, vérification des montants. Les erreurs sont retournées en langage clair, pas en codes opaques.</p>
+        </article>
+
+        <!-- Petite carte droite -->
+        <article class="bento-card bento-card--accent bento-card--span-4">
+          <svg class="bento-card__icon" viewBox="0 0 40 40" fill="none" aria-hidden="true" style="color:white">
+            <circle cx="20" cy="20" r="14" stroke="currentColor" stroke-width="1.5" opacity="0.4"/>
+            <path d="M20 8v12l6 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          <h3 class="bento-card__title" style="color:white;">14 statuts normalisés</h3>
+          <p class="bento-card__body">SUBMITTED → RECEIVED → APPROVED → PAID. Quel que soit le cycle de vie de chaque PA, vous recevez toujours les mêmes événements.</p>
+        </article>
+
+        <!-- Carte medium -->
+        <article class="bento-card bento-card--span-6">
+          <svg class="bento-card__icon" viewBox="0 0 40 40" fill="none" aria-hidden="true">
+            <path d="M8 20h24M20 8l12 12-12 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <h3 class="bento-card__title">Routing intelligent</h3>
+          <p class="bento-card__body">Définissez votre PA par défaut ou passez <code style="font-size:0.85em; background:var(--surface-2); padding:0.1em 0.4em; border-radius:var(--radius-sm);">routing.pa: "auto"</code> pour la sélection automatique basée sur le SIRET destinataire. Multi-tenant nativement supporté.</p>
+        </article>
+
+        <!-- Carte medium -->
+        <article class="bento-card bento-card--span-6">
+          <svg class="bento-card__icon" viewBox="0 0 40 40" fill="none" aria-hidden="true">
+            <path d="M12 8h16v4H12zM8 16h24v4H8zM12 24h16v4H12z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+          </svg>
+          <h3 class="bento-card__title">SDKs multilangage</h3>
+          <p class="bento-card__body">Bibliothèques officielles en TypeScript, Python, Go. Générées depuis la spec OpenAPI 3.1. Méthodes typées, erreurs structurées, exemples testés.</p>
+        </article>
+
+        <!-- Carte dark large -->
+        <article class="bento-card bento-card--dark bento-card--span-12">
+          <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:var(--space-8);">
+            <div>
+              <svg style="width:36px;height:36px;color:#c4813a;margin-bottom:var(--space-4);" viewBox="0 0 36 36" fill="none" aria-hidden="true">
+                <path d="M18 4l2.5 8H28l-7 5 2.5 8-7-5-7 5 2.5-8-7-5h7.5z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+              </svg>
+              <h3 class="bento-card__title">Open Source Apache 2.0</h3>
+              <p class="bento-card__body">Code auditable, aucune boîte noire. Déployez on-premise ou utilisez le service cloud. La communauté contribue les adaptateurs PA.</p>
+            </div>
+            <div>
+              <svg style="width:36px;height:36px;color:#c4813a;margin-bottom:var(--space-4);" viewBox="0 0 36 36" fill="none" aria-hidden="true">
+                <rect x="4" y="4" width="28" height="28" rx="4" stroke="currentColor" stroke-width="1.5"/>
+                <path d="M4 14h28M14 4v28" stroke="currentColor" stroke-width="1.5"/>
+              </svg>
+              <h3 class="bento-card__title">Docs interactives Scalar</h3>
+              <p class="bento-card__body">Playground intégré, exemples en live, référence OpenAPI 3.1 complète. Testez votre intégration depuis la documentation.</p>
+            </div>
+            <div>
+              <svg style="width:36px;height:36px;color:#c4813a;margin-bottom:var(--space-4);" viewBox="0 0 36 36" fill="none" aria-hidden="true">
+                <path d="M18 4C10.268 4 4 10.268 4 18s6.268 14 14 14 14-6.268 14-14S25.732 4 18 4z" stroke="currentColor" stroke-width="1.5"/>
+                <path d="M12 18l4 4 8-8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <h3 class="bento-card__title">Suit la norme EN 16931</h3>
+              <p class="bento-card__body">Mises à jour biannuelles (mai/novembre). Versionné SemVer. Sunset policy 12 mois pour les changements breaking. Vous n'avez pas à surveiller les artefacts DGFiP.</p>
+            </div>
+          </div>
+        </article>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- STATUTS TABLE -->
+  <section class="section" aria-labelledby="statuts-title">
+    <div class="container">
+      <p class="section__label">Cycle de vie</p>
+      <h2 class="section__title" id="statuts-title">14 statuts. Un seul vocabulaire.</h2>
+      <p class="section__subtitle">
+        Quel que soit l'opérateur PA en coulisse, vos webhooks parlent toujours le même langage.
+      </p>
+
+      <table class="status-table" aria-label="Tableau des statuts du cycle de vie des factures">
+        <thead>
+          <tr>
+            <th scope="col">Statut onefacture</th>
+            <th scope="col">Description</th>
+            <th scope="col">Obligation DGFiP</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td><code>SUBMITTED</code></td><td>Facture déposée auprès de la PA</td><td><span class="status-badge st-amber">Technique</span></td></tr>
+          <tr><td><code>RECEIVED</code></td><td>Confirmée reçue par la PA destinataire</td><td><span class="status-badge st-green">Obligatoire</span></td></tr>
+          <tr><td><code>REJECTED</code></td><td>Rejetée par la PA ou la DGFiP</td><td><span class="status-badge st-green">Obligatoire</span></td></tr>
+          <tr><td><code>REFUSED</code></td><td>Refusée par le client destinataire</td><td><span class="status-badge st-green">Obligatoire</span></td></tr>
+          <tr><td><code>APPROVED</code></td><td>Approuvée par le client</td><td><span class="status-badge st-amber">Recommandé</span></td></tr>
+          <tr><td><code>PAID</code></td><td>Paiement constaté</td><td><span class="status-badge st-green">Obligatoire</span></td></tr>
+          <tr><td><code>DISPUTED</code></td><td>En litige entre les parties</td><td><span class="status-badge st-red">Facultatif</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- OPEN SOURCE -->
+  <section class="section section--beige" id="open-source" aria-labelledby="oss-title">
+    <div class="container--wide">
+      <div class="oss-inner">
+        <div>
+          <p class="section__label">Open Source</p>
+          <h2 class="section__title" id="oss-title">
+            Construit pour durer.<br>Governé par la communauté.
+          </h2>
+          <p class="section__subtitle">
+            Licence Apache 2.0. Contribuez les adaptateurs PA qui manquent,
+            auditez chaque ligne, déployez sur votre infrastructure.
+          </p>
+          <a href="https://github.com/onefacture" class="btn btn--dark" target="_blank" rel="noopener noreferrer">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/>
+            </svg>
+            Voir le code sur GitHub
+          </a>
+        </div>
+
+        <div class="oss-pillars" role="list">
+          <div class="oss-pillar" role="listitem">
+            <svg class="oss-pillar__icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+            <div>
+              <p class="oss-pillar__title">Aucun vendor lock-in</p>
+              <p class="oss-pillar__body">Migrez de PA à tout moment sans modifier une ligne de code applicatif. Changer de fournisseur est un paramètre de configuration.</p>
+            </div>
+          </div>
+          <div class="oss-pillar" role="listitem">
+            <svg class="oss-pillar__icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
+              <circle cx="12" cy="12" r="10"/>
+              <path d="M12 8v4l3 3"/>
+            </svg>
+            <div>
+              <p class="oss-pillar__title">Toujours à jour avec la norme</p>
+              <p class="oss-pillar__body">EN 16931 publie de nouveaux artefacts tous les 6 mois. onefacture intègre chaque mise à jour. Vous n'avez rien à surveiller.</p>
+            </div>
+          </div>
+          <div class="oss-pillar" role="listitem">
+            <svg class="oss-pillar__icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
+              <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+              <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>
+            </svg>
+            <div>
+              <p class="oss-pillar__title">Communauté d'experts</p>
+              <p class="oss-pillar__body">Les adaptateurs PA sont contribués par les intégrateurs qui les utilisent. Chaque connecteur est testé, documenté, maintenu.</p>
+            </div>
+          </div>
+          <div class="oss-pillar" role="listitem">
+            <svg class="oss-pillar__icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
+              <rect x="2" y="3" width="20" height="14" rx="2"/>
+              <path d="M8 21h8M12 17v4"/>
+            </svg>
+            <div>
+              <p class="oss-pillar__title">Auto-hébergeable</p>
+              <p class="oss-pillar__body">Docker Compose pour développement, Helm chart pour Kubernetes. Déployez dans votre VPC. Vos données ne quittent jamais votre périmètre.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA FINAL -->
+  <section class="cta-section" id="cta" aria-labelledby="cta-title">
+    <div class="cta-section__inner">
+      <p class="section__label" style="color:#c4813a; margin-bottom:var(--space-4);">Prêt à intégrer ?</p>
+      <h2 class="cta-section__title" id="cta-title">
+        Intégrez une fois.<br>Connectez partout.
+      </h2>
+      <p class="cta-section__sub">
+        Septembre 2026 arrive vite. Commencez avec onefacture dès aujourd'hui — en open source, sans engagement.
+      </p>
+      <div class="cta-section__actions">
+        <a href="https://github.com/onefacture" class="btn btn--primary btn--lg" target="_blank" rel="noopener noreferrer">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/>
+          </svg>
+          Démarrer sur GitHub
+        </a>
+        <a href="#solution" class="btn btn--ghost btn--lg" style="color:#9e8d7a; border-color: oklch(from #9e8d7a l c h / 0.35);">Lire la documentation</a>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <span class="footer-logo">onefacture</span>
+    <ul class="footer-links" role="list">
+      <li><a href="https://github.com/onefacture" target="_blank" rel="noopener noreferrer">GitHub</a></li>
+      <li><a href="#">Documentation</a></li>
+      <li><a href="#">Contribuer</a></li>
+      <li><a href="#">Contact</a></li>
+    </ul>
+    <p class="footer-copy">Apache 2.0 · Conforme EN 16931 · Réforme 2026</p>
+  </div>
+</footer>
+
+<script>
+// Theme toggle
+(function(){
+  const toggle = document.querySelector('[data-theme-toggle]');
+  const html = document.documentElement;
+  let theme = matchMedia('(prefers-color-scheme:dark)').matches ? 'dark' : 'light';
+  html.setAttribute('data-theme', theme);
+  function updateToggle() {
+    if (!toggle) return;
+    toggle.setAttribute('aria-label', 'Basculer vers le thème ' + (theme === 'dark' ? 'clair' : 'sombre'));
+    toggle.innerHTML = theme === 'dark'
+      ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>'
+      : '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
+  }
+  updateToggle();
+  toggle && toggle.addEventListener('click', () => {
+    theme = theme === 'dark' ? 'light' : 'dark';
+    html.setAttribute('data-theme', theme);
+    updateToggle();
+  });
+})();
+
+// Scroll reveal
+(function(){
+  const els = document.querySelectorAll('.section > *, .hero__code-preview, .bento-card, .problem-card, .flow-step, .oss-pillar');
+  const obs = new IntersectionObserver((entries) => {
+    entries.forEach((e, i) => {
+      if (e.isIntersecting) {
+        e.target.style.transitionDelay = (i * 0.03) + 's';
+        e.target.classList.add('visible');
+        obs.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.08 });
+  els.forEach(el => { el.classList.add('reveal'); obs.observe(el); });
+})();
+
+// Smooth nav links
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+  a.addEventListener('click', e => {
+    const id = a.getAttribute('href').slice(1);
+    const el = document.getElementById(id);
+    if (el) { e.preventDefault(); el.scrollIntoView({ behavior: 'smooth' }); }
+  });
+});
+</script>
+</body>
+</html>
