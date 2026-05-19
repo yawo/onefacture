@@ -1,34 +1,26 @@
-# AGENTS.md
+# AGENTS.md — Guide de construction de onefacture
 
-```markdown
-# AGENTS.md — Guide de construction de onefacture par un agent IA
-
-## 1. Vision & Contexte
-
-**onefacture** est une API unifiée open source qui abstrait la complexité
-des Plateformes Agréées (PA) françaises pour la facturation électronique B2B.
-
-### Contexte réglementaire
-- Depuis le 1er septembre 2026, toute entreprise française assujettie à la TVA
-  doit émettre et recevoir ses factures électroniques via une PA immatriculée
-  par la DGFiP (schéma dit "en Y"). [web:7][web:12]
-- Plus de 108 PA sont immatriculées (Sage, SAP, Axway, Pagero, Serensia, Azopio,
-  Chaintrust, etc.), chacune avec sa propre API propriétaire. [web:21][web:27]
-- Les formats obligatoires sont Factur-X (PDF/A-3 + XML), UBL 2.1 et CII,
-  conformes à la norme européenne EN 16931. [web:3][web:26]
-- Les normes AFNOR structurent le dispositif :
-  - **XP Z12-012** : formats et profils des messages factures
-  - **XP Z12-013** : API standard pour interfacer SI entreprise ↔ PA
-  - **XP Z12-014** : cas d'usage B2B [web:19][web:25]
-
-### Problème résolu
-Les PA n'exposent pas toutes la norme XP Z12-013 de la même façon.
-Chaque intégrateur doit maîtriser N APIs propriétaires. onefacture absorbe
-cette complexité en exposant une seule API normée, ergonomique et évolutive.
+> Ce document est la source de vérité pour l'agent IA chargé de construire **onefacture**. Il définit la vision, l'architecture, les normes de qualité et la roadmap d'exécution.
 
 ---
 
-## 2. Architecture cible
+## 1. Vision & Contexte
+
+**onefacture** est une API unifiée open source qui abstrait la complexité des Plateformes Agréées (PA) françaises pour la facturation électronique B2B (Réforme 2026).
+
+### Problème résolu
+Depuis le 1er septembre 2026, toute entreprise française assujettie à la TVA doit émettre et recevoir ses factures via une PA immatriculée par la DGFiP (schéma en "Y"). Avec plus de 100 PA (Sage, SAP, Pennylane, Qonto, etc.), chacune possédant sa propre API propriétaire, l'intégration devient un cauchemar pour les ERP et SaaS. **onefacture** absorbe cette complexité en exposant une seule API normée (Factur-X / EN 16931), ergonomique et évolutive.
+
+### Normes de référence
+- **XP Z12-012** : formats et profils des messages factures.
+- **XP Z12-013** : API standard pour interfacer SI entreprise ↔ PA.
+- **XP Z12-014** : cas d'usage B2B.
+
+---
+
+## 2. Architecture Cible (Go-First)
+
+Le système est conçu pour la performance, la concurrence (gestion des flux XML/PDF) et la robustesse.
 
 ```
 ┌─────────────────────────────────────────────────┐
@@ -39,72 +31,57 @@ cette complexité en exposant une seule API normée, ergonomique et évolutive.
                     ▼
 ┌─────────────────────────────────────────────────┐
 │              onefacture API Gateway             │
-│  - Auth (OAuth2 / API Key)                      │
+│  - Langage : Go 1.23+ (Fiber ou Chi)            │
+│  - Auth : API Key / OAuth2                      │
 │  - Routing logique PA                           │
 │  - Validation Factur-X / UBL / CII              │
-│  - Gestion statuts cycle de vie                 │
-│  - Webhook & événements                         │
-│  - Annuaire (lookup PA destinataire)            │
-└───────────────────┬─────────────────────────────┘
-                    │
-      ┌─────────────┼─────────────┐
-      ▼             ▼             ▼
-  Adapter PA1   Adapter PA2   Adapter PAN
-  (Sage)        (Axway)       (Pagero)
-  XP Z12-013    propriétaire  REST custom
+│  - Normalisation Request/Response               │
+└──────────┬──────────────┬──────────────┬────────┘
+           │              │              │
+    ┌──────▼──────┐ ┌─────▼──────┐ ┌────▼───────┐
+    │ Adaptateur  │ │ Adaptateur │ │ Adaptateur │
+    │    Chorus   │ │  Pennylane │ │    Cegid   │
+    └──────┬──────┘ └─────┬──────┘ └────┬───────┘
+           │              │              │
+    ┌──────▼──────────────▼──────────────▼────────┐
+    │           Plateformes Agréées (PA)          │
+    └─────────────────────────────────────────────┘
 ```
 
-### Stack recommandée
-| Composant         | Technologie                        |
-|-------------------|------------------------------------|
-| API Gateway       | Python (FastAPI) ou Go (Fiber)     |
-| Adapters PA       | Python async (httpx) ou Go         |
-| Validation XML    | lxml + schematron (AFNOR publics)  |
-| Génération PDF/A3 | pypdf / fpdf2 + attachement XML    |
-| Queue / Events    | Redis Streams ou NATS              |
-| Base de données   | PostgreSQL (statuts, audit trail)  |
-| Annuaire PA       | Cache Redis + sync PPF             |
-| Auth              | OAuth2 / JWT (Keycloak ou built-in)|
-| Docs              | OpenAPI 3.1 + Redoc / Scalar       |
-| Tests             | pytest + testcontainers            |
-| CI/CD             | GitHub Actions                     |
-| Conteneurs        | Docker Compose (dev) + Helm (prod) |
+### Stack Technique
+| Couche | Technologie |
+|---|---|
+| **API Gateway** | Go (Fiber ou Chi) |
+| **Adaptateurs PA** | Go (un package par PA) |
+| **Validation Factur-X** | Go + sidecar Python (lxml/schematron) |
+| **Stockage** | PostgreSQL + pgvector (audit trail, recherche) |
+| **Messaging** | NATS ou Redis Streams |
+| **Documentation** | OpenAPI 3.1 + Scalar |
+| **CI/CD** | GitHub Actions |
+| **Conteneurs** | Docker Compose (dev) + Helm (prod) |
 
 ---
 
-## 3. Modèle de données core
+## 3. Modèle de données Core (Unified Invoice)
 
-### Invoice (ressource centrale)
-```json
-{
-  "id": "uuid",
-  "status": "DRAFT|SUBMITTED|ACCEPTED|REJECTED|PAID|CANCELLED",
-  "format": "FACTURX|UBL|CII",
-  "profile": "MINIMUM|BASIC_WL|BASIC|EN16931|EXTENDED",
-  "seller": { "siren": "...", "vat_number": "...", "name": "...", "address": {} },
-  "buyer": { "siren": "...", "vat_number": "...", "name": "...", "address": {} },
-  "lines": [{ "description": "...", "quantity": 1, "unit_price": 100.0, "vat_rate": 0.20 }],
-  "total_excl_tax": 100.0,
-  "total_vat": 20.0,
-  "total_incl_tax": 120.0,
-  "issue_date": "2026-09-01",
-  "due_date": "2026-09-30",
-  "pa_id": "SAGE|AXWAY|PAGERO|...",
-  "pa_ref": "ref_interne_pa",
-  "lifecycle": [],
-  "attachments": [],
-  "raw_xml": "base64...",
-  "raw_pdf": "base64..."
-}
-```
+L'Invoice est la ressource centrale, basée sur la norme **Factur-X 1.08 / EN 16931**.
 
-### LifecycleEvent
-```json
-{
-  "event_type": "RECEIVED|APPROVED|REFUSED|PAID",
-  "timestamp": "ISO8601",
-  "actor": "buyer|seller|pa|dgfip",
-  "comment": "..."
+### Structure Go (Conceptuelle)
+```go
+type Invoice struct {
+    ID           string      `json:"id"`
+    Status       Status      `json:"status"` // DRAFT, SUBMITTED, RECEIVED, etc.
+    Profile      Profile     `json:"profile"` // MINIMUM, BASIC, EN16931, EXTENDED
+    Seller       Party       `json:"seller"`
+    Buyer        Party       `json:"buyer"`
+    Lines        []Line      `json:"lines"`
+    Totals       Totals      `json:"totals"`
+    IssueDate    time.Time   `json:"issue_date"`
+    DueDate      time.Time   `json:"due_date"`
+    PAID         string      `json:"pa_id"`
+    PARef        string      `json:"pa_ref"`
+    RawXML       []byte      `json:"-"`
+    RawPDF       []byte      `json:"-"`
 }
 ```
 
@@ -112,229 +89,119 @@ cette complexité en exposant une seule API normée, ergonomique et évolutive.
 
 ## 4. Endpoints API (OpenAPI 3.1)
 
-### Invoices
-| Method | Path                              | Description                           |
-|--------|-----------------------------------|---------------------------------------|
-| POST   | /v1/invoices                      | Créer + émettre une facture           |
-| GET    | /v1/invoices                      | Lister factures (filtres, pagination) |
-| GET    | /v1/invoices/{id}                 | Détail d'une facture                  |
-| PUT    | /v1/invoices/{id}                 | Mettre à jour (DRAFT seulement)       |
-| DELETE | /v1/invoices/{id}                 | Annuler / mettre en corbeille         |
-| POST   | /v1/invoices/{id}/submit          | Soumettre à la PA                     |
-| POST   | /v1/invoices/{id}/cancel          | Émettre avoir d'annulation            |
-| GET    | /v1/invoices/{id}/lifecycle       | Historique statuts cycle de vie       |
-| GET    | /v1/invoices/{id}/download        | Télécharger PDF/A-3 ou XML            |
+### Invoices & Reception
+| Method | Path | Description |
+|---|---|---|
+| POST | `/v1/invoices` | Créer + émettre une facture |
+| GET | `/v1/invoices/{id}` | Détail et statut actuel |
+| POST | `/v1/invoices/{id}/submit` | Soumettre à la PA (si DRAFT) |
+| GET | `/v1/inbox` | Lister les factures reçues |
+| POST | `/v1/inbox/{id}/approve` | Approuver une facture reçue |
 
-### Reception
-| Method | Path                              | Description                           |
-|--------|-----------------------------------|---------------------------------------|
-| GET    | /v1/inbox                         | Factures reçues                       |
-| POST   | /v1/inbox/{id}/acknowledge        | Accuser réception                     |
-| POST   | /v1/inbox/{id}/approve            | Approuver la facture                  |
-| POST   | /v1/inbox/{id}/reject             | Rejeter avec motif                    |
-
-### Validation
-| Method | Path                              | Description                           |
-|--------|-----------------------------------|---------------------------------------|
-| POST   | /v1/validate                      | Valider un fichier Factur-X/UBL/CII   |
-| POST   | /v1/convert                       | Convertir entre formats               |
-
-### Annuaire
-| Method | Path                              | Description                           |
-|--------|-----------------------------------|---------------------------------------|
-| GET    | /v1/directory/lookup              | Trouver la PA d'un SIREN destinataire |
-
-### PA Management
-| Method | Path                              | Description                           |
-|--------|-----------------------------------|---------------------------------------|
-| GET    | /v1/platforms                     | Lister PA supportées                  |
-| POST   | /v1/platforms/{id}/connect        | Connecter credentials PA              |
-| GET    | /v1/platforms/{id}/status         | Santé / connectivité PA               |
-
-### E-reporting
-| Method | Path                              | Description                           |
-|--------|-----------------------------------|---------------------------------------|
-| POST   | /v1/ereporting/transactions       | Déclarer transactions B2C / export    |
-| POST   | /v1/ereporting/payments           | Déclarer données paiement             |
-
-### Webhooks
-| Method | Path                              | Description                           |
-|--------|-----------------------------------|---------------------------------------|
-| POST   | /v1/webhooks                      | Créer endpoint webhook                |
-| GET    | /v1/webhooks                      | Lister webhooks                       |
-| DELETE | /v1/webhooks/{id}                 | Supprimer webhook                     |
+### Validation & Annuaire
+| Method | Path | Description |
+|---|---|---|
+| POST | `/v1/validate` | Valider un fichier Factur-X/UBL/CII |
+| GET | `/v1/directory/lookup` | Trouver la PA d'un SIREN destinataire |
+| GET | `/v1/platforms` | Lister les PA supportées et leur santé |
 
 ---
 
-## 5. Adapters PA — Pattern
+## 5. Adapters PA — Interface Go
 
-Chaque adapter implémente une interface commune :
+Chaque adaptateur implémente l'interface commune :
 
-```python
-class PAAdapter(ABC):
-    """Interface commune pour tous les adapters Plateforme Agréée."""
-
-    @abstractmethod
-    async def submit_invoice(self, invoice: Invoice) -> PASubmitResult:
-        """Émet une facture vers la PA."""
-
-    @abstractmethod
-    async def get_status(self, pa_ref: str) -> LifecycleEvent:
-        """Récupère le statut d'une facture côté PA."""
-
-    @abstractmethod
-    async def fetch_received(self) -> list[Invoice]:
-        """Récupère les factures reçues depuis la PA."""
-
-    @abstractmethod
-    async def send_lifecycle_event(self, pa_ref: str, event: LifecycleEventType) -> bool:
-        """Envoie un statut cycle de vie (approbation, rejet, paiement)."""
-
-    @abstractmethod
-    async def health_check(self) -> bool:
-        """Vérifie la disponibilité de la PA."""
+```go
+type PAAdapter interface {
+    Name() string
+    Submit(ctx context.Context, inv *Invoice) (*SubmitResult, error)
+    GetStatus(ctx context.Context, paRef string) (*LifecycleEvent, error)
+    Webhook(ctx context.Context, payload []byte) (*WebhookEvent, error)
+    HealthCheck(ctx context.Context) error
+}
 ```
 
-### Adapters à implémenter (priorité)
-1. **Chorus Pro / PPF** (Portail Public de Facturation — référence)
-2. **Sage PA**
-3. **Axway**
-4. **Pagero**
-5. **B2Brouter** (PA agréée, API REST documentée) [web:15]
-6. **Super PDP** (API simple et accessible) [web:6]
-7. Generique basé sur XP Z12-013 AFNOR (auto-détection)
+### Priorité d'implémentation
+1. **Chorus Pro / PPF** (Référence d'État)
+2. **Docaposte (SERES)** (~35% du marché)
+3. **Pennylane** (Forte adoption PME)
+4. **Cegid / Qonto** (ERP et Fintech)
+5. **Super PDP / B2Brouter** (Accessibilité)
 
 ---
 
-## 6. Validation Factur-X
+## 6. Pipeline de Validation & Génération
 
-L'agent doit implémenter un pipeline de validation en couches :
+### Validation (6 couches)
+1. **PDF/A-3** : Vérifier la validité du conteneur.
+2. **Extraction** : Extraire le XML CII/UBL embarqué.
+3. **XSD** : Valider contre les schémas EN 16931.
+4. **Schematron** : Appliquer les règles métiers AFNOR (XP Z12-012).
+5. **Métier** : SIREN, TVA cohérente, calculs des totaux.
+6. **Score** : Retourner les erreurs structurées (code, path, message).
 
-```
-1. Validation PDF/A-3   → vérifier conteneur PDF valide
-2. Extraction XML       → extraire fichier XML embarqué
-3. Validation XSD       → schéma XSD EN 16931 / profil (MINIMUM → EXTENDED)
-4. Validation Schematron → règles métier AFNOR XP Z12-012
-5. Validation métier    → SIREN valide, TVA cohérente, totaux corrects
-6. Score de conformité  → retourner liste d'erreurs structurées (code + message + path)
-```
-
----
-
-## 7. Génération Factur-X
-
-L'agent doit implémenter la génération complète :
-
-```
-1. Recevoir payload JSON normalisé
-2. Calculer totaux, TVA, arrondis
-3. Générer XML CII (CrossIndustryInvoice) selon profil
-4. Générer PDF/A-3 (layout paramétrable)
-5. Embarquer XML dans PDF (conformément à PDF/A-3)
-6. Retourner fichier binaire + métadonnées
-```
+### Génération
+1. Calcul des arrondis et taxes sur le payload JSON.
+2. Génération du XML CII selon le profil choisi.
+3. Génération du PDF/A-3 (layout paramétrable).
+4. Injection du XML dans le PDF (Factur-X compliant).
 
 ---
 
-## 8. Gestion des erreurs
+## 7. Règles de Qualité & Contribution
 
-Toutes les erreurs retournent un objet structuré :
+### Code & Style
+- **Go 1.23+** : Préférer la bibliothèque standard.
+- **Erreurs** : Toujours wrapper avec du contexte (`fmt.Errorf("context: %w", err)`).
+- **Tests** : Unitaires (logic) + Intégration (API/DB via Testcontainers). Couverture ≥ 80%.
+- **Secrets** : Utiliser `ONEFACTURE_` prefix env vars. Jamais de hardcode.
+- **Lint** : `golangci-lint` doit passer sans avertissement.
 
+### Gestion des Erreurs (RFC 7807)
+Les erreurs doivent être structurées :
 ```json
 {
-  "error": {
-    "code": "VALIDATION_FAILED|PA_UNAVAILABLE|AUTH_ERROR|...",
-    "message": "Message lisible",
-    "details": [
-      { "field": "seller.siren", "code": "INVALID_SIREN", "message": "SIREN invalide" }
-    ],
-    "request_id": "uuid",
-    "timestamp": "ISO8601"
-  }
+  "type": "https://onefacture.io/errors/validation-failed",
+  "title": "Validation Failed",
+  "status": 400,
+  "detail": "The provided SIREN is invalid.",
+  "instance": "/v1/invoices/123",
+  "errors": [{ "field": "seller.siren", "code": "INVALID" }]
 }
 ```
 
 ---
 
-## 9. Sécurité
-
-- **Auth** : OAuth2 (client_credentials flow) + API Key (header `X-API-Key`)
-- **Chiffrement** : TLS 1.3 obligatoire ; données at-rest chiffrées (AES-256)
-- **Isolation** : multi-tenancy par `organization_id` sur toutes les ressources
-- **Audit** : log immuable de chaque action (émission, réception, statut)
-- **RGPD** : endpoint `/v1/gdpr/export` et `/v1/gdpr/delete`
-- **Rate limiting** : par API key (configurable par plan)
-
----
-
-## 10. Open Source & Gouvernance
-
-- Licence : **Apache 2.0**
-- Repo : `github.com/onefacture/onefacture`
-- Structure :
-  ```
-  onefacture/
-  ├── api/           # FastAPI app, routes, schemas
-  ├── adapters/      # Un dossier par PA
-  ├── core/          # Validation, génération, modèles
-  ├── workers/       # Tâches async (polling PA, webhooks)
-  ├── migrations/    # Alembic / SQL
-  ├── tests/         # pytest, fixtures, mocks PA
-  ├── docs/          # OpenAPI spec, guides
-  ├── docker/
-  ├── .github/workflows/
-  ├── AGENTS.md
-  ├── ISSUES.md
-  └── README.md
-  ```
-- **SDK** à générer automatiquement depuis OpenAPI : Python, TypeScript, PHP
-- **Sandbox** intégrée avec PA mockées pour les développeurs
-
----
-
-## 11. Instructions pour l'agent IA
-
-L'agent doit exécuter les étapes dans cet ordre strict :
+## 8. Instructions pour l'agent IA (Roadmap)
 
 ### Phase 0 — Recherche & Spécifications
-- [ ] Lire et parser les normes AFNOR XP Z12-012, Z12-013, Z12-014
-- [ ] Scraper la liste officielle des PA immatriculées (impots.gouv.fr)
-- [ ] Lire la documentation API de chaque PA prioritaire
-- [ ] Extraire les schémas XSD EN 16931 et Factur-X depuis FNFE-MPE
+- [ ] Parser les normes AFNOR XP Z12-012/013.
+- [ ] Extraire les schémas XSD et Schematrons depuis FNFE-MPE.
 
-### Phase 1 — Fondations
-- [ ] Initialiser le projet (structure, dépendances, CI/CD)
-- [ ] Créer les modèles de données core (Pydantic v2)
-- [ ] Implémenter la validation Factur-X (pipeline 6 étapes)
-- [ ] Implémenter la génération Factur-X (tous profils)
-- [ ] Écrire les tests unitaires correspondants
+### Phase 1 — Fondations (Go)
+- [ ] Init projet, CI/CD GitHub Actions.
+- [ ] Modèles Pydantic-like en Go (structs + tags).
+- [ ] Implémenter le pipeline de validation (Sidecar Python).
 
 ### Phase 2 — API Gateway
-- [ ] Implémenter tous les endpoints `/v1/invoices`
-- [ ] Implémenter `/v1/inbox`
-- [ ] Implémenter `/v1/validate` et `/v1/convert`
-- [ ] Implémenter auth OAuth2 + API Key
-- [ ] Générer documentation OpenAPI 3.1
+- [ ] Endpoints `/v1/invoices` et `/v1/validate`.
+- [ ] Auth API Key + Middleware logging.
+- [ ] Documentation Scalar intégrée.
 
 ### Phase 3 — Adapters PA
-- [ ] Implémenter l'interface `PAAdapter`
-- [ ] Adapter Chorus Pro / PPF (référence)
-- [ ] Adapter Super PDP
-- [ ] Adapter B2Brouter
-- [ ] Adapter Sage, Axway, Pagero
-- [ ] Tests d'intégration (sandbox)
+- [ ] Interface `PAAdapter` et registre.
+- [ ] Adapter Chorus Pro (Mocké puis réel).
+- [ ] Adapter Pennylane/Docaposte.
 
-### Phase 4 — Features avancées
-- [ ] Annuaire / lookup SIREN → PA
-- [ ] E-reporting (transactions + paiements)
-- [ ] Webhooks (émission, réception, statuts)
-- [ ] Workers async (polling statuts, retry)
-- [ ] SDK Python + TypeScript
+### Phase 4 — Workers & Async
+- [ ] Polling des statuts PA via NATS/Redis.
+- [ ] Webhooks sortants pour notifier le client.
 
-### Phase 5 — Qualité & Lancement
-- [ ] Tests de charge
-- [ ] Documentation complète (guides, tutoriels)
-- [ ] Sandbox publique
-- [ ] Packaging Docker + Helm chart
-```
+---
 
+## 9. Sécurité & Gouvernance
+
+- **Licence** : Apache 2.0.
+- **Multi-tenancy** : Isolation stricte par `organization_id`.
+- **Audit Log** : Chaque transition de statut doit être immuable en base.
+- **GDPR** : Endpoints de suppression et d'export dédiés.
