@@ -60,11 +60,11 @@ func (d *Deliverer) onEvent(ctx context.Context, ev events.Event) error {
 	}
 	for _, ep := range endpoints {
 		_, err := d.store.Webhooks.Enqueue(ctx, ep.ID, ev.Type, map[string]any{
-			"type":           ev.Type,
-			"occurred_at":    ev.OccurredAt,
+			"type":            ev.Type,
+			"occurred_at":     ev.OccurredAt,
 			"organization_id": ev.OrganizationID,
-			"invoice_id":     ev.InvoiceID,
-			"data":           ev.Payload,
+			"invoice_id":      ev.InvoiceID,
+			"data":            ev.Payload,
 		})
 		if err != nil {
 			d.logger.Warn("enqueue delivery", "err", err)

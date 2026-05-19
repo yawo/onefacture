@@ -31,7 +31,7 @@ func runBusinessRules(inv *invoice.Invoice) []Finding {
 	if !approxEqual(inv.Totals.TaxExclusiveAmount+inv.Totals.TaxAmount, inv.Totals.TaxInclusiveAmount) {
 		out = append(out, Finding{
 			Layer: "business", Code: "BR-CO-15", Severity: SeverityError,
-			Path: "totals.tax_inclusive_amount",
+			Path:    "totals.tax_inclusive_amount",
 			Message: "tax_inclusive_amount must equal tax_exclusive_amount + tax_amount",
 		})
 	}

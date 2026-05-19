@@ -41,10 +41,10 @@ type DateTimeString struct {
 }
 
 type SupplyChainTradeTx struct {
-	Lines         []LineItem    `xml:"ram:IncludedSupplyChainTradeLineItem"`
-	ApplicableHeaderTradeAgreement   HeaderTradeAgreement   `xml:"ram:ApplicableHeaderTradeAgreement"`
-	ApplicableHeaderTradeDelivery    HeaderTradeDelivery    `xml:"ram:ApplicableHeaderTradeDelivery"`
-	ApplicableHeaderTradeSettlement  HeaderTradeSettlement  `xml:"ram:ApplicableHeaderTradeSettlement"`
+	Lines                           []LineItem            `xml:"ram:IncludedSupplyChainTradeLineItem"`
+	ApplicableHeaderTradeAgreement  HeaderTradeAgreement  `xml:"ram:ApplicableHeaderTradeAgreement"`
+	ApplicableHeaderTradeDelivery   HeaderTradeDelivery   `xml:"ram:ApplicableHeaderTradeDelivery"`
+	ApplicableHeaderTradeSettlement HeaderTradeSettlement `xml:"ram:ApplicableHeaderTradeSettlement"`
 }
 
 type LineItem struct {
@@ -64,8 +64,8 @@ type LineItem struct {
 	} `xml:"ram:SpecifiedLineTradeDelivery"`
 	SpecifiedLineTradeSettlement struct {
 		ApplicableTradeTax struct {
-			TypeCode             string `xml:"ram:TypeCode"`
-			CategoryCode         string `xml:"ram:CategoryCode"`
+			TypeCode              string `xml:"ram:TypeCode"`
+			CategoryCode          string `xml:"ram:CategoryCode"`
 			RateApplicablePercent string `xml:"ram:RateApplicablePercent"`
 		} `xml:"ram:ApplicableTradeTax"`
 		SpecifiedTradeSettlementLineMonetarySummation struct {
@@ -80,16 +80,16 @@ type QuantityValue struct {
 }
 
 type HeaderTradeAgreement struct {
-	BuyerReference string      `xml:"ram:BuyerReference,omitempty"`
+	BuyerReference   string     `xml:"ram:BuyerReference,omitempty"`
 	SellerTradeParty TradeParty `xml:"ram:SellerTradeParty"`
 	BuyerTradeParty  TradeParty `xml:"ram:BuyerTradeParty"`
 }
 
 type TradeParty struct {
-	Name                   string                 `xml:"ram:Name"`
+	Name                       string             `xml:"ram:Name"`
 	SpecifiedLegalOrganization *LegalOrganization `xml:"ram:SpecifiedLegalOrganization,omitempty"`
-	PostalTradeAddress     PostalTradeAddress     `xml:"ram:PostalTradeAddress"`
-	SpecifiedTaxRegistration *TaxRegistration     `xml:"ram:SpecifiedTaxRegistration,omitempty"`
+	PostalTradeAddress         PostalTradeAddress `xml:"ram:PostalTradeAddress"`
+	SpecifiedTaxRegistration   *TaxRegistration   `xml:"ram:SpecifiedTaxRegistration,omitempty"`
 }
 
 type LegalOrganization struct {
@@ -117,25 +117,25 @@ type TaxRegistration struct {
 type HeaderTradeDelivery struct{}
 
 type HeaderTradeSettlement struct {
-	InvoiceCurrencyCode string `xml:"ram:InvoiceCurrencyCode"`
-	ApplicableTradeTax  []ApplicableTradeTax `xml:"ram:ApplicableTradeTax"`
-	SpecifiedTradeSettlementHeaderMonetarySummation TradeSummation `xml:"ram:SpecifiedTradeSettlementHeaderMonetarySummation"`
+	InvoiceCurrencyCode                             string               `xml:"ram:InvoiceCurrencyCode"`
+	ApplicableTradeTax                              []ApplicableTradeTax `xml:"ram:ApplicableTradeTax"`
+	SpecifiedTradeSettlementHeaderMonetarySummation TradeSummation       `xml:"ram:SpecifiedTradeSettlementHeaderMonetarySummation"`
 }
 
 type ApplicableTradeTax struct {
-	CalculatedAmount     string `xml:"ram:CalculatedAmount"`
-	TypeCode             string `xml:"ram:TypeCode"`
-	BasisAmount          string `xml:"ram:BasisAmount"`
-	CategoryCode         string `xml:"ram:CategoryCode"`
+	CalculatedAmount      string `xml:"ram:CalculatedAmount"`
+	TypeCode              string `xml:"ram:TypeCode"`
+	BasisAmount           string `xml:"ram:BasisAmount"`
+	CategoryCode          string `xml:"ram:CategoryCode"`
 	RateApplicablePercent string `xml:"ram:RateApplicablePercent"`
 }
 
 type TradeSummation struct {
-	LineTotalAmount      string `xml:"ram:LineTotalAmount"`
-	TaxBasisTotalAmount  string `xml:"ram:TaxBasisTotalAmount"`
-	TaxTotalAmount       Amount `xml:"ram:TaxTotalAmount"`
-	GrandTotalAmount     string `xml:"ram:GrandTotalAmount"`
-	DuePayableAmount     string `xml:"ram:DuePayableAmount"`
+	LineTotalAmount     string `xml:"ram:LineTotalAmount"`
+	TaxBasisTotalAmount string `xml:"ram:TaxBasisTotalAmount"`
+	TaxTotalAmount      Amount `xml:"ram:TaxTotalAmount"`
+	GrandTotalAmount    string `xml:"ram:GrandTotalAmount"`
+	DuePayableAmount    string `xml:"ram:DuePayableAmount"`
 }
 
 type Amount struct {

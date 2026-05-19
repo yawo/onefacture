@@ -20,7 +20,7 @@ import (
 
 // Event is the canonical domain event published on the bus.
 type Event struct {
-	Type           string         `json:"type"`             // e.g. "invoice.submitted"
+	Type           string         `json:"type"` // e.g. "invoice.submitted"
 	OrganizationID string         `json:"organization_id"`
 	InvoiceID      string         `json:"invoice_id,omitempty"`
 	OccurredAt     time.Time      `json:"occurred_at"`

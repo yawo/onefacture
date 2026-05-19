@@ -12,7 +12,7 @@ type Adapter struct{}
 
 func New() *Adapter { return &Adapter{} }
 
-func (a *Adapter) Name() string { return "pennylane" }
+func (a *Adapter) Name() string                        { return "pennylane" }
 func (a *Adapter) HealthCheck(_ context.Context) error { return adapters.ErrNotImplemented }
 func (a *Adapter) Submit(_ context.Context, _ *invoice.Invoice) (*adapters.SubmitResult, error) {
 	return nil, adapters.ErrNotImplemented

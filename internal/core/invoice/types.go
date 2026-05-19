@@ -52,30 +52,30 @@ const (
 
 // Invoice is the unified invoice resource.
 type Invoice struct {
-	ID             string    `json:"id"`
-	OrganizationID string    `json:"organization_id"`
-	Status         Status    `json:"status"`
-	Profile        Profile   `json:"profile"               validate:"required,oneof=MINIMUM BASIC EN16931 EXTENDED"`
-	TypeCode       TypeCode  `json:"type_code"             validate:"required,oneof=380 381 384"`
-	Number         string    `json:"number"                validate:"required,max=64"`
-	IssueDate      time.Time `json:"issue_date"            validate:"required"`
+	ID             string     `json:"id"`
+	OrganizationID string     `json:"organization_id"`
+	Status         Status     `json:"status"`
+	Profile        Profile    `json:"profile"               validate:"required,oneof=MINIMUM BASIC EN16931 EXTENDED"`
+	TypeCode       TypeCode   `json:"type_code"             validate:"required,oneof=380 381 384"`
+	Number         string     `json:"number"                validate:"required,max=64"`
+	IssueDate      time.Time  `json:"issue_date"            validate:"required"`
 	DueDate        *time.Time `json:"due_date,omitempty"`
-	Currency       string    `json:"currency"              validate:"required,len=3"`
+	Currency       string     `json:"currency"              validate:"required,len=3"`
 
 	Seller Party  `json:"seller"                validate:"required"`
 	Buyer  Party  `json:"buyer"                 validate:"required"`
 	Lines  []Line `json:"lines"                 validate:"required,min=1,dive"`
 	Totals Totals `json:"totals"                validate:"required"`
 
-	Notes          []Note   `json:"notes,omitempty"           validate:"dive"`
-	PaymentTerms   string   `json:"payment_terms,omitempty"`
-	PaymentMeans   []Means  `json:"payment_means,omitempty"   validate:"dive"`
-	BuyerReference string   `json:"buyer_reference,omitempty"`
-	OrderRef       string   `json:"order_reference,omitempty"`
+	Notes          []Note  `json:"notes,omitempty"           validate:"dive"`
+	PaymentTerms   string  `json:"payment_terms,omitempty"`
+	PaymentMeans   []Means `json:"payment_means,omitempty"   validate:"dive"`
+	BuyerReference string  `json:"buyer_reference,omitempty"`
+	OrderRef       string  `json:"order_reference,omitempty"`
 
 	// PA routing
-	PAID   string `json:"pa_id,omitempty"`
-	PARef  string `json:"pa_ref,omitempty"`
+	PAID  string `json:"pa_id,omitempty"`
+	PARef string `json:"pa_ref,omitempty"`
 
 	// Stored raw artifacts (not serialised in JSON responses, only via dedicated endpoints).
 	RawXML []byte `json:"-"`
@@ -87,12 +87,12 @@ type Invoice struct {
 
 // Party is a seller or buyer.
 type Party struct {
-	Name      string  `json:"name"                validate:"required,max=200"`
-	LegalName string  `json:"legal_name,omitempty"`
-	SIREN     string  `json:"siren,omitempty"     validate:"omitempty,len=9,numeric"`
-	SIRET     string  `json:"siret,omitempty"     validate:"omitempty,len=14,numeric"`
-	VATNumber string  `json:"vat_number,omitempty"`
-	Address   Address `json:"address"             validate:"required"`
+	Name      string   `json:"name"                validate:"required,max=200"`
+	LegalName string   `json:"legal_name,omitempty"`
+	SIREN     string   `json:"siren,omitempty"     validate:"omitempty,len=9,numeric"`
+	SIRET     string   `json:"siret,omitempty"     validate:"omitempty,len=14,numeric"`
+	VATNumber string   `json:"vat_number,omitempty"`
+	Address   Address  `json:"address"             validate:"required"`
 	Contact   *Contact `json:"contact,omitempty"`
 }
 
@@ -115,7 +115,7 @@ type Line struct {
 	ID          string  `json:"id,omitempty"`
 	Description string  `json:"description"        validate:"required,max=512"`
 	Quantity    float64 `json:"quantity"           validate:"required,gt=0"`
-	UnitCode    string  `json:"unit_code"          validate:"required"`     // UN/ECE Rec 20, e.g. "C62" = piece
+	UnitCode    string  `json:"unit_code"          validate:"required"` // UN/ECE Rec 20, e.g. "C62" = piece
 	UnitPrice   float64 `json:"unit_price"         validate:"gte=0"`
 	NetAmount   float64 `json:"net_amount"         validate:"gte=0"`
 	TaxRate     float64 `json:"tax_rate"           validate:"gte=0,lte=100"`
@@ -125,13 +125,13 @@ type Line struct {
 
 // Totals aggregates monetary values per EN 16931.
 type Totals struct {
-	LineNetAmount       float64 `json:"line_net_amount"          validate:"gte=0"`
-	TaxExclusiveAmount  float64 `json:"tax_exclusive_amount"     validate:"gte=0"`
-	TaxAmount           float64 `json:"tax_amount"               validate:"gte=0"`
-	TaxInclusiveAmount  float64 `json:"tax_inclusive_amount"     validate:"gte=0"`
-	PaidAmount          float64 `json:"paid_amount"              validate:"gte=0"`
-	PayableAmount       float64 `json:"payable_amount"           validate:"gte=0"`
-	TaxBreakdown        []TaxSubtotal `json:"tax_breakdown,omitempty" validate:"dive"`
+	LineNetAmount      float64       `json:"line_net_amount"          validate:"gte=0"`
+	TaxExclusiveAmount float64       `json:"tax_exclusive_amount"     validate:"gte=0"`
+	TaxAmount          float64       `json:"tax_amount"               validate:"gte=0"`
+	TaxInclusiveAmount float64       `json:"tax_inclusive_amount"     validate:"gte=0"`
+	PaidAmount         float64       `json:"paid_amount"              validate:"gte=0"`
+	PayableAmount      float64       `json:"payable_amount"           validate:"gte=0"`
+	TaxBreakdown       []TaxSubtotal `json:"tax_breakdown,omitempty" validate:"dive"`
 }
 
 type TaxSubtotal struct {

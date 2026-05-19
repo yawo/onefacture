@@ -26,11 +26,11 @@ type HTTPConfig struct {
 }
 
 type DatabaseConfig struct {
-	DSN             string
-	MaxConns        int32
-	MigrationsPath  string
-	ConnectTimeout  time.Duration
-	StatementCache  bool
+	DSN            string
+	MaxConns       int32
+	MigrationsPath string
+	ConnectTimeout time.Duration
+	StatementCache bool
 }
 
 type RedisConfig struct {
@@ -60,7 +60,7 @@ func Load() (*Config, error) {
 		},
 		Database: DatabaseConfig{
 			DSN:            env("ONEFACTURE_DB_DSN", "postgres://onefacture:onefacture@localhost:5432/onefacture?sslmode=disable"),
-			MaxConns:       int32(envInt("ONEFACTURE_DB_MAX_CONNS", 20)),
+			MaxConns:       envInt32("ONEFACTURE_DB_MAX_CONNS", 20),
 			MigrationsPath: env("ONEFACTURE_DB_MIGRATIONS_PATH", "internal/storage/migrations"),
 			ConnectTimeout: envDuration("ONEFACTURE_DB_CONNECT_TIMEOUT", 5*time.Second),
 			StatementCache: envBool("ONEFACTURE_DB_STATEMENT_CACHE", true),
@@ -97,6 +97,15 @@ func envInt(key string, fallback int) int {
 	if v, ok := os.LookupEnv(key); ok && v != "" {
 		if n, err := strconv.Atoi(v); err == nil {
 			return n
+		}
+	}
+	return fallback
+}
+
+func envInt32(key string, fallback int32) int32 {
+	if v, ok := os.LookupEnv(key); ok && v != "" {
+		if n, err := strconv.ParseInt(v, 10, 32); err == nil {
+			return int32(n)
 		}
 	}
 	return fallback
