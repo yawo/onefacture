@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "onefacture.fullname" . }}
+  labels: {{- include "onefacture.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels: {{- include "onefacture.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations: {{- toYaml .Values.podAnnotations | nindent 8 }}
+      labels: {{- include "onefacture.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: api
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 8080
+          env:
+            - name: ONEFACTURE_DB_DSN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "onefacture.fullname" . }}-secret
+                  key: db-dsn
+            - name: ONEFACTURE_REDIS_ADDR
+              value: {{ .Values.redis.addr | quote }}
+            - name: ONEFACTURE_REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "onefacture.fullname" . }}-secret
+                  key: redis-password
+                  optional: true
+            - name: ONEFACTURE_HASH_PEPPER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "onefacture.fullname" . }}-secret
+                  key: hash-pepper
+            {{- range $k, $v := .Values.env }}
+            - name: {{ $k }}
+              value: {{ $v | quote }}
+            {{- end }}
+          readinessProbe:
+            httpGet: { path: /readyz, port: http }
+          livenessProbe:
+            httpGet: { path: /healthz, port: http }
+          resources: {{- toYaml .Values.resources.api | nindent 12 }}
+        - name: sidecar
+          image: "{{ .Values.sidecar.image.repository }}:{{ .Values.sidecar.image.tag }}"
+          ports:
+            - name: sidecar
+              containerPort: 8081
+          resources: {{- toYaml .Values.resources.sidecar | nindent 12 }}

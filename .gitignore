@@ -1,0 +1,35 @@
+# Binaries
+bin/
+dist/
+*.exe
+*.test
+*.out
+
+# Go
+vendor/
+coverage.out
+coverage.html
+
+# Python sidecar
+sidecar/.venv/
+sidecar/__pycache__/
+sidecar/**/__pycache__/
+*.pyc
+
+# Local secrets / env
+.env
+.env.local
+*.local.yaml
+
+# Editor
+.vscode/
+.idea/
+*.swp
+.DS_Store
+
+# Temp
+tmp/
+.tmp/
+
+# Generated docs
+docs/openapi.generated.json
