@@ -33,3 +33,29 @@ func TestGenerateCII(t *testing.T) {
 	require.True(t, strings.Contains(s, "Acme"))
 	require.True(t, strings.Contains(s, "EUR"))
 }
+
+func TestGuidelineSpecifiedDocumentContextParameterIDMinimum(t *testing.T) {
+urn := GuidelineSpecifiedDocumentContextParameterID(invoice.ProfileMinimum)
+require.Equal(t, "urn:factur-x.eu:1p0:minimum", urn)
+}
+
+func TestGuidelineSpecifiedDocumentContextParameterIDBasic(t *testing.T) {
+urn := GuidelineSpecifiedDocumentContextParameterID(invoice.ProfileBasic)
+require.Equal(t, "urn:cen.eu:en16931:2017#compliant#urn:factur-x.eu:1p0:basic", urn)
+}
+
+func TestGuidelineSpecifiedDocumentContextParameterIDEN16931(t *testing.T) {
+urn := GuidelineSpecifiedDocumentContextParameterID(invoice.ProfileEN16931)
+require.Equal(t, "urn:cen.eu:en16931:2017", urn)
+}
+
+func TestGuidelineSpecifiedDocumentContextParameterIDExtended(t *testing.T) {
+urn := GuidelineSpecifiedDocumentContextParameterID(invoice.ProfileExtended)
+require.Equal(t, "urn:cen.eu:en16931:2017#conformant#urn:factur-x.eu:1p0:extended", urn)
+}
+
+func TestGuidelineSpecifiedDocumentContextParameterIDDefault(t *testing.T) {
+// Test with invalid profile
+urn := GuidelineSpecifiedDocumentContextParameterID("")
+require.Equal(t, "urn:cen.eu:en16931:2017", urn)
+}
