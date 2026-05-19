@@ -33,3 +33,4 @@ tmp/
 
 # Generated docs
 docs/openapi.generated.json
+video/**/work-*

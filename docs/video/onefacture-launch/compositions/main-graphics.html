@@ -1,0 +1,258 @@
+<template id="main-graphics-template">
+  <div
+    data-composition-id="main-graphics"
+    data-width="1920"
+    data-height="1080"
+    data-duration="15.0"
+  >
+    <!-- Background -->
+    <div class="bg-layer"></div>
+
+    <!-- Scene 1: Une API -->
+    <div id="scene-1" class="scene">
+      <div class="scene-1-text">Une API.</div>
+    </div>
+
+    <!-- Scene 2: Toutes les plateformes -->
+    <div id="scene-2" class="scene">
+      <div class="pa-grid">
+        <div class="pa-chip">Docaposte</div>
+        <div class="pa-chip">Pennylane</div>
+        <div class="pa-chip">Cegid</div>
+        <div class="pa-chip">Qonto</div>
+        <div class="pa-chip">B2Brouter</div>
+        <div class="pa-chip">Agena3000</div>
+      </div>
+      <div class="scene-2-text">Toutes les plateformes.</div>
+    </div>
+
+    <!-- Scene 3: Intégrez une fois -->
+    <div id="scene-3" class="scene">
+      <div class="code-box">
+        <div class="code-line">POST /v1/invoices</div>
+        <div class="code-line indent">{ "routing": "auto" }</div>
+      </div>
+      <div class="scene-3-text">Intégrez une fois.</div>
+    </div>
+
+    <!-- Scene 4: Connectez partout -->
+    <div id="scene-4" class="scene">
+      <div class="connection-lines">
+        <div class="line l1"></div>
+        <div class="line l2"></div>
+        <div class="line l3"></div>
+      </div>
+      <div class="scene-4-text">Connectez partout.</div>
+    </div>
+
+    <!-- Scene 5: Simplification -->
+    <div id="scene-5" class="scene">
+      <div class="scene-5-text">La facturation électronique simplifiée.</div>
+    </div>
+
+    <!-- Scene 6: Brand -->
+    <div id="scene-6" class="scene">
+      <div class="brand-logo">
+        <svg width="120" height="120" viewBox="0 0 28 28" fill="none">
+          <rect x="2" y="2" width="24" height="24" rx="5" fill="#7c4a1a" opacity="0.12"/>
+          <rect x="6" y="7" width="10" height="1.5" rx="0.75" fill="#7c4a1a"/>
+          <rect x="6" y="11" width="16" height="1.5" rx="0.75" fill="#7c4a1a"/>
+          <rect x="6" y="15" width="12" height="1.5" rx="0.75" fill="#7c4a1a"/>
+          <rect x="6" y="19" width="8" height="1.5" rx="0.75" fill="#7c4a1a"/>
+          <circle cx="21" cy="19.5" r="4" fill="#7c4a1a"/>
+          <path d="M19.5 19.5l1.2 1.2 2-2" stroke="white" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <div class="brand-name">(O)nefacture</div>
+      </div>
+    </div>
+
+    <!-- Scene 7: CTA -->
+    <div id="scene-7" class="scene">
+      <div class="cta-container">
+        <div class="cta-oss">Open source. Apache 2.0.</div>
+        <div class="cta-github">Démarrer sur GitHub.</div>
+      </div>
+    </div>
+
+    <style>
+      #main-graphics {
+        background: #faf9f6;
+        font-family: "Satoshi", sans-serif;
+        color: #1a1510;
+        overflow: hidden;
+      }
+
+      .bg-layer {
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(circle at 50% 50%, #f5f2ec 0%, #faf9f6 100%);
+        z-index: -1;
+      }
+
+      .scene {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        opacity: 0;
+        padding: 80px;
+        text-align: center;
+      }
+
+      /* Typography */
+      .scene-1-text, .scene-2-text, .scene-3-text, .scene-4-text, .scene-5-text {
+        font-family: "Zodiak", serif;
+        font-size: 140px;
+        font-weight: 700;
+        letter-spacing: -0.04em;
+        line-height: 1;
+        color: #1a1510;
+      }
+
+      /* Scene 2: Grid */
+      .pa-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 20px;
+        margin-bottom: 60px;
+      }
+      .pa-chip {
+        padding: 12px 24px;
+        background: #f5f2ec;
+        border: 1px solid rgba(26, 21, 16, 0.1);
+        border-radius: 99px;
+        font-weight: 600;
+        font-size: 24px;
+        opacity: 0;
+      }
+
+      /* Scene 3: Code */
+      .code-box {
+        background: #1a1510;
+        color: #faf9f6;
+        padding: 40px;
+        border-radius: 16px;
+        font-family: monospace;
+        font-size: 32px;
+        margin-bottom: 60px;
+        text-align: left;
+        width: 600px;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        opacity: 0;
+      }
+      .code-line.indent { padding-left: 40px; color: #7c4a1a; }
+
+      /* Scene 4: Lines */
+      .connection-lines {
+        position: relative;
+        width: 400px;
+        height: 200px;
+        margin-bottom: 40px;
+      }
+      .line {
+        position: absolute;
+        height: 2px;
+        background: #7c4a1a;
+        width: 0;
+      }
+      .l1 { top: 20%; left: 0; transform: rotate(15deg); }
+      .l2 { top: 50%; left: 0; }
+      .l3 { top: 80%; left: 0; transform: rotate(-15deg); }
+
+      /* Scene 6: Brand */
+      .brand-logo {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 30px;
+      }
+      .brand-name {
+        font-family: "Zodiak", serif;
+        font-size: 100px;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+      }
+
+      /* Scene 7: CTA */
+      .cta-container {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+      .cta-oss {
+        font-size: 32px;
+        color: #7c4a1a;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        opacity: 0;
+      }
+      .cta-github {
+        font-family: "Zodiak", serif;
+        font-size: 80px;
+        font-weight: 700;
+        opacity: 0;
+      }
+    </style>
+
+    <script>
+      (function() {
+        const tl = gsap.timeline({ paused: true });
+
+        // Scene 1: Une API (0-2s)
+        tl.to("#scene-1", { opacity: 1, duration: 0.3 }, 0);
+        tl.from(".scene-1-text", { y: 100, opacity: 0, duration: 0.8, ease: "power4.out" }, 0.1);
+        tl.to("#scene-1", { opacity: 0, y: -50, duration: 0.4, ease: "power2.in" }, 1.6);
+
+        // Scene 2: Toutes les plateformes (2-4s)
+        tl.to("#scene-2", { opacity: 1, duration: 0.1 }, 2.0);
+        tl.fromTo(".pa-chip", 
+          { opacity: 0, y: 20 },
+          { 
+            opacity: 1, 
+            y: 0, 
+            stagger: 0.05, 
+            duration: 0.5, 
+            ease: "back.out(1.7)" 
+          }, 2.1);
+        tl.from(".scene-2-text", { scale: 0.8, opacity: 0, duration: 0.6, ease: "power2.out" }, 2.5);
+        tl.to("#scene-2", { opacity: 0, x: -100, duration: 0.4 }, 3.6);
+
+        // Scene 3: Intégrez une fois (4-6.5s)
+        tl.to("#scene-3", { opacity: 1, duration: 0.1 }, 4.0);
+        tl.fromTo(".code-box", 
+          { opacity: 0, scale: 0.9 },
+          { opacity: 1, scale: 1, duration: 0.8, ease: "expo.out" }, 4.1);
+        tl.from(".scene-3-text", { x: 50, opacity: 0, duration: 0.6 }, 4.5);
+        tl.to("#scene-3", { opacity: 0, scale: 1.1, duration: 0.4 }, 6.1);
+
+        // Scene 4: Connectez partout (6.5-8.5s)
+        tl.to("#scene-4", { opacity: 1, duration: 0.1 }, 6.5);
+        tl.to(".line", { width: 400, stagger: 0.1, duration: 0.8, ease: "power2.inOut" }, 6.6);
+        tl.from(".scene-4-text", { y: 50, opacity: 0, duration: 0.6 }, 7.0);
+        tl.to("#scene-4", { opacity: 0, duration: 0.4 }, 8.1);
+
+        // Scene 5: Simplification (8.5-11s)
+        tl.to("#scene-5", { opacity: 1, duration: 0.3 }, 8.5);
+        tl.from(".scene-5-text", { scale: 1.2, opacity: 0, duration: 1, ease: "power3.out" }, 8.7);
+        tl.to("#scene-5", { opacity: 0, duration: 0.4 }, 10.6);
+
+        // Scene 6: Brand (11-13.5s)
+        tl.to("#scene-6", { opacity: 1, duration: 0.3 }, 11.0);
+        tl.from(".brand-logo svg", { rotation: -10, scale: 0.5, opacity: 0, duration: 0.8, ease: "back.out" }, 11.2);
+        tl.from(".brand-name", { y: 30, opacity: 0, duration: 0.6, ease: "power2.out" }, 11.6);
+        tl.to("#scene-6", { opacity: 0, duration: 0.4 }, 13.1);
+
+        // Scene 7: CTA (13.5-15s)
+        tl.to("#scene-7", { opacity: 1, duration: 0.3 }, 13.5);
+        tl.to(".cta-oss", { opacity: 1, y: 0, duration: 0.5 }, 13.7);
+        tl.to(".cta-github", { opacity: 1, y: 0, duration: 0.5 }, 13.9);
+
+        window.__timelines = window.__timelines || {};
+        window.__timelines["main-graphics"] = tl;
+      })();
+    </script>
+  </div>
+</template>
