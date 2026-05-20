@@ -77,6 +77,13 @@ WHERE status IN ('SUBMITTED','RECEIVED') AND pa_ref IS NOT NULL LIMIT 100`
 			p.logger.Warn("update status", "err", err)
 			continue
 		}
+		if ev.Status == invoice.StatusRejected {
+			_ = p.store.Invoices.SetLastRejection(ctx, orgID, id, invoice.Rejection{
+				Code:       ev.PACode,
+				Message:    ev.PAMessage,
+				OccurredAt: ev.OccurredAt,
+			})
+		}
 		_ = p.store.Lifecycle.Record(ctx, orgID, id, storage.LifecycleEvent{
 			FromStatus: invoice.Status(status), ToStatus: ev.Status, PACode: ev.PACode, PAMessage: ev.PAMessage,
 		})

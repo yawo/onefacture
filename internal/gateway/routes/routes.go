@@ -171,6 +171,9 @@ func submitNow(r *http.Request, deps Dependencies, orgID, invID uuid.UUID, inv *
 	}
 	inv.PAID = a.Name()
 	inv.PARef = res.PARef
+	if err := deps.Store.Invoices.SetSubmissionMetadata(r.Context(), orgID, invID, inv.PAID, inv.PARef); err != nil {
+		return err
+	}
 	if err := deps.Store.Invoices.UpdateStatus(r.Context(), orgID, invID, invoice.StatusSubmitted); err != nil {
 		return err
 	}
@@ -248,11 +251,88 @@ func SubmitInvoice(deps Dependencies) http.HandlerFunc {
 			problem.Conflict(w, r, "cannot submit from "+string(inv.Status))
 			return
 		}
+		if inv.Status == invoice.StatusRejected {
+			_ = deps.Store.Invoices.IncrementRejectionRetry(r.Context(), orgID, id, "manual resubmission")
+		}
 		if err := submitNow(r, deps, orgID, id, inv); err != nil {
 			problem.Internal(w, r, err.Error())
 			return
 		}
 		writeJSON(w, http.StatusAccepted, inv)
+	}
+}
+
+// RetryRejectedInvoice retries a rejected invoice after quick corrections done in external ERP.
+func RetryRejectedInvoice(deps Dependencies) http.HandlerFunc {
+	type reqBody struct {
+		ResolutionHint string `json:"resolution_hint"`
+	}
+	return func(w http.ResponseWriter, r *http.Request) {
+		orgID, _ := middleware.OrgID(r.Context())
+		id, err := uuid.Parse(chi.URLParam(r, "id"))
+		if err != nil {
+			problem.BadRequest(w, r, "invalid id")
+			return
+		}
+		inv, err := deps.Store.Invoices.Get(r.Context(), orgID, id)
+		if errors.Is(err, storage.ErrNotFound) {
+			problem.NotFound(w, r, "invoice not found")
+			return
+		}
+		if err != nil {
+			problem.Internal(w, r, err.Error())
+			return
+		}
+		if inv.Status != invoice.StatusRejected {
+			problem.Conflict(w, r, "invoice is not rejected")
+			return
+		}
+		var body reqBody
+		_ = json.NewDecoder(io.LimitReader(r.Body, 8192)).Decode(&body)
+		_ = deps.Store.Invoices.IncrementRejectionRetry(r.Context(), orgID, id, body.ResolutionHint)
+		if err := submitNow(r, deps, orgID, id, inv); err != nil {
+			problem.Internal(w, r, err.Error())
+			return
+		}
+		_ = deps.Store.Lifecycle.Record(r.Context(), orgID, id, storage.LifecycleEvent{
+			FromStatus: invoice.StatusRejected,
+			ToStatus:   invoice.StatusSubmitted,
+			PAMessage:  "retry submitted",
+			Payload:    map[string]any{"resolution_hint": body.ResolutionHint, "strategy": "manual"},
+		})
+		writeJSON(w, http.StatusAccepted, inv)
+	}
+}
+
+// RejectionSummary provides lightweight monitoring stats for rejection management.
+func RejectionSummary(deps Dependencies) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		orgID, _ := middleware.OrgID(r.Context())
+		const q = `SELECT COALESCE(pa_code,''), COUNT(*) FROM lifecycle_events
+WHERE organization_id = $1 AND to_status = 'REJECTED'
+GROUP BY pa_code ORDER BY COUNT(*) DESC`
+		rows, err := deps.Store.Pool().Query(r.Context(), q, orgID)
+		if err != nil {
+			problem.Internal(w, r, "query rejection summary: "+err.Error())
+			return
+		}
+		defer rows.Close()
+		type entry struct {
+			Code  string `json:"code"`
+			Count int    `json:"count"`
+		}
+		out := []entry{}
+		total := 0
+		for rows.Next() {
+			var e entry
+			if err := rows.Scan(&e.Code, &e.Count); err != nil {
+				problem.Internal(w, r, "scan rejection summary: "+err.Error())
+				return
+			}
+			out = append(out, e)
+			total += e.Count
+		}
+		writeJSON(w, http.StatusOK, map[string]any{"total_rejected": total, "by_code": out})
 	}
 }
 

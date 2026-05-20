@@ -83,6 +83,19 @@ type Invoice struct {
 
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
+
+	LastRejection *Rejection `json:"last_rejection,omitempty"`
+}
+
+// Rejection contains normalized PA rejection details.
+type Rejection struct {
+	Code           string     `json:"code,omitempty"`
+	Message        string     `json:"message,omitempty"`
+	OccurredAt     time.Time  `json:"occurred_at"`
+	RetryCount     int        `json:"retry_count,omitempty"`
+	LastRetryAt    *time.Time `json:"last_retry_at,omitempty"`
+	NextRetryAt    *time.Time `json:"next_retry_at,omitempty"`
+	ResolutionHint string     `json:"resolution_hint,omitempty"`
 }
 
 // Party is a seller or buyer.
