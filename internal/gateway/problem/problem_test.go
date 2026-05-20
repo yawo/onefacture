@@ -182,11 +182,11 @@ func TestWriteWithErrors(t *testing.T) {
 	}
 
 	Write(w, r, Problem{
-		Type:    "validation-failed",
-		Status:  http.StatusBadRequest,
-		Title:   "Validation Failed",
-		Detail:  "Invalid invoice data",
-		Errors:  errs,
+		Type:     "validation-failed",
+		Status:   http.StatusBadRequest,
+		Title:    "Validation Failed",
+		Detail:   "Invalid invoice data",
+		Errors:   errs,
 		Instance: "/custom/path", // This should be overwritten with r.URL.Path
 	})
 

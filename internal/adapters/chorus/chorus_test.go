@@ -103,9 +103,9 @@ func TestWebhook(t *testing.T) {
 
 func TestEnvOr(t *testing.T) {
 	tests := []struct {
-		name    string
-		key     string
-		value   string
+		name     string
+		key      string
+		value    string
 		fallback string
 		expected string
 	}{

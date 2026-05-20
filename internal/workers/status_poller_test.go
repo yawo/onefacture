@@ -126,14 +126,6 @@ func TestStatusPollerRun(t *testing.T) {
 	// If we got here without hanging, the test passes
 }
 
-// Helper function to create a mock store with pool
-func createMockStore(t *testing.T) *storage.Store {
-	// For the tick method to work, we need a store with a pool
-	// In a real integration test, we'd use testcontainers
-	// For now, we'll skip tick() tests that require database access
-	return &storage.Store{}
-}
-
 func TestStatusPollerInterval(t *testing.T) {
 	logger := slog.Default()
 	store := &storage.Store{}
