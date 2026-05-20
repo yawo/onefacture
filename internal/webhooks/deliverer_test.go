@@ -131,9 +131,9 @@ func TestBackoffFunction(t *testing.T) {
 	require.True(t, t2.Before(t3))
 
 	// Backoff should be capped at 1 hour
-	t_max := backoff(100)
+	tMax := backoff(100)
 	now := time.Now().UTC()
-	require.LessOrEqual(t, t_max.Sub(now), 1*time.Hour+1*time.Second)
+	require.LessOrEqual(t, tMax.Sub(now), 1*time.Hour+1*time.Second)
 }
 
 func TestDelivererOnEventInvalidOrgID(t *testing.T) {

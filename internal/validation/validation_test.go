@@ -182,9 +182,9 @@ func TestRound2(t *testing.T) {
 	}{
 		{100.0, 100.00},
 		{100.124, 100.12},
-		{100.125, 100.12},  // banker's rounding: round to nearest even
+		{100.125, 100.12}, // banker's rounding: round to nearest even
 		{100.126, 100.13},
-		{100.135, 100.14},  // banker's rounding
+		{100.135, 100.14}, // banker's rounding
 	}
 
 	for _, tt := range tests {
@@ -283,150 +283,150 @@ func TestRunBusinessRulesMissingSellerSIREN(t *testing.T) {
 }
 
 func TestNewClient(t *testing.T) {
-cfg := config.SidecarConfig{
-BaseURL: "http://localhost:5000",
-Timeout: 10 * time.Second,
-}
-client := NewClient(cfg)
-require.NotNil(t, client)
-require.Equal(t, cfg.BaseURL, client.base)
-require.NotNil(t, client.http)
+	cfg := config.SidecarConfig{
+		BaseURL: "http://localhost:5000",
+		Timeout: 10 * time.Second,
+	}
+	client := NewClient(cfg)
+	require.NotNil(t, client)
+	require.Equal(t, cfg.BaseURL, client.base)
+	require.NotNil(t, client.http)
 }
 
 func TestNewClientDefaultTimeout(t *testing.T) {
-cfg := config.SidecarConfig{
-BaseURL: "http://localhost:5000",
-Timeout: 0,
-}
-client := NewClient(cfg)
-require.NotNil(t, client)
-require.Equal(t, cfg.BaseURL, client.base)
+	cfg := config.SidecarConfig{
+		BaseURL: "http://localhost:5000",
+		Timeout: 0,
+	}
+	client := NewClient(cfg)
+	require.NotNil(t, client)
+	require.Equal(t, cfg.BaseURL, client.base)
 }
 
 func TestValidateInvoiceLocally(t *testing.T) {
-cfg := config.SidecarConfig{
-BaseURL: "", // No sidecar configured
-Timeout: 5 * time.Second,
-}
-client := NewClient(cfg)
+	cfg := config.SidecarConfig{
+		BaseURL: "", // No sidecar configured
+		Timeout: 5 * time.Second,
+	}
+	client := NewClient(cfg)
 
-inv := &invoice.Invoice{
-Profile:   invoice.ProfileEN16931,
-Currency:  "EUR",
-IssueDate: time.Now(),
-Status:    invoice.StatusDraft,
-Seller: invoice.Party{
-Name:  "Seller",
-SIREN: "123456782",
-},
-Buyer: invoice.Party{
-Name:  "Buyer",
-SIREN: "987654324",
-},
-Lines: []invoice.Line{
-{Description: "Test", Quantity: 1, UnitPrice: 100, TaxRate: 20, TaxCategory: "S"},
-},
-}
-inv.ComputeTotals()
+	inv := &invoice.Invoice{
+		Profile:   invoice.ProfileEN16931,
+		Currency:  "EUR",
+		IssueDate: time.Now(),
+		Status:    invoice.StatusDraft,
+		Seller: invoice.Party{
+			Name:  "Seller",
+			SIREN: "123456782",
+		},
+		Buyer: invoice.Party{
+			Name:  "Buyer",
+			SIREN: "987654324",
+		},
+		Lines: []invoice.Line{
+			{Description: "Test", Quantity: 1, UnitPrice: 100, TaxRate: 20, TaxCategory: "S"},
+		},
+	}
+	inv.ComputeTotals()
 
-ctx := context.Background()
-xml := []byte("<test/>")
+	ctx := context.Background()
+	xml := []byte("<test/>")
 
-report, err := client.ValidateInvoice(ctx, inv, xml)
-require.NoError(t, err)
-require.NotNil(t, report)
-require.True(t, report.Valid) // Should be valid as business rules pass and sidecar unavailable is just a warning
+	report, err := client.ValidateInvoice(ctx, inv, xml)
+	require.NoError(t, err)
+	require.NotNil(t, report)
+	require.True(t, report.Valid) // Should be valid as business rules pass and sidecar unavailable is just a warning
 }
 
 func TestValidateInvoiceWithBusinessRuleViolations(t *testing.T) {
-cfg := config.SidecarConfig{
-BaseURL: "",
-Timeout: 5 * time.Second,
-}
-client := NewClient(cfg)
+	cfg := config.SidecarConfig{
+		BaseURL: "",
+		Timeout: 5 * time.Second,
+	}
+	client := NewClient(cfg)
 
-inv := &invoice.Invoice{
-Profile:   invoice.ProfileEN16931,
-Currency:  "", // Missing currency
-IssueDate: time.Now(),
-Status:    invoice.StatusDraft,
-Seller: invoice.Party{
-Name:  "Seller",
-SIREN: "123456782",
-},
-Buyer: invoice.Party{
-Name:  "Buyer",
-SIREN: "987654324",
-},
-Lines: []invoice.Line{
-{Description: "Test", Quantity: 1, UnitPrice: 100, TaxRate: 20, TaxCategory: "S"},
-},
-}
-inv.ComputeTotals()
+	inv := &invoice.Invoice{
+		Profile:   invoice.ProfileEN16931,
+		Currency:  "", // Missing currency
+		IssueDate: time.Now(),
+		Status:    invoice.StatusDraft,
+		Seller: invoice.Party{
+			Name:  "Seller",
+			SIREN: "123456782",
+		},
+		Buyer: invoice.Party{
+			Name:  "Buyer",
+			SIREN: "987654324",
+		},
+		Lines: []invoice.Line{
+			{Description: "Test", Quantity: 1, UnitPrice: 100, TaxRate: 20, TaxCategory: "S"},
+		},
+	}
+	inv.ComputeTotals()
 
-ctx := context.Background()
-xml := []byte("<test/>")
+	ctx := context.Background()
+	xml := []byte("<test/>")
 
-report, err := client.ValidateInvoice(ctx, inv, xml)
-require.NoError(t, err)
-require.NotNil(t, report)
-require.False(t, report.Valid)
-require.NotEmpty(t, report.Findings)
+	report, err := client.ValidateInvoice(ctx, inv, xml)
+	require.NoError(t, err)
+	require.NotNil(t, report)
+	require.False(t, report.Valid)
+	require.NotEmpty(t, report.Findings)
 }
 
 func TestValidateXMLNoSidecar(t *testing.T) {
-cfg := config.SidecarConfig{
-BaseURL: "",
-Timeout: 5 * time.Second,
-}
-client := NewClient(cfg)
+	cfg := config.SidecarConfig{
+		BaseURL: "",
+		Timeout: 5 * time.Second,
+	}
+	client := NewClient(cfg)
 
-ctx := context.Background()
-xml := []byte("<test/>")
+	ctx := context.Background()
+	xml := []byte("<test/>")
 
-_, err := client.ValidateXML(ctx, xml, "EN16931")
-require.Error(t, err)
-require.Contains(t, err.Error(), "sidecar not configured")
+	_, err := client.ValidateXML(ctx, xml, "EN16931")
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "sidecar not configured")
 }
 
 func TestReportStructure(t *testing.T) {
-report := &Report{
-Valid:   true,
-Profile: "EN16931",
-Findings: []Finding{
-{
-Layer:    "business",
-Code:     "TEST",
-Severity: SeverityWarning,
-Message:  "Test finding",
-},
-},
-}
+	report := &Report{
+		Valid:   true,
+		Profile: "EN16931",
+		Findings: []Finding{
+			{
+				Layer:    "business",
+				Code:     "TEST",
+				Severity: SeverityWarning,
+				Message:  "Test finding",
+			},
+		},
+	}
 
-require.True(t, report.Valid)
-require.Equal(t, "EN16931", report.Profile)
-require.Len(t, report.Findings, 1)
-require.Equal(t, SeverityWarning, report.Findings[0].Severity)
+	require.True(t, report.Valid)
+	require.Equal(t, "EN16931", report.Profile)
+	require.Len(t, report.Findings, 1)
+	require.Equal(t, SeverityWarning, report.Findings[0].Severity)
 }
 
 func TestHasErrorsEmptyFindings(t *testing.T) {
-findings := []Finding{}
-require.False(t, hasErrors(findings))
+	findings := []Finding{}
+	require.False(t, hasErrors(findings))
 }
 
 func TestHasErrorsOnlyWarnings(t *testing.T) {
-findings := []Finding{
-{Severity: SeverityWarning},
-{Severity: SeverityWarning},
-}
-require.False(t, hasErrors(findings))
+	findings := []Finding{
+		{Severity: SeverityWarning},
+		{Severity: SeverityWarning},
+	}
+	require.False(t, hasErrors(findings))
 }
 
 func TestHasErrorsWithErrors(t *testing.T) {
-findings := []Finding{
-{Severity: SeverityWarning},
-{Severity: SeverityError},
-{Severity: SeverityWarning},
-}
-require.True(t, hasErrors(findings))
+	findings := []Finding{
+		{Severity: SeverityWarning},
+		{Severity: SeverityError},
+		{Severity: SeverityWarning},
+	}
+	require.True(t, hasErrors(findings))
 }
