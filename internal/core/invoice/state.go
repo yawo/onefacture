@@ -11,7 +11,7 @@ var allowedTransitions = map[Status]map[Status]struct{}{
 	StatusSubmitted: {StatusAccepted: {}, StatusRejected: {}, StatusReceived: {}},
 	StatusReceived:  {StatusAccepted: {}, StatusRejected: {}},
 	StatusAccepted:  {StatusPaid: {}, StatusCancelled: {}},
-	StatusRejected:  {},
+	StatusRejected:  {StatusSubmitted: {}, StatusCancelled: {}},
 	StatusPaid:      {},
 	StatusCancelled: {},
 }

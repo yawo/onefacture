@@ -103,6 +103,72 @@ func (r *InvoiceRepo) UpdateStatus(ctx context.Context, orgID, id uuid.UUID, sta
 	return nil
 }
 
+// SetSubmissionMetadata stores PA routing metadata on an invoice.
+func (r *InvoiceRepo) SetSubmissionMetadata(ctx context.Context, orgID, id uuid.UUID, paID, paRef string) error {
+	const q = `UPDATE invoices SET pa_id = NULLIF($1,''), pa_ref = NULLIF($2,''), updated_at = now() WHERE id = $3 AND organization_id = $4`
+	tag, err := r.pool.Exec(ctx, q, paID, paRef, id, orgID)
+	if err != nil {
+		return fmt.Errorf("update submission metadata: %w", err)
+	}
+	if tag.RowsAffected() == 0 {
+		return ErrNotFound
+	}
+	return nil
+}
+
+// SetLastRejection updates the invoice payload with the latest rejection details.
+func (r *InvoiceRepo) SetLastRejection(ctx context.Context, orgID, id uuid.UUID, rej invoice.Rejection) error {
+	inv, err := r.Get(ctx, orgID, id)
+	if err != nil {
+		return err
+	}
+	inv.LastRejection = &rej
+	payload, err := json.Marshal(inv)
+	if err != nil {
+		return fmt.Errorf("marshal invoice: %w", err)
+	}
+	const q = `UPDATE invoices SET payload = $1, updated_at = now() WHERE id = $2 AND organization_id = $3`
+	tag, err := r.pool.Exec(ctx, q, payload, id, orgID)
+	if err != nil {
+		return fmt.Errorf("update rejection payload: %w", err)
+	}
+	if tag.RowsAffected() == 0 {
+		return ErrNotFound
+	}
+	return nil
+}
+
+func (r *InvoiceRepo) IncrementRejectionRetry(ctx context.Context, orgID, id uuid.UUID, resolutionHint string) error {
+	inv, err := r.Get(ctx, orgID, id)
+	if err != nil {
+		return err
+	}
+	if inv.LastRejection == nil {
+		return nil
+	}
+	now := time.Now().UTC()
+	next := now.Add(30 * time.Minute)
+	inv.LastRejection.RetryCount++
+	inv.LastRejection.LastRetryAt = &now
+	inv.LastRejection.NextRetryAt = &next
+	if resolutionHint != "" {
+		inv.LastRejection.ResolutionHint = resolutionHint
+	}
+	payload, err := json.Marshal(inv)
+	if err != nil {
+		return fmt.Errorf("marshal invoice: %w", err)
+	}
+	const q = `UPDATE invoices SET payload = $1, updated_at = now() WHERE id = $2 AND organization_id = $3`
+	tag, err := r.pool.Exec(ctx, q, payload, id, orgID)
+	if err != nil {
+		return fmt.Errorf("update retry payload: %w", err)
+	}
+	if tag.RowsAffected() == 0 {
+		return ErrNotFound
+	}
+	return nil
+}
+
 // List returns invoices for an organization, paginated and optionally filtered.
 type ListFilter struct {
 	Direction Direction

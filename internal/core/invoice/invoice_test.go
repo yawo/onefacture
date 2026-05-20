@@ -55,3 +55,11 @@ func TestStateMachine(t *testing.T) {
 	require.Equal(t, StatusValidated, inv.Status)
 	require.ErrorIs(t, inv.Transition(StatusPaid), ErrInvalidTransition)
 }
+
+func TestRejectedCanBeResubmitted(t *testing.T) {
+	inv := sampleInvoice()
+	inv.Status = StatusRejected
+	require.True(t, CanTransition(StatusRejected, StatusSubmitted))
+	require.NoError(t, inv.Transition(StatusSubmitted))
+	require.Equal(t, StatusSubmitted, inv.Status)
+}

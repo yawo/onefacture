@@ -88,8 +88,10 @@ func (s *Server) buildRouter() *chi.Mux {
 		r.Route("/v1/invoices", func(r chi.Router) {
 			r.Post("/", routes.CreateInvoice(deps))
 			r.Get("/", routes.ListInvoices(deps))
+			r.Get("/rejections/summary", routes.RejectionSummary(deps))
 			r.Get("/{id}", routes.GetInvoice(deps))
 			r.Post("/{id}/submit", routes.SubmitInvoice(deps))
+			r.Post("/{id}/retry", routes.RetryRejectedInvoice(deps))
 			r.Get("/{id}/events", routes.InvoiceEvents(deps))
 		})
 
