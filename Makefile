@@ -1,4 +1,4 @@
-.PHONY: help build test test-unit test-integration lint fmt tidy clean dev run docker docker-build sidecar sidecar-dev migrate-up migrate-down openapi
+.PHONY: help build test test-unit test-integration lint lint-helm lint-docker fmt tidy clean dev run docker docker-build sidecar sidecar-dev migrate-up migrate-down openapi
 
 GO            ?= go
 GOLANGCI_LINT ?= golangci-lint
@@ -25,8 +25,28 @@ test-unit: ## Run unit tests with coverage
 test-integration: ## Run integration tests (require docker)
 	$(GO) test -race -tags=integration -timeout=10m $(PKG)
 
-lint: ## Run golangci-lint
-	$(GOLANGCI_LINT) run --timeout=5m
+lint: ## Run linters available in the current environment
+	@if command -v $(GOLANGCI_LINT) >/dev/null 2>&1; then \
+		$(GOLANGCI_LINT) run --timeout=5m; \
+	else \
+		echo "Skipping Go lint: $(GOLANGCI_LINT) is not installed in this environment"; \
+	fi
+	@$(MAKE) lint-helm
+	@$(MAKE) lint-docker
+
+lint-helm: ## Lint Helm chart when helm is installed
+	@if command -v helm >/dev/null 2>&1; then \
+		helm lint deploy/helm/onefacture; \
+	else \
+		echo "Skipping Helm lint: helm is not installed in this environment"; \
+	fi
+
+lint-docker: ## Validate Docker tooling when docker is installed
+	@if command -v docker >/dev/null 2>&1; then \
+		docker --version >/dev/null; \
+	else \
+		echo "Skipping Docker checks: docker is not installed in this environment"; \
+	fi
 
 fmt: ## Format Go code
 	$(GO) fmt $(PKG)

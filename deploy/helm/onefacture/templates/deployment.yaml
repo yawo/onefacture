@@ -9,7 +9,15 @@ spec:
     matchLabels: {{- include "onefacture.selectorLabels" . | nindent 6 }}
   template:
     metadata:
-      annotations: {{- toYaml .Values.podAnnotations | nindent 8 }}
+      annotations:
+        {{- if .Values.observability.metrics.enabled }}
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+        prometheus.io/path: {{ .Values.observability.metrics.path | quote }}
+        {{- end }}
+        {{- with .Values.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
       labels: {{- include "onefacture.selectorLabels" . | nindent 8 }}
     spec:
       containers:
@@ -38,6 +46,12 @@ spec:
                 secretKeyRef:
                   name: {{ include "onefacture.fullname" . }}-secret
                   key: hash-pepper
+            {{- if .Values.observability.tracing.enabled }}
+            - name: ONEFACTURE_OTEL_EXPORTER_OTLP_ENDPOINT
+              value: {{ required "observability.tracing.endpoint is required when tracing is enabled" .Values.observability.tracing.endpoint | quote }}
+            - name: ONEFACTURE_OTEL_SERVICE_NAME
+              value: {{ .Values.observability.tracing.serviceName | quote }}
+            {{- end }}
             {{- range $k, $v := .Values.env }}
             - name: {{ $k }}
               value: {{ $v | quote }}

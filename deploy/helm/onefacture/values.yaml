@@ -31,15 +31,32 @@ service:
   type: ClusterIP
   port: 80
 
+secrets:
+  hashPepper: ""
+
 ingress:
   enabled: false
   className: nginx
+  annotations: {}
   hosts:
     - host: api.onefacture.local
       paths: ["/"]
 
-serviceMonitor:
-  enabled: false
+observability:
+  metrics:
+    enabled: true
+    path: /metrics
+  tracing:
+    enabled: false
+    endpoint: ""
+    serviceName: onefacture-api
+  serviceMonitor:
+    enabled: false
+    namespace: ""
+    labels: {}
+    interval: 30s
+    scrapeTimeout: 10s
+    path: /metrics
 
 podAnnotations:
   prometheus.io/scrape: "true"
