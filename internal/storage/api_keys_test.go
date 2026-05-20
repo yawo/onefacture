@@ -42,7 +42,7 @@ func TestAPIKeyGenerateSuccess(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
 
-	store, cleanup := setupTestStore(t, ctx)
+	store, cleanup := setupTestStore(ctx, t)
 	defer cleanup()
 
 	orgID := uuid.New()
@@ -72,7 +72,7 @@ func TestAPIKeyGenerateMultipleKeys(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
 
-	store, cleanup := setupTestStore(t, ctx)
+	store, cleanup := setupTestStore(ctx, t)
 	defer cleanup()
 
 	orgID := uuid.New()
@@ -92,7 +92,7 @@ func TestAPIKeyLookupSuccess(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
 
-	store, cleanup := setupTestStore(t, ctx)
+	store, cleanup := setupTestStore(ctx, t)
 	defer cleanup()
 
 	orgID := uuid.New()
@@ -120,7 +120,7 @@ func TestAPIKeyLookupNotFound(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
 
-	store, cleanup := setupTestStore(t, ctx)
+	store, cleanup := setupTestStore(ctx, t)
 	defer cleanup()
 
 	_, err := store.APIKeys.Lookup(ctx, "ofx_nonexistent", "pepper")
@@ -136,7 +136,7 @@ func TestAPIKeyLookupWrongPepper(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
 
-	store, cleanup := setupTestStore(t, ctx)
+	store, cleanup := setupTestStore(ctx, t)
 	defer cleanup()
 
 	plaintext, _, err := store.APIKeys.Generate(ctx, uuid.New(), "test_key", "correct_pepper")
@@ -155,7 +155,7 @@ func TestAPIKeyLookupRevoked(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
 
-	store, cleanup := setupTestStore(t, ctx)
+	store, cleanup := setupTestStore(ctx, t)
 	defer cleanup()
 
 	orgID := uuid.New()
@@ -179,7 +179,7 @@ func TestAPIKeyRevokeSuccess(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
 
-	store, cleanup := setupTestStore(t, ctx)
+	store, cleanup := setupTestStore(ctx, t)
 	defer cleanup()
 
 	orgID := uuid.New()
@@ -201,7 +201,7 @@ func TestAPIKeyRevokeNotFound(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
 
-	store, cleanup := setupTestStore(t, ctx)
+	store, cleanup := setupTestStore(ctx, t)
 	defer cleanup()
 
 	err := store.APIKeys.Revoke(ctx, uuid.New(), uuid.New())
@@ -217,7 +217,7 @@ func TestAPIKeyRevokeTwice(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
 
-	store, cleanup := setupTestStore(t, ctx)
+	store, cleanup := setupTestStore(ctx, t)
 	defer cleanup()
 
 	orgID := uuid.New()
@@ -241,7 +241,7 @@ func TestAPIKeyRevokeWrongOrganization(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
 
-	store, cleanup := setupTestStore(t, ctx)
+	store, cleanup := setupTestStore(ctx, t)
 	defer cleanup()
 
 	orgID1 := uuid.New()
@@ -263,7 +263,7 @@ func TestAPIKeyGenerateEmptyName(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
 
-	store, cleanup := setupTestStore(t, ctx)
+	store, cleanup := setupTestStore(ctx, t)
 	defer cleanup()
 
 	plaintext, key, err := store.APIKeys.Generate(ctx, uuid.New(), "", "pepper")
@@ -282,7 +282,7 @@ func TestAPIKeyGenerateEmptyPepper(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
 
-	store, cleanup := setupTestStore(t, ctx)
+	store, cleanup := setupTestStore(ctx, t)
 	defer cleanup()
 
 	plaintext, generated, err := store.APIKeys.Generate(ctx, uuid.New(), "test_key", "")
@@ -295,7 +295,7 @@ func TestAPIKeyGenerateEmptyPepper(t *testing.T) {
 	require.Equal(t, generated.ID, found.ID)
 }
 
-func setupTestStore(t *testing.T, ctx context.Context) (*Store, func()) {
+func setupTestStore(ctx context.Context, t *testing.T) (*Store, func()) {
 	req := testcontainers.ContainerRequest{
 		Image:        "postgres:16-alpine",
 		ExposedPorts: []string{"5432/tcp"},
@@ -320,10 +320,10 @@ func setupTestStore(t *testing.T, ctx context.Context) (*Store, func()) {
 	dsn := "postgresql://postgres:password@" + host + ":" + port.Port() + "/onefacture_test?sslmode=disable"
 
 	cfg := config.DatabaseConfig{
-		DSN:             dsn,
-		MaxConns:        10,
-		ConnectTimeout:  5 * time.Second,
-		StatementCache:  true,
+		DSN:            dsn,
+		MaxConns:       10,
+		ConnectTimeout: 5 * time.Second,
+		StatementCache: true,
 	}
 
 	store, err := New(ctx, cfg)
