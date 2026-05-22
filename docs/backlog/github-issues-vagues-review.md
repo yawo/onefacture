@@ -8,7 +8,7 @@ Plan: `docs/backlog/github-issues-vagues-plan.md`.
 Runbook acceptance externe: `docs/operations/external-acceptance.md`.
 Checklist preuves externes: `docs/operations/external-acceptance-evidence.md`.
 
-Manifest executable: `docs/backlog/github-issues-vagues-acceptance.json`, verifie par `scripts/verify_backlog_acceptance_manifest.rb`, `make verify-backlog-manifest` et le job CI `backlog-acceptance-manifest`. Le verifier controle les 24 titres backlog, les 24 lignes du plan, les 24 entrees de review, les 24 lignes d'audit, les chemins d'artefacts, les commandes `make`, la coherence des gates plan/manifest, les jobs CI d'audit, les targets Makefile de preuves externes, le contenu de `scripts/verify_external_gate_smokes.sh`, les modes supportes par `scripts/verify_external_acceptance.sh`, les marqueurs de succes obligatoires du verifier de preuves externes, le garde-fou `make audit-backlog-completion`, les snippets Python embarques et les choix du workflow manuel `.github/workflows/external-acceptance.yml`. Les chemins externes critiques sont aussi smoke-testes localement ou verifies en pre-publication par `make verify-external-smokes`, par `make verify-local` avec `gofmt`, syntaxe shell/Ruby globale et parse YAML des workflows, et par les jobs CI `external-gate-smokes` et `local-acceptance` avec Go, Python et Node provisionnes.
+Manifest executable: `docs/backlog/github-issues-vagues-acceptance.json`, verifie par `scripts/verify_backlog_acceptance_manifest.rb`, `make verify-backlog-manifest` et le job CI `backlog-acceptance-manifest`. Le verifier controle les 24 titres backlog, les 24 lignes du plan, les 24 entrees de review, les 24 lignes d'audit, les chemins d'artefacts, les commandes `make`, la coherence des gates plan/manifest, les jobs CI d'audit, les targets Makefile de preuves externes, le contenu de `scripts/verify_external_gate_smokes.sh`, les modes supportes par `scripts/verify_external_acceptance.sh`, les marqueurs de succes obligatoires du verifier de preuves externes, le garde-fou `make audit-backlog-completion`, les snippets Python embarques et les choix du workflow manuel `.github/workflows/external-acceptance.yml`. Les chemins externes critiques sont aussi smoke-testes localement ou verifies en pre-publication par `make verify-external-smokes`, par `make verify-local` avec `gofmt`, syntaxe shell/Ruby globale, parse YAML et actionlint des workflows, et par les jobs CI `external-gate-smokes` et `local-acceptance` avec Go, Python et Node provisionnes.
 
 Un item externe ne peut passer de `partial_external` a `covered_external` qu'apres revue d'un bundle valide dans `docs/operations/evidence`, ajout de `reviewed_evidence` dans le manifest, suppression des `external_blockers`, puis re-execution de `make audit-backlog-completion`, qui reverifie le bundle et le commit `HEAD`.
 
@@ -93,6 +93,7 @@ Pour chaque item externe finalise, cette review doit contenir `<numero>. <titre>
 - `bash scripts/smoke_outcome_metrics_gate_local.sh`
 - `make verify-external-smokes`
 - `ruby -e 'require "yaml"; ARGV.each { |f| YAML.load_file(f) }' .github/workflows/sandbox-smoke.yml .github/workflows/sdk-publish.yml`
+- `go run github.com/rhysd/actionlint/cmd/actionlint@v1.7.12 .github/workflows/external-acceptance.yml .github/workflows/ci.yml .github/workflows/sdk-publish.yml .github/workflows/sandbox-smoke.yml`
 - `python -m compileall -q sdks/python/src`
 - `npm --prefix sdks/typescript run build`
 - `scripts/verify_sdk_release_artifacts.sh`
@@ -107,6 +108,8 @@ Pour chaque item externe finalise, cette review doit contenir `<numero>. <titre>
 - `make create-external-evidence STAMP=YYYY-MM-DD`
 - `make check-external-env` liste les variables requises pour les gates externes avant collecte
 - `make collect-external-evidence STAMP=YYYY-MM-DD` collecte les logs rediges des gates externes, remplit `summary.md` et valide le bundle si toutes les gates passent
+- `make check-github-external-config GITHUB_REPO=yawo/onefacture` liste les variables et secrets GitHub Actions requis avant execution du workflow externe
+- `make smoke-github-external-config` et le job CI `github-external-config` verifient le checker GitHub Actions avec un faux `gh`
 - `make smoke-external-env` et le job CI `external-env-readiness` verifient le checker d'environnement externe
 - `make smoke-external-evidence-collector` et le job CI `external-evidence-collector` verifient le collecteur avec des gates simulees, sans appeler de services externes
 - `make smoke-external-evidence-review` et le job CI `external-evidence-review` verifient le helper de revue qui mappe un bundle valide vers les issues externes
@@ -117,4 +120,4 @@ Audit detaille: `docs/backlog/github-issues-vagues-completion-audit.md`.
 ## Risques restants
 
 - La suite `internal/storage` complete hors `-short` reste trop lente pour le job CI par defaut dans l'environnement courant; le CI couvre donc toute la repo en `-short -race` et `make verify-local` execute les tests storage critiques, dont les cas de chiffrement.
-- Les criteres d'acceptation sandbox PA live, public sandbox, PyPI/npm et KMS cloud necessitent des credentials, comptes ou une cible de deploiement.
+- Les criteres d'acceptation sandbox PA live, public sandbox, PyPI/npm, amelioration du taux de resoumission et KMS cloud necessitent des credentials, comptes, une cible de deploiement ou des donnees d'usage.

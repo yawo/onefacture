@@ -4,13 +4,13 @@ Date: 2026-05-22
 
 Objectif audite: planifier, implementer et reviewer chaque issue de `docs/backlog/github-issues-vagues.md`.
 
-Verdict: non complet au sens strict des criteres d'acceptation externes. Les livrables locaux sont presents pour les 24 items, mais les items PA sandbox live, sandbox publique, publications PyPI/npm et broker KMS cloud demandent encore credentials, hosting ou comptes externes.
+Verdict: non complet au sens strict des criteres d'acceptation externes. Les livrables locaux sont presents pour les 24 items, mais les items PA sandbox live, sandbox publique, publications PyPI/npm, mesure d'amelioration produit et broker KMS cloud demandent encore credentials, hosting, comptes externes ou donnees d'usage.
 
 Plan: `docs/backlog/github-issues-vagues-plan.md`.
 Checklist preuves externes: `docs/operations/external-acceptance-evidence.md`.
 Template env externe: `docs/operations/external-acceptance.env.example`.
 Matrice fermeture externe: `docs/operations/external-closure-matrix.md`.
-Manifest executable: `docs/backlog/github-issues-vagues-acceptance.json`, verifie par `scripts/verify_backlog_acceptance_manifest.rb`, `make verify-backlog-manifest` et le job CI `backlog-acceptance-manifest`. Le verifier controle les 24 titres backlog, les 24 lignes du plan, les 24 entrees de review, les 24 lignes d'audit, les chemins d'artefacts, les commandes `make`, la coherence des gates plan/manifest, les jobs CI d'audit, les targets Makefile de preuves externes, le contenu de `scripts/verify_external_gate_smokes.sh`, les modes supportes par `scripts/verify_external_acceptance.sh`, les marqueurs de succes obligatoires du verifier de preuves externes, le garde-fou `make audit-backlog-completion`, les snippets Python embarques et les choix du workflow manuel `.github/workflows/external-acceptance.yml`. Les chemins externes critiques sont aussi smoke-testes localement ou verifies en pre-publication par `make verify-external-smokes`, par `make verify-local` avec `gofmt`, syntaxe shell/Ruby globale et parse YAML des workflows, et par les jobs CI `external-gate-smokes` et `local-acceptance` avec Go, Python et Node provisionnes.
+Manifest executable: `docs/backlog/github-issues-vagues-acceptance.json`, verifie par `scripts/verify_backlog_acceptance_manifest.rb`, `make verify-backlog-manifest` et le job CI `backlog-acceptance-manifest`. Le verifier controle les 24 titres backlog, les 24 lignes du plan, les 24 entrees de review, les 24 lignes d'audit, les chemins d'artefacts, les commandes `make`, la coherence des gates plan/manifest, les jobs CI d'audit, les targets Makefile de preuves externes, le contenu de `scripts/verify_external_gate_smokes.sh`, les modes supportes par `scripts/verify_external_acceptance.sh`, les marqueurs de succes obligatoires du verifier de preuves externes, le garde-fou `make audit-backlog-completion`, les snippets Python embarques et les choix du workflow manuel `.github/workflows/external-acceptance.yml`. Les chemins externes critiques sont aussi smoke-testes localement ou verifies en pre-publication par `make verify-external-smokes`, par `make verify-local` avec `gofmt`, syntaxe shell/Ruby globale, parse YAML et actionlint des workflows, et par les jobs CI `external-gate-smokes` et `local-acceptance` avec Go, Python et Node provisionnes.
 
 Le statut final pour une preuve externe revue est `covered_external`. Il exige `reviewed_evidence.bundle`, `reviewed_evidence.commit_sha`, `reviewed_evidence.reviewed_at`, `reviewed_evidence.reviewed_by`, aucun `external_blockers`, et une revalidation du bundle par `make audit-backlog-completion` contre le `HEAD` courant.
 
@@ -164,6 +164,7 @@ Pour chaque item externe finalise, la review doit contenir `<numero>. <titre>: c
 - `scripts/verify_external_acceptance.sh outcome-metrics` sans env verifie que le preflight echoue explicitement sur API prod manquante
 - `ruby -e 'require "yaml"; ARGV.each { |f| YAML.load_file(f) }' .github/workflows/sandbox-smoke.yml .github/workflows/sdk-publish.yml`
 - `ruby -e 'require "yaml"; ARGV.each { |f| YAML.load_file(f) }' .github/workflows/ci.yml deploy/helm/onefacture/values-sandbox.yaml`
+- `go run github.com/rhysd/actionlint/cmd/actionlint@v1.7.12 .github/workflows/external-acceptance.yml .github/workflows/ci.yml .github/workflows/sdk-publish.yml .github/workflows/sandbox-smoke.yml`
 - `scripts/verify_sdk_release_artifacts.sh` via `make verify-external-smokes`
 - `ruby scripts/verify_backlog_acceptance_manifest.rb`
 - `make verify-backlog-manifest`
@@ -176,15 +177,20 @@ Pour chaque item externe finalise, la review doit contenir `<numero>. <titre>: c
 - `make smoke-backlog-completion-audit` et le job CI `backlog-completion-audit` verifient que l'audit echoue sans bundle et echoue encore avec un bundle valide tant que le manifest garde des items externes partiels
 - `make create-external-evidence STAMP=YYYY-MM-DD` cree le squelette de preuves externes attendu
 - `make check-external-env` liste les variables requises pour les gates externes avant collecte
+- `make check-github-external-config GITHUB_REPO=yawo/onefacture` liste les variables et secrets GitHub Actions requis avant execution du workflow externe.
+- `make smoke-github-external-config` et le job CI `github-external-config` verifient le checker GitHub Actions avec un faux `gh` en couvrant les chemins missing et complete.
 - `make collect-external-evidence STAMP=YYYY-MM-DD` collecte les logs rediges des gates externes, remplit `summary.md` et valide le bundle si toutes les gates passent
 - `make smoke-external-env` et le job CI `external-env-readiness` verifient le checker d'environnement externe
 - `make smoke-external-evidence-collector` et le job CI `external-evidence-collector` verifient le collecteur avec des gates simulees, sans appeler de services externes
 - `make smoke-external-evidence-review` et le job CI `external-evidence-review` verifient le helper de revue qui mappe un bundle valide vers les issues externes
+- `gh variable list --json name,value` et `gh secret list` sur `github.com/yawo/onefacture` ne retournent actuellement aucune variable ni secret Actions, donc le workflow externe manuel ne peut pas produire de bundle live sans configuration prealable.
 - `git diff --check`
 
 ## Manques restants
 
 - Credentials PISTE, Docaposte et Pennylane pour valider `make verify-live-pa`; le round-trip submit/status est seulement smoke-teste localement par `scripts/smoke_live_pa_gate_local.sh`.
+- Variables et secrets GitHub Actions externes non configures sur le depot, donc `.github/workflows/external-acceptance.yml` ne peut pas encore collecter les preuves live.
+- `make check-github-external-config GITHUB_REPO=yawo/onefacture` echoue actuellement avec toutes les variables externes requises et `NPM_TOKEN` manquants.
 - URL sandbox publique et verification d'un compte vierge par `make verify-public-sandbox`; le flow quickstart est seulement smoke-teste localement par `scripts/smoke_public_sandbox_local.sh`.
 - Publication reelle de `onefacture` sur PyPI et `@onefacture/sdk` sur npm, puis `make verify-sdk-registries`.
 - Broker KMS cloud reel et audit de rotation en environnement de production, puis `make verify-kms-broker`.

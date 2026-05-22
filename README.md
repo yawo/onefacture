@@ -128,11 +128,16 @@ Veuillez lire notre [Guide de contribution](./CONTRIBUTING.md) (en cours de réd
 ### Verification rapide
 
 ```bash
-make verify-local   # tests et gates locaux du backlog
+make verify-local   # tests, smokes, manifest, YAML et actionlint locaux du backlog
 make verify-sdk     # artefacts SDK installables localement
 ```
 
-Les gates qui dependent de sandboxes PA, de registres publics ou d'un broker KMS deploye sont documentes dans [docs/operations/external-acceptance.md](./docs/operations/external-acceptance.md).
+Les gates qui dependent de sandboxes PA, de registres publics ou d'un broker KMS deploye sont documentes dans [docs/operations/external-acceptance.md](./docs/operations/external-acceptance.md). Avant de les lancer, verifier la configuration locale et GitHub Actions:
+
+```bash
+make check-external-env
+make check-github-external-config GITHUB_REPO=yawo/onefacture
+```
 
 ## 📄 Licence
 

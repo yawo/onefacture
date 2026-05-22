@@ -25,6 +25,8 @@ external_evidence_collector_path = root.join("scripts/collect_external_acceptanc
 external_evidence_collector_smoke_path = root.join("scripts/smoke_external_evidence_collector.sh")
 external_env_checker_path = root.join("scripts/check_external_acceptance_env.sh")
 external_env_smoke_path = root.join("scripts/smoke_external_acceptance_env.sh")
+github_external_config_path = root.join("scripts/check_github_external_acceptance_config.sh")
+github_external_config_smoke_path = root.join("scripts/smoke_github_external_acceptance_config.sh")
 external_evidence_review_path = root.join("scripts/review_external_evidence_bundle.rb")
 external_evidence_review_smoke_path = root.join("scripts/smoke_external_evidence_review.sh")
 local_acceptance_path = root.join("scripts/verify_local_acceptance.sh")
@@ -97,6 +99,8 @@ abort "external evidence collector missing" unless external_evidence_collector_p
 abort "external evidence collector smoke missing" unless external_evidence_collector_smoke_path.exist?
 abort "external env checker missing" unless external_env_checker_path.exist?
 abort "external env smoke missing" unless external_env_smoke_path.exist?
+abort "GitHub external config checker missing" unless github_external_config_path.exist?
+abort "GitHub external config checker smoke missing" unless github_external_config_smoke_path.exist?
 abort "external evidence review helper missing" unless external_evidence_review_path.exist?
 abort "external evidence review smoke missing" unless external_evidence_review_smoke_path.exist?
 abort "local acceptance wrapper missing" unless local_acceptance_path.exist?
@@ -106,6 +110,8 @@ external_evidence_collector = external_evidence_collector_path.read
 external_evidence_collector_smoke = external_evidence_collector_smoke_path.read
 external_env_checker = external_env_checker_path.read
 external_env_smoke = external_env_smoke_path.read
+github_external_config = github_external_config_path.read
+github_external_config_smoke = github_external_config_smoke_path.read
 external_evidence_review = external_evidence_review_path.read
 external_evidence_review_smoke = external_evidence_review_smoke_path.read
 local_acceptance = local_acceptance_path.read
@@ -190,6 +196,10 @@ abort "external workflow evidence artifact path missing" unless workflow_text.in
 abort "external workflow evidence links must use github.repository" unless workflow_text.include?("ONEFACTURE_EVIDENCE_LINKS: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}")
 abort "external workflow missing evidence operator" unless workflow_text.include?("ONEFACTURE_EVIDENCE_OPERATOR:")
 abort "external workflow missing evidence environment" unless workflow_text.include?("ONEFACTURE_EVIDENCE_ENVIRONMENT:")
+abort "external workflow missing retry baseline env" unless workflow_text.include?("ONEFACTURE_BASELINE_RETRY_SUCCESS_RATE: ${{ vars.ONEFACTURE_BASELINE_RETRY_SUCCESS_RATE }}")
+abort "external workflow must default evidence operator to github.actor" unless workflow_text.include?("ONEFACTURE_EVIDENCE_OPERATOR: ${{ vars.ONEFACTURE_EVIDENCE_OPERATOR || github.actor }}")
+abort "external workflow must read real evidence environment from repo vars" unless workflow_text.include?("ONEFACTURE_EVIDENCE_ENVIRONMENT: ${{ vars.ONEFACTURE_EVIDENCE_ENVIRONMENT }}")
+abort "external workflow must not hardcode generic evidence environment" if workflow_text.include?("external-acceptance-workflow")
 external_modes.keys.each do |mode|
   abort "external evidence checklist missing gate #{mode}" unless external_evidence.include?("`#{mode}`")
 end
@@ -210,6 +220,23 @@ end
   abort "external acceptance runbook missing #{var}" unless external_acceptance_runbook.include?(var)
 end
 abort "external acceptance runbook missing retry baseline requirement" unless external_acceptance_runbook.include?("ONEFACTURE_BASELINE_RETRY_SUCCESS_RATE") && external_acceptance_runbook.include?("amelioration de l'item 21")
+abort "external acceptance runbook missing GitHub CLI variable setup" unless external_acceptance_runbook.include?("gh variable set ONEFACTURE_CHORUS_BASE_URL") && external_acceptance_runbook.include?("gh variable set ONEFACTURE_BASELINE_RETRY_SUCCESS_RATE")
+abort "external acceptance runbook missing GitHub CLI secret setup" unless external_acceptance_runbook.include?("gh secret set ONEFACTURE_CHORUS_ACCESS_TOKEN") && external_acceptance_runbook.include?("gh secret set ONEFACTURE_PROD_API_KEY") && external_acceptance_runbook.include?("gh secret set NPM_TOKEN")
+abort "Makefile missing check-github-external-config" unless make_targets["check-github-external-config"]
+abort "Makefile missing smoke-github-external-config" unless make_targets["smoke-github-external-config"]
+abort "external acceptance runbook missing GitHub config checker command" unless external_acceptance_runbook.include?("make check-github-external-config")
+abort "external evidence checklist missing GitHub config checker command" unless external_evidence.include?("make check-github-external-config")
+abort "external evidence checklist missing GitHub config smoke command" unless external_evidence.include?("make smoke-github-external-config")
+abort "review doc missing GitHub config checker command" unless review_text.include?("make check-github-external-config")
+abort "completion audit doc missing GitHub config checker command" unless audit_text.include?("make check-github-external-config")
+abort "review doc missing GitHub config smoke command" unless review_text.include?("make smoke-github-external-config")
+abort "completion audit doc missing GitHub config smoke command" unless audit_text.include?("make smoke-github-external-config")
+abort "review doc missing GitHub external config CI job" unless review_text.include?("github-external-config")
+abort "completion audit doc missing GitHub external config CI job" unless audit_text.include?("github-external-config")
+abort "GitHub external config checker missing gh variable inspection" unless github_external_config.include?("gh variable list") && github_external_config.include?("ONEFACTURE_BASELINE_RETRY_SUCCESS_RATE")
+abort "GitHub external config checker missing gh secret inspection" unless github_external_config.include?("gh secret list") && github_external_config.include?("NPM_TOKEN")
+abort "GitHub external config checker smoke missing fake gh harness" unless github_external_config_smoke.include?("unexpected fake gh command")
+abort "GitHub external config checker smoke missing success marker assertion" unless github_external_config_smoke.include?("GitHub Actions external acceptance configuration ok")
 abort "external acceptance runbook missing SDK publication handoff" unless external_acceptance_runbook.include?("## Publication SDKs")
 abort "external acceptance runbook missing SDK local verifier before publish" unless external_acceptance_runbook.include?("make verify-sdk")
 abort "external acceptance runbook missing PyPI trusted publishing handoff" unless external_acceptance_runbook.include?("PyPI trusted publishing") && external_acceptance_runbook.include?("onefacture")
@@ -532,6 +559,9 @@ abort "review doc missing covered_external review standard" unless review_text.i
 abort "completion audit doc missing covered_external review standard" unless audit_text.include?("covered_external") && audit_text.include?("reviewed_evidence.bundle")
 abort "review doc missing local-acceptance CI/local gate summary" unless review_text.include?("local-acceptance") && review_text.include?("gofmt") && review_text.include?("parse YAML")
 abort "completion audit doc missing local-acceptance CI/local gate summary" unless audit_text.include?("local-acceptance") && audit_text.include?("gofmt") && audit_text.include?("parse YAML")
+abort "local acceptance wrapper missing pinned actionlint workflow validation" unless local_acceptance.include?("go run github.com/rhysd/actionlint/cmd/actionlint@v1.7.12") && local_acceptance.include?(".github/workflows/external-acceptance.yml")
+abort "review doc missing pinned actionlint verification" unless review_text.include?("go run github.com/rhysd/actionlint/cmd/actionlint@v1.7.12")
+abort "completion audit doc missing pinned actionlint verification" unless audit_text.include?("go run github.com/rhysd/actionlint/cmd/actionlint@v1.7.12")
 abort "review doc missing current PyPI negative evidence" unless review_text.include?("make verify-sdk-registries") && review_text.include?("PyPI onefacture install failed")
 abort "review doc missing current npm negative evidence" unless review_text.include?("make verify-sdk-registries") && review_text.include?("npm @onefacture/sdk install failed")
 abort "completion audit doc missing current PyPI negative evidence" unless audit_text.include?("make verify-sdk-registries") && audit_text.include?("PyPI onefacture install failed")
@@ -568,6 +598,10 @@ ci_expectations = {
   },
   "external-env-readiness" => {
     "run" => "bash scripts/smoke_external_acceptance_env.sh",
+    "uses" => []
+  },
+  "github-external-config" => {
+    "run" => "bash scripts/smoke_github_external_acceptance_config.sh",
     "uses" => []
   },
   "external-evidence-review" => {

@@ -34,6 +34,7 @@ Or collect a bundle directly from a live environment. This preflights the requir
 ```bash
 # Fill real values from docs/operations/external-acceptance.env.example first.
 make check-external-env
+make check-github-external-config GITHUB_REPO=yawo/onefacture
 make check-external-env GATE=public-sandbox
 make collect-external-evidence STAMP=YYYY-MM-DD
 ```
@@ -44,6 +45,7 @@ Validate the collector locally without contacting external services:
 
 ```bash
 make smoke-external-env
+make smoke-github-external-config
 make smoke-external-evidence-collector
 make smoke-external-evidence-review
 ```

@@ -198,9 +198,12 @@ covered_audit="$tmpdir/covered-audit.md"
 ruby -rjson -e '
   data = JSON.parse(File.read(ARGV.fetch(0)))
   File.open(ARGV.fetch(1), "w") do |file|
-    file.puts "# Review fixture"
+     file.puts "# Review fixture"
      file.puts "covered_external reviewed_evidence"
      file.puts "local-acceptance gofmt parse YAML"
+     file.puts "go run github.com/rhysd/actionlint/cmd/actionlint@v1.7.12"
+     file.puts "make check-github-external-config"
+     file.puts "make smoke-github-external-config"
      file.puts "make verify-sdk-registries PyPI onefacture install failed npm @onefacture/sdk install failed"
      file.puts "## Titres source couverts"
     data.fetch("issues").each do |issue|
@@ -213,6 +216,9 @@ ruby -rjson -e '
      file.puts "docs/operations/external-acceptance.env.example"
      file.puts "docs/operations/external-closure-matrix.md"
      file.puts "local-acceptance gofmt parse YAML"
+     file.puts "go run github.com/rhysd/actionlint/cmd/actionlint@v1.7.12"
+     file.puts "make check-github-external-config"
+     file.puts "make smoke-github-external-config"
      file.puts "make verify-sdk-registries PyPI onefacture install failed npm @onefacture/sdk install failed"
      file.puts "## Titres source couverts"
     data.fetch("issues").each do |issue|
@@ -283,9 +289,12 @@ reviewed_audit="$tmpdir/audit.md"
 ruby -rjson -e '
   data = JSON.parse(File.read(ARGV.fetch(0)))
   File.open(ARGV.fetch(1), "w") do |file|
-    file.puts "# Review fixture"
+     file.puts "# Review fixture"
      file.puts "covered_external reviewed_evidence"
      file.puts "local-acceptance gofmt parse YAML"
+     file.puts "go run github.com/rhysd/actionlint/cmd/actionlint@v1.7.12"
+     file.puts "make check-github-external-config"
+     file.puts "make smoke-github-external-config"
      file.puts "make verify-sdk-registries PyPI onefacture install failed npm @onefacture/sdk install failed"
      file.puts "## Titres source couverts"
     data.fetch("issues").each do |issue|
@@ -298,6 +307,9 @@ ruby -rjson -e '
      file.puts "docs/operations/external-acceptance.env.example"
      file.puts "docs/operations/external-closure-matrix.md"
      file.puts "local-acceptance gofmt parse YAML"
+     file.puts "go run github.com/rhysd/actionlint/cmd/actionlint@v1.7.12"
+     file.puts "make check-github-external-config"
+     file.puts "make smoke-github-external-config"
      file.puts "make verify-sdk-registries PyPI onefacture install failed npm @onefacture/sdk install failed"
      file.puts "## Titres source couverts"
     data.fetch("issues").each do |issue|

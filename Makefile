@@ -1,4 +1,4 @@
-.PHONY: help build test test-unit test-integration lint lint-helm lint-docker fmt tidy clean dev run docker docker-build sidecar sidecar-dev migrate-up migrate-down openapi verify-local verify-backlog-manifest audit-backlog-completion smoke-backlog-completion-audit verify-external-smokes check-external-env smoke-external-env create-external-evidence collect-external-evidence smoke-external-evidence-collector review-external-evidence smoke-external-evidence-review verify-external-evidence verify-external-evidence-smoke verify-sdk verify-external verify-live-pa verify-public-sandbox verify-sdk-registries verify-kms-broker verify-outcome-metrics
+.PHONY: help build test test-unit test-integration lint lint-helm lint-docker fmt tidy clean dev run docker docker-build sidecar sidecar-dev migrate-up migrate-down openapi verify-local verify-backlog-manifest audit-backlog-completion smoke-backlog-completion-audit verify-external-smokes check-external-env check-github-external-config smoke-github-external-config smoke-external-env create-external-evidence collect-external-evidence smoke-external-evidence-collector review-external-evidence smoke-external-evidence-review verify-external-evidence verify-external-evidence-smoke verify-sdk verify-external verify-live-pa verify-public-sandbox verify-sdk-registries verify-kms-broker verify-outcome-metrics
 
 GO            ?= go
 GOLANGCI_LINT ?= golangci-lint
@@ -101,6 +101,12 @@ verify-external-smokes: ## Verify local smokes/pre-publication checks for extern
 
 check-external-env: ## Check required environment for external acceptance gates (GATE=all)
 	bash scripts/check_external_acceptance_env.sh "$(GATE)"
+
+check-github-external-config: ## Check GitHub Actions vars/secrets for external acceptance (GITHUB_REPO=owner/repo optional)
+	bash scripts/check_github_external_acceptance_config.sh "$(GITHUB_REPO)"
+
+smoke-github-external-config: ## Verify GitHub Actions config checker with a fake gh CLI
+	bash scripts/smoke_github_external_acceptance_config.sh
 
 smoke-external-env: ## Verify the external acceptance environment checker
 	bash scripts/smoke_external_acceptance_env.sh

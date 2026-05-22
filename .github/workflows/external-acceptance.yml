@@ -35,8 +35,9 @@ jobs:
       ONEFACTURE_PROD_API_URL: ${{ vars.ONEFACTURE_PROD_API_URL }}
       ONEFACTURE_PROD_API_KEY: ${{ secrets.ONEFACTURE_PROD_API_KEY }}
       ONEFACTURE_MIN_RETRIED_INVOICES: ${{ vars.ONEFACTURE_MIN_RETRIED_INVOICES }}
-      ONEFACTURE_EVIDENCE_OPERATOR: github-actions
-      ONEFACTURE_EVIDENCE_ENVIRONMENT: external-acceptance-workflow
+      ONEFACTURE_BASELINE_RETRY_SUCCESS_RATE: ${{ vars.ONEFACTURE_BASELINE_RETRY_SUCCESS_RATE }}
+      ONEFACTURE_EVIDENCE_OPERATOR: ${{ vars.ONEFACTURE_EVIDENCE_OPERATOR || github.actor }}
+      ONEFACTURE_EVIDENCE_ENVIRONMENT: ${{ vars.ONEFACTURE_EVIDENCE_ENVIRONMENT }}
       ONEFACTURE_EVIDENCE_LINKS: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
     steps:
       - uses: actions/checkout@v4

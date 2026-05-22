@@ -28,14 +28,14 @@ The API lives on `http://localhost:8080`, the Scalar docs on
 make test               # unit tests + coverage
 make test-integration   # integration tests (require docker)
 make lint               # golangci-lint
-make verify-local       # local acceptance gates for backlog delivery
+make verify-local       # local tests, smokes, manifest, YAML and actionlint gates
 make verify-backlog-manifest # issue-to-artifact audit map
 make verify-external-smokes # local mocks/pre-publication checks for external gates
 make verify-sdk         # local installability checks for SDK packages
 ```
 
-The CI gate is **60 %** unit-test coverage today (climbing to 80 % as adapters
-get wired up).
+The CI gate is **35 %** unit-test coverage today (climbing toward 80 % as
+adapters get wired up).
 
 ## Acceptance gates
 
@@ -56,6 +56,8 @@ Use the external gates only when the required credentials and deployed services
 are available:
 
 ```bash
+make check-external-env
+make check-github-external-config GITHUB_REPO=yawo/onefacture
 make verify-external
 make verify-live-pa
 make verify-public-sandbox

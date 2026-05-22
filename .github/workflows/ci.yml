@@ -173,6 +173,14 @@ jobs:
       - name: Verify external env readiness checker
         run: bash scripts/smoke_external_acceptance_env.sh
 
+  github-external-config:
+    name: GitHub external config readiness
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify GitHub external config checker
+        run: bash scripts/smoke_github_external_acceptance_config.sh
+
   external-evidence-review:
     name: External evidence review
     runs-on: ubuntu-latest

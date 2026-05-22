@@ -55,11 +55,17 @@ bash scripts/smoke_backlog_completion_audit.sh
 bash scripts/smoke_external_evidence_collector.sh
 bash scripts/smoke_external_acceptance_env.sh
 bash scripts/smoke_external_evidence_review.sh
+bash scripts/smoke_github_external_acceptance_config.sh
 ruby -e 'require "yaml"; ARGV.each { |f| YAML.load_file(f) }' \
 	.github/workflows/ci.yml \
 	.github/workflows/external-acceptance.yml \
 	.github/workflows/sandbox-smoke.yml \
 	.github/workflows/sdk-publish.yml \
 	deploy/helm/onefacture/values-sandbox.yaml
+go run github.com/rhysd/actionlint/cmd/actionlint@v1.7.12 \
+	.github/workflows/external-acceptance.yml \
+	.github/workflows/ci.yml \
+	.github/workflows/sdk-publish.yml \
+	.github/workflows/sandbox-smoke.yml
 
 git diff --check
