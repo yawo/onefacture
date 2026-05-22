@@ -1,0 +1,66 @@
+name: Publish SDKs
+
+on:
+  workflow_dispatch:
+    inputs:
+      publish_python:
+        description: "Publish Python SDK to PyPI"
+        required: true
+        default: "false"
+      publish_typescript:
+        description: "Publish TypeScript SDK to npm"
+        required: true
+        default: "false"
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  python:
+    if: ${{ inputs.publish_python == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Verify SDK install artifacts
+        run: bash scripts/verify_sdk_release_artifacts.sh
+      - name: Build Python SDK
+        working-directory: sdks/python
+        run: |
+          python -m pip install --upgrade build
+          python -m build
+      - name: Publish Python SDK
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: sdks/python/dist
+
+  typescript:
+    if: ${{ inputs.publish_typescript == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          registry-url: "https://registry.npmjs.org"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Verify SDK install artifacts
+        run: bash scripts/verify_sdk_release_artifacts.sh
+      - name: Build TypeScript SDK
+        working-directory: sdks/typescript
+        run: |
+          npm ci
+          npm run build
+      - name: Publish TypeScript SDK
+        working-directory: sdks/typescript
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish --access public

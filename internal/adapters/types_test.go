@@ -20,6 +20,13 @@ func TestErrNotImplementedType(t *testing.T) {
 	require.Error(t, err)
 }
 
+func TestPAErrorString(t *testing.T) {
+	err := &PAError{Platform: "chorus", Operation: "submit", Code: "BR-SIREN", Message: "buyer siren invalid"}
+
+	require.Contains(t, err.Error(), "chorus submit failed")
+	require.Contains(t, err.Error(), "BR-SIREN")
+}
+
 func TestSubmitResultStruct(t *testing.T) {
 	// Ensure struct is properly defined
 	result := &SubmitResult{

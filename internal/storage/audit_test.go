@@ -279,10 +279,10 @@ func TestAuditHashChain(t *testing.T) {
 
 func TestAuditLatestHashInitial(t *testing.T) {
 	orgID := uuid.New()
-	
+
 	prev := sha256.Sum256([]byte(orgID.String() + "user" + "ACTION" + "type" + "id" + "{}"))
 	expected := prev[:]
-	
+
 	require.NotNil(t, expected)
 	require.Len(t, expected, 32)
 }

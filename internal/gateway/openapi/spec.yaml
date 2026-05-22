@@ -20,6 +20,13 @@ components:
       type: apiKey
       in: header
       name: X-API-Key
+  parameters:
+    IdempotencyKey:
+      in: header
+      name: Idempotency-Key
+      required: true
+      schema: { type: string, minLength: 1, maxLength: 255 }
+      description: Persistent idempotency key scoped to the authenticated organization.
   schemas:
     Profile:
       type: string
@@ -79,6 +86,10 @@ components:
         title: { type: string }
         status: { type: integer }
         detail: { type: string }
+        instance: { type: string }
+        remediation_hint: { type: string }
+        docs_url: { type: string, format: uri }
+        retryable: { type: boolean }
         errors:
           type: array
           items:
@@ -100,10 +111,26 @@ paths:
       security: []
       responses:
         "200": { description: list }
+  /v1/sandbox/credentials:
+    post:
+      summary: Generate immediate sandbox credentials
+      security: []
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: { type: string }
+                siren: { type: string }
+      responses:
+        "201": { description: sandbox organization and API key }
   /v1/invoices:
     post:
       summary: Create and validate an invoice (optionally submit to PA)
       parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
         - in: query
           name: submit
           schema: { type: boolean }
@@ -112,6 +139,61 @@ paths:
         content:
           application/json:
             schema: { $ref: "#/components/schemas/Invoice" }
+            examples:
+              commercial_invoice:
+                summary: Facture commerciale
+                value:
+                  profile: EN16931
+                  type_code: "380"
+                  number: INV-2026-0001
+                  currency: EUR
+                  issue_date: "2026-05-22"
+                  seller:
+                    name: Acme SAS
+                    siren: "732829320"
+                    address: { line1: "1 rue Cler", postal_code: "75007", city: Paris, country_code: FR }
+                  buyer:
+                    name: Globex SAS
+                    siren: "552120222"
+                    address: { line1: "2 avenue Foch", postal_code: "75116", city: Paris, country_code: FR }
+                  lines:
+                    - { description: Consulting, quantity: 10, unit_code: HUR, unit_price: 150, tax_rate: 20, tax_category: S }
+              credit_note:
+                summary: Avoir commercial
+                value:
+                  profile: EN16931
+                  type_code: "381"
+                  number: AV-2026-0001
+                  currency: EUR
+                  issue_date: "2026-05-22"
+                  seller:
+                    name: Acme SAS
+                    siren: "732829320"
+                    address: { line1: "1 rue Cler", postal_code: "75007", city: Paris, country_code: FR }
+                  buyer:
+                    name: Globex SAS
+                    siren: "552120222"
+                    address: { line1: "2 avenue Foch", postal_code: "75116", city: Paris, country_code: FR }
+                  lines:
+                    - { description: "Avoir commercial", quantity: 1, unit_code: C62, unit_price: 250, tax_rate: 20, tax_category: S }
+              correction_invoice:
+                summary: Facture corrective
+                value:
+                  profile: EN16931
+                  type_code: "384"
+                  number: COR-2026-0001
+                  currency: EUR
+                  issue_date: "2026-05-22"
+                  seller:
+                    name: Acme SAS
+                    siren: "732829320"
+                    address: { line1: "1 rue Cler", postal_code: "75007", city: Paris, country_code: FR }
+                  buyer:
+                    name: Globex SAS
+                    siren: "552120222"
+                    address: { line1: "2 avenue Foch", postal_code: "75116", city: Paris, country_code: FR }
+                  lines:
+                    - { description: "Correction prix unitaire", quantity: 4, unit_code: HUR, unit_price: 125, tax_rate: 20, tax_category: S }
       responses:
         "201":
           description: created
@@ -139,6 +221,7 @@ paths:
           name: id
           required: true
           schema: { type: string, format: uuid }
+        - $ref: "#/components/parameters/IdempotencyKey"
       responses:
         "200": { description: ok }
         "404": { description: not found }
@@ -163,6 +246,52 @@ paths:
           schema: { type: string, format: uuid }
       responses:
         "200": { description: ok }
+  /v1/invoices/{id}/rejection-patch:
+    get:
+      summary: Propose un patch JSON pour corriger un rejet PA
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        "200": { description: patch JSON pret a appliquer }
+        "409": { description: facture sans rejet }
+  /v1/invoices/{id}/retry:
+    post:
+      summary: Resoumettre une facture rejetee apres correction
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                resolution_hint: { type: string }
+            examples:
+              siren_corrected:
+                summary: Resoumission apres correction SIREN
+                value:
+                  resolution_hint: SIREN acheteur corrige dans ERP
+      responses:
+        "202": { description: retry submitted }
+        "409": { description: facture non rejetee ou transition invalide }
+  /v1/invoices/{id}/timeline:
+    get:
+      summary: Timeline enrichie d'une facture
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        "200": { description: transitions, erreurs, retries et latences }
+        "404": { description: not found }
   /v1/inbox:
     get:
       summary: List received invoices
@@ -187,6 +316,27 @@ paths:
           application/xml: { schema: { type: string, format: binary } }
       responses:
         "200": { description: report }
+  /v1/validate/bulk:
+    post:
+      summary: Pre-validate a batch of invoices before emission
+      parameters:
+        - in: query
+          name: format
+          schema: { type: string, enum: [json, csv], default: json }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [invoices]
+              properties:
+                invoices:
+                  type: array
+                  items: { $ref: "#/components/schemas/Invoice" }
+      responses:
+        "200": { description: aggregate report or CSV findings export }
+        "400": { description: bad request }
   /v1/directory/lookup:
     get:
       summary: Resolve a SIREN to its registered PA
@@ -197,6 +347,26 @@ paths:
           schema: { type: string }
       responses:
         "200": { description: ok }
+  /v1/submissions/dlq:
+    get:
+      summary: Inspect failed PA submissions
+      parameters:
+        - in: query
+          name: limit
+          schema: { type: integer, default: 50 }
+      responses:
+        "200": { description: failed submission list }
+  /v1/submissions/dlq/{id}/replay:
+    post:
+      summary: Replay a failed PA submission
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        "202": { description: replay submitted }
+        "404": { description: dlq entry not found }
   /v1/webhooks:
     post:
       summary: Register an outbound webhook endpoint
@@ -213,8 +383,46 @@ paths:
                 events:
                   type: array
                   items: { type: string }
+                ip_allowlist:
+                  type: array
+                  items: { type: string }
+                mtls_required: { type: boolean }
+                mtls_cert_ref: { type: string }
       responses:
         "201": { description: created }
+  /v1/webhooks/deliveries:
+    get:
+      summary: Inspect webhook delivery attempts and DLQ entries
+      parameters:
+        - in: query
+          name: status
+          schema: { type: string, enum: [PENDING, RETRYING, FAILED, DELIVERED] }
+        - in: query
+          name: limit
+          schema: { type: integer, default: 50 }
+      responses:
+        "200": { description: delivery list }
+  /v1/webhooks/deliveries/{id}/replay:
+    post:
+      summary: Replay a failed webhook delivery
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        "202": { description: replay scheduled }
+        "404": { description: failed delivery not found }
+  /v1/analytics/compliance-score:
+    get:
+      summary: Score qualite de conformite du tenant
+      responses:
+        "200": { description: score hebdomadaire et tendances elementaires }
+  /v1/analytics/rejection-retry-success-rate:
+    get:
+      summary: Taux de succes des resoumissions apres rejet
+      responses:
+        "200": { description: taux de factures acceptees apres retry post-rejet }
   /v1/data/export:
     post:
       summary: GDPR data export (Article 20)

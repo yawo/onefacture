@@ -6,12 +6,17 @@ import (
 	"context"
 	"crypto/hmac"
 	"crypto/sha256"
+	"crypto/tls"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io"
 	"log/slog"
+	"net"
 	"net/http"
+	"net/url"
+	"os"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -108,6 +113,11 @@ func (d *Deliverer) attempt(ctx context.Context, delivery storage.WebhookDeliver
 		d.logger.Warn("payload marshal", "err", err)
 		return
 	}
+	if err := endpointAllowed(ctx, ep); err != nil {
+		attempts := delivery.Attempts + 1
+		_ = d.store.Webhooks.MarkFailed(ctx, delivery.ID, attempts, backoff(attempts), err.Error())
+		return
+	}
 	sig := sign(ep.SecretHash, payload)
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, ep.URL, bytes.NewReader(payload))
 	if err != nil {
@@ -119,7 +129,16 @@ func (d *Deliverer) attempt(ctx context.Context, delivery storage.WebhookDeliver
 	req.Header.Set("X-Onefacture-Signature", "sha256="+sig)
 	req.Header.Set("X-Onefacture-Delivery", delivery.ID.String())
 
-	resp, err := d.client.Do(req)
+	client := d.client
+	if ep.MTLSRequired {
+		client, err = d.clientForEndpoint(ep)
+		if err != nil {
+			attempts := delivery.Attempts + 1
+			_ = d.store.Webhooks.MarkFailed(ctx, delivery.ID, attempts, backoff(attempts), err.Error())
+			return
+		}
+	}
+	resp, err := client.Do(req)
 	attempts := delivery.Attempts + 1
 	if err != nil {
 		_ = d.store.Webhooks.MarkFailed(ctx, delivery.ID, attempts, backoff(attempts), err.Error())
@@ -133,6 +152,65 @@ func (d *Deliverer) attempt(ctx context.Context, delivery storage.WebhookDeliver
 	body, _ := io.ReadAll(io.LimitReader(resp.Body, 1024))
 	_ = d.store.Webhooks.MarkFailed(ctx, delivery.ID, attempts, backoff(attempts),
 		fmt.Sprintf("status=%d body=%s", resp.StatusCode, string(body)))
+}
+
+func (d *Deliverer) clientForEndpoint(ep *storage.WebhookEndpoint) (*http.Client, error) {
+	certPath, keyPath, err := parseMTLSCertRef(ep.MTLSCertRef)
+	if err != nil {
+		return nil, err
+	}
+	certPEM, err := os.ReadFile(certPath)
+	if err != nil {
+		return nil, fmt.Errorf("read mtls cert: %w", err)
+	}
+	keyPEM, err := os.ReadFile(keyPath)
+	if err != nil {
+		return nil, fmt.Errorf("read mtls key: %w", err)
+	}
+	cert, err := tls.X509KeyPair(certPEM, keyPEM)
+	if err != nil {
+		return nil, fmt.Errorf("load mtls key pair: %w", err)
+	}
+	transport := http.DefaultTransport.(*http.Transport).Clone()
+	transport.TLSClientConfig = &tls.Config{Certificates: []tls.Certificate{cert}, MinVersion: tls.VersionTLS12}
+	return &http.Client{Timeout: d.client.Timeout, Transport: transport}, nil
+}
+
+func parseMTLSCertRef(ref string) (string, string, error) {
+	ref = strings.TrimSpace(ref)
+	if ref == "" {
+		return "", "", fmt.Errorf("mtls_cert_ref required when mtls_required is true")
+	}
+	parts := strings.Split(ref, ":")
+	if len(parts) != 2 || strings.TrimSpace(parts[0]) == "" || strings.TrimSpace(parts[1]) == "" {
+		return "", "", fmt.Errorf("mtls_cert_ref must be cert_path:key_path")
+	}
+	return strings.TrimSpace(parts[0]), strings.TrimSpace(parts[1]), nil
+}
+
+func endpointAllowed(ctx context.Context, ep *storage.WebhookEndpoint) error {
+	if len(ep.IPAllowlist) == 0 {
+		return nil
+	}
+	parsed, err := url.Parse(ep.URL)
+	if err != nil {
+		return fmt.Errorf("parse webhook url: %w", err)
+	}
+	host := parsed.Hostname()
+	ips, err := net.DefaultResolver.LookupIPAddr(ctx, host)
+	if err != nil {
+		return fmt.Errorf("resolve webhook host: %w", err)
+	}
+	allowed := map[string]struct{}{}
+	for _, ip := range ep.IPAllowlist {
+		allowed[ip] = struct{}{}
+	}
+	for _, ip := range ips {
+		if _, ok := allowed[ip.IP.String()]; ok {
+			return nil
+		}
+	}
+	return fmt.Errorf("webhook destination %s not in ip_allowlist", host)
 }
 
 func sign(secret, body []byte) string {

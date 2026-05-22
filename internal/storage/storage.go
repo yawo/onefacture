@@ -5,11 +5,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
 
 	pgx "github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/yawo/onefacture/internal/config"
+	"github.com/yawo/onefacture/internal/security"
 )
 
 // Store is the unified persistence facade.
@@ -19,7 +21,9 @@ type Store struct {
 	Organizations *OrganizationRepo
 	APIKeys       *APIKeyRepo
 	Invoices      *InvoiceRepo
+	Idempotency   *IdempotencyRepo
 	Lifecycle     *LifecycleRepo
+	Submissions   *SubmissionRepo
 	Audit         *AuditRepo
 	Webhooks      *WebhookRepo
 }
@@ -50,11 +54,31 @@ func New(ctx context.Context, cfg config.DatabaseConfig) (*Store, error) {
 	s := &Store{pool: pool}
 	s.Organizations = &OrganizationRepo{pool: pool}
 	s.APIKeys = &APIKeyRepo{pool: pool}
-	s.Invoices = &InvoiceRepo{pool: pool}
+	s.Invoices = &InvoiceRepo{pool: pool, encryptor: encryptorFromEnv()}
+	s.Idempotency = &IdempotencyRepo{pool: pool}
 	s.Lifecycle = &LifecycleRepo{pool: pool}
+	s.Submissions = &SubmissionRepo{pool: pool}
 	s.Audit = &AuditRepo{pool: pool}
 	s.Webhooks = &WebhookRepo{pool: pool}
 	return s, nil
+}
+
+func encryptorFromEnv() *security.Encryptor {
+	if kmsURL := os.Getenv("ONEFACTURE_KMS_URL"); kmsURL != "" {
+		return security.NewEncryptor(security.HTTPKMSProvider{
+			BaseURL:     kmsURL,
+			BearerToken: os.Getenv("ONEFACTURE_KMS_TOKEN"),
+		})
+	}
+	raw := os.Getenv("ONEFACTURE_ENCRYPTION_KEY")
+	if raw == "" {
+		return nil
+	}
+	key, err := security.DecodeAES256Key(raw)
+	if err != nil {
+		return nil
+	}
+	return security.NewEncryptor(security.StaticKeyProvider{KeyID: os.Getenv("ONEFACTURE_ENCRYPTION_KEY_ID"), Key: key})
 }
 
 // Pool returns the underlying pgx pool for advanced operations (migrations, tx).

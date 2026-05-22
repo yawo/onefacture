@@ -6,9 +6,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/require"
-	"github.com/stretchr/testify/mock"
 	"github.com/google/uuid"
+	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 
 	"github.com/yawo/onefacture/internal/adapters"
 	"github.com/yawo/onefacture/internal/adapters/registry"

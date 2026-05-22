@@ -53,6 +53,24 @@ CREATE INDEX invoices_org_status_idx ON invoices(organization_id, status);
 CREATE INDEX invoices_buyer_idx ON invoices(buyer_siren) WHERE buyer_siren IS NOT NULL;
 CREATE INDEX invoices_issue_idx ON invoices(issue_date);
 
+CREATE TABLE idempotency_keys (
+    id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+    key             TEXT NOT NULL,
+    method          TEXT NOT NULL,
+    path            TEXT NOT NULL,
+    request_hash    TEXT NOT NULL,
+    status_code     INT,
+    response_body   JSONB,
+    resource_type   TEXT,
+    resource_id     TEXT,
+    created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
+    updated_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
+    UNIQUE (organization_id, key)
+);
+
+CREATE INDEX idempotency_keys_org_idx ON idempotency_keys(organization_id, created_at DESC);
+
 CREATE TABLE lifecycle_events (
     id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     invoice_id      UUID NOT NULL REFERENCES invoices(id) ON DELETE CASCADE,
@@ -88,6 +106,9 @@ CREATE TABLE webhook_endpoints (
     url             TEXT NOT NULL,
     secret_hash     BYTEA NOT NULL,
     events          TEXT[] NOT NULL DEFAULT ARRAY['*']::TEXT[],
+    ip_allowlist    TEXT[] NOT NULL DEFAULT ARRAY[]::TEXT[],
+    mtls_required   BOOLEAN NOT NULL DEFAULT FALSE,
+    mtls_cert_ref   TEXT,
     active          BOOLEAN NOT NULL DEFAULT TRUE,
     created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
 );
@@ -108,3 +129,17 @@ CREATE TABLE webhook_deliveries (
 );
 
 CREATE INDEX webhook_deliveries_status_idx ON webhook_deliveries(status, next_attempt_at);
+
+CREATE TABLE submission_dlq (
+    id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+    invoice_id      UUID NOT NULL REFERENCES invoices(id) ON DELETE CASCADE,
+    pa_id           TEXT NOT NULL,
+    error           TEXT NOT NULL,
+    payload         JSONB NOT NULL DEFAULT '{}'::JSONB,
+    status          TEXT NOT NULL DEFAULT 'FAILED',
+    created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
+    replayed_at     TIMESTAMPTZ
+);
+
+CREATE INDEX submission_dlq_org_status_idx ON submission_dlq(organization_id, status, created_at DESC);

@@ -1,0 +1,37 @@
+{
+  "profile": "EN16931",
+  "type_code": "380",
+  "number": "INV-2026-0001",
+  "currency": "EUR",
+  "issue_date": "2026-05-22T00:00:00Z",
+  "seller": {
+    "name": "Acme SAS",
+    "siren": "732829320",
+    "address": {
+      "line1": "1 rue Cler",
+      "postal_code": "75007",
+      "city": "Paris",
+      "country_code": "FR"
+    }
+  },
+  "buyer": {
+    "name": "Globex SAS",
+    "siren": "552120222",
+    "address": {
+      "line1": "2 avenue Foch",
+      "postal_code": "75116",
+      "city": "Paris",
+      "country_code": "FR"
+    }
+  },
+  "lines": [
+    {
+      "description": "Consulting",
+      "quantity": 10,
+      "unit_code": "HUR",
+      "unit_price": 150,
+      "tax_rate": 20,
+      "tax_category": "S"
+    }
+  ]
+}

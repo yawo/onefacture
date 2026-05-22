@@ -1,0 +1,191 @@
+{
+  "objective": "Planifier, implementer et reviewer chaque issue de docs/backlog/github-issues-vagues.md.",
+  "issues": [
+    {
+      "number": 1,
+      "title": "Intégration Chorus Pro PISTE sandbox (round-trip complet)",
+      "status": "partial_external",
+      "artifacts": ["internal/adapters/chorus", "internal/adapters/sandbox", "internal/adapters/live", "docs/operations/external-acceptance.md"],
+      "verification_commands": ["make verify-live-pa"],
+      "external_gate": "verify-live-pa",
+      "external_blockers": ["Credentials Chorus Pro PISTE sandbox requis pour prouver le round-trip end-to-end."]
+    },
+    {
+      "number": 2,
+      "title": "Intégration Docaposte sandbox (submit/status/webhook)",
+      "status": "partial_external",
+      "artifacts": ["internal/adapters/docaposte", "internal/adapters/sandbox", "internal/adapters/live", "docs/operations/external-acceptance.md"],
+      "verification_commands": ["make verify-live-pa"],
+      "external_gate": "verify-live-pa",
+      "external_blockers": ["Credentials Docaposte sandbox requis pour prouver les tests d'integration live."]
+    },
+    {
+      "number": 3,
+      "title": "Intégration Pennylane sandbox (submit/status/webhook)",
+      "status": "partial_external",
+      "artifacts": ["internal/adapters/pennylane", "internal/adapters/sandbox", "internal/adapters/live", "docs/operations/external-acceptance.md"],
+      "verification_commands": ["make verify-live-pa"],
+      "external_gate": "verify-live-pa",
+      "external_blockers": ["Credentials Pennylane sandbox requis pour prouver le round-trip automatise."]
+    },
+    {
+      "number": 4,
+      "title": "Idempotency-Key obligatoire sur POST /v1/invoices et /submit",
+      "status": "covered_local",
+      "artifacts": ["internal/storage/idempotency.go", "internal/storage/migrations/0001_init.up.sql", "internal/gateway/routes"],
+      "verification_commands": ["make verify-local"]
+    },
+    {
+      "number": 5,
+      "title": "Circuit breaker + retry policy pour soumission PA",
+      "status": "covered_local",
+      "artifacts": ["internal/reliability", "internal/adapters/registry"],
+      "verification_commands": ["make verify-local"]
+    },
+    {
+      "number": 6,
+      "title": "DLQ pour soumissions et événements non délivrables",
+      "status": "covered_local",
+      "artifacts": ["internal/events/bus.go", "internal/storage/submissions.go", "internal/storage/webhooks.go", "internal/gateway/routes"],
+      "verification_commands": ["make verify-local"]
+    },
+    {
+      "number": 7,
+      "title": "Annuaire SIREN avec cache TTL + fallback provider",
+      "status": "covered_local",
+      "artifacts": ["internal/directory"],
+      "verification_commands": ["make verify-local"]
+    },
+    {
+      "number": 8,
+      "title": "Override de routage PA par organisation",
+      "status": "covered_local",
+      "artifacts": ["internal/gateway/routes", "internal/storage/organizations.go"],
+      "verification_commands": ["make verify-local"]
+    },
+    {
+      "number": 9,
+      "title": "Sandbox publique onefacture (multi-tenant, PA mockées)",
+      "status": "partial_external",
+      "artifacts": ["deploy/helm/onefacture/values-sandbox.yaml", "scripts/smoke_public_sandbox.sh", "docs/sandbox/public-sandbox.md", "docs/operations/external-acceptance.md"],
+      "verification_commands": ["make verify-public-sandbox"],
+      "external_gate": "verify-public-sandbox",
+      "external_blockers": ["URL sandbox publique et test par developpeur externe requis."]
+    },
+    {
+      "number": 10,
+      "title": "Onboarding “5 minutes to first invoice”",
+      "status": "partial_external",
+      "artifacts": ["docs/onboarding/5-minutes-first-invoice.md", "docs/onboarding/onefacture.postman_collection.json", "docs/examples/commercial-invoice.json", "docs/examples/business-scenarios.md", "scripts/smoke_public_sandbox.sh"],
+      "verification_commands": ["make verify-public-sandbox"],
+      "external_gate": "verify-public-sandbox",
+      "external_blockers": ["Compte vierge sur sandbox publique requis pour prouver le parcours en conditions reelles."]
+    },
+    {
+      "number": 11,
+      "title": "Publication SDK Python sur PyPI",
+      "status": "partial_external",
+      "artifacts": ["sdks/python/pyproject.toml", "sdks/python/src", ".github/workflows/sdk-publish.yml", "scripts/verify_sdk_release_artifacts.sh"],
+      "verification_commands": ["make verify-sdk", "make verify-sdk-registries"],
+      "external_gate": "verify-sdk-registries",
+      "external_blockers": ["Publication PyPI reelle requise pour prouver pip install onefacture; make verify-sdk-registries a confirme le 2026-05-22: PyPI onefacture install failed."]
+    },
+    {
+      "number": 12,
+      "title": "Publication SDK TypeScript sur npm",
+      "status": "partial_external",
+      "artifacts": ["sdks/typescript/package.json", "sdks/typescript/package-lock.json", "sdks/typescript/src", ".github/workflows/sdk-publish.yml", "scripts/verify_sdk_release_artifacts.sh"],
+      "verification_commands": ["make verify-sdk", "make verify-sdk-registries"],
+      "external_gate": "verify-sdk-registries",
+      "external_blockers": ["Publication npm reelle requise pour prouver npm install @onefacture/sdk; make verify-sdk-registries a confirme le 2026-05-22: npm @onefacture/sdk install failed."]
+    },
+    {
+      "number": 13,
+      "title": "CLI onefacture doctor",
+      "status": "covered_local",
+      "artifacts": ["cmd/onefacture"],
+      "verification_commands": ["make verify-local"]
+    },
+    {
+      "number": 14,
+      "title": "Trace ID dans toutes les réponses API",
+      "status": "covered_local",
+      "artifacts": ["internal/gateway/middleware", "internal/gateway/server.go"],
+      "verification_commands": ["make verify-local"]
+    },
+    {
+      "number": 15,
+      "title": "Endpoint timeline facture",
+      "status": "covered_local",
+      "artifacts": ["internal/gateway/routes"],
+      "verification_commands": ["make verify-local"]
+    },
+    {
+      "number": 16,
+      "title": "Webhook inspector UI",
+      "status": "covered_local",
+      "artifacts": ["internal/gateway/routes", "internal/webhooks", "internal/storage/webhooks.go"],
+      "verification_commands": ["make verify-local"]
+    },
+    {
+      "number": 17,
+      "title": "Erreurs enrichies RFC 7807 (hint/docs/retryable)",
+      "status": "covered_local",
+      "artifacts": ["internal/gateway/problem"],
+      "verification_commands": ["make verify-local"]
+    },
+    {
+      "number": 18,
+      "title": "Pack d’exemples métier (avoir, correction, rejet)",
+      "status": "covered_local",
+      "artifacts": ["docs/examples/business-scenarios.md", "internal/gateway/openapi/spec.yaml", "internal/gateway/openapi/openapi_test.go", "sdks/python/src", "sdks/typescript/src"],
+      "verification_commands": ["make verify-local"]
+    },
+    {
+      "number": 19,
+      "title": "Pré-validation bulk avant émission",
+      "status": "covered_local",
+      "artifacts": ["internal/gateway/routes"],
+      "verification_commands": ["make verify-local"]
+    },
+    {
+      "number": 20,
+      "title": "Score qualité de conformité par tenant",
+      "status": "covered_local",
+      "artifacts": ["internal/gateway/routes"],
+      "verification_commands": ["make verify-local"]
+    },
+    {
+      "number": 21,
+      "title": "Assistant de correction automatique des rejets",
+      "status": "partial_outcome_external",
+      "artifacts": ["internal/gateway/routes", "docs/operations/external-acceptance.md"],
+      "verification_commands": ["make verify-outcome-metrics"],
+      "external_gate": "verify-outcome-metrics",
+      "external_blockers": ["Donnees produit requises pour prouver une amelioration effective du taux de re-soumission reussie."]
+    },
+    {
+      "number": 22,
+      "title": "Chiffrement at-rest BYOK/KMS",
+      "status": "partial_external",
+      "artifacts": ["internal/security", "internal/storage/storage.go", "docs/security/byok-kms-runbook.md", "docs/operations/external-acceptance.md"],
+      "verification_commands": ["make verify-kms-broker"],
+      "external_gate": "verify-kms-broker",
+      "external_blockers": ["Broker KMS cloud deploye et audit de rotation requis."]
+    },
+    {
+      "number": 23,
+      "title": "mTLS optionnel + IP allowlist par webhook endpoint",
+      "status": "covered_local",
+      "artifacts": ["internal/webhooks", "internal/storage/webhooks.go"],
+      "verification_commands": ["make verify-local"]
+    },
+    {
+      "number": 24,
+      "title": "Framework multi-juridiction (PEPPOL/ViDA ready)",
+      "status": "covered_local",
+      "artifacts": ["internal/jurisdiction", "docs/architecture/multi-jurisdiction.md"],
+      "verification_commands": ["make verify-local"]
+    }
+  ]
+}

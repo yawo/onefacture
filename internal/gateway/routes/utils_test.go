@@ -96,8 +96,8 @@ func TestWriteJSON(t *testing.T) {
 
 func TestWriteJSONComplexStruct(t *testing.T) {
 	type Response struct {
-		ID    string `json:"id"`
-		Count int    `json:"count"`
+		ID    string   `json:"id"`
+		Count int      `json:"count"`
 		Items []string `json:"items"`
 	}
 

@@ -285,11 +285,11 @@ func TestOrganizationCreateComplexSettings(t *testing.T) {
 
 	complexSettings := map[string]any{
 		"feature_flags": map[string]any{
-			"beta": true,
+			"beta":         true,
 			"experimental": false,
 		},
-		"timeout_ms": 5000,
-		"auto_submit": true,
+		"timeout_ms":   5000,
+		"auto_submit":  true,
 		"webhook_urls": []string{"https://example.com/webhook1", "https://example.com/webhook2"},
 	}
 

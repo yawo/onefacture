@@ -73,7 +73,7 @@ Nous sommes en plein développement actif pour respecter les échéances réglem
 - [x] **Phase 4 :** Workers Asynchrones (Redis Streams, webhooks signés HMAC, polling lifecycle).
 - [ ] **Phase 5 :** Expérience Développeur (Sandbox publique, SDKs Python/TS — scaffolding en place).
 
-*(Consultez [ISSUES.md](./ISSUES.md) pour le backlog détaillé).*
+*(Consultez [ISSUES.md](./ISSUES.md) pour le backlog détaillé, [les exemples metier](./docs/examples/business-scenarios.md) pour les cas avoir/correction/rejet, et [les gates d'acceptance externes](./docs/operations/external-acceptance.md) pour les validations qui exigent des services reels).*
 
 ---
 
@@ -124,6 +124,15 @@ curl -X POST "http://localhost:8080/v1/invoices?submit=true" \
 Les contributions sont les bienvenues ! Que ce soit pour construire un adaptateur pour une PDP spécifique, améliorer le moteur de validation, ou enrichir la documentation, votre aide est essentielle pour démocratiser la facturation électronique en France.
 
 Veuillez lire notre [Guide de contribution](./CONTRIBUTING.md) (en cours de rédaction) pour commencer.
+
+### Verification rapide
+
+```bash
+make verify-local   # tests et gates locaux du backlog
+make verify-sdk     # artefacts SDK installables localement
+```
+
+Les gates qui dependent de sandboxes PA, de registres publics ou d'un broker KMS deploye sont documentes dans [docs/operations/external-acceptance.md](./docs/operations/external-acceptance.md).
 
 ## 📄 Licence
 

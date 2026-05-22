@@ -11,6 +11,7 @@ import (
 	"github.com/yawo/onefacture/internal/adapters/docaposte"
 	"github.com/yawo/onefacture/internal/adapters/mock"
 	"github.com/yawo/onefacture/internal/adapters/pennylane"
+	"github.com/yawo/onefacture/internal/reliability"
 )
 
 // Registry holds named adapters and resolves them by org configuration.
@@ -26,10 +27,10 @@ func NewDefault(logger *slog.Logger) *Registry {
 		adapters: map[string]adapters.PAAdapter{},
 		logger:   logger,
 	}
-	r.Register(mock.New())
-	r.Register(chorus.New())
-	r.Register(pennylane.New())
-	r.Register(docaposte.New())
+	r.Register(reliability.WrapAdapter(mock.New()))
+	r.Register(reliability.WrapAdapter(chorus.New()))
+	r.Register(reliability.WrapAdapter(pennylane.New()))
+	r.Register(reliability.WrapAdapter(docaposte.New()))
 	return r
 }
 

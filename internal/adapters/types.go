@@ -4,6 +4,7 @@ package adapters
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/yawo/onefacture/internal/core/invoice"
@@ -49,3 +50,20 @@ var ErrNotImplemented = errStr("adapter: not implemented")
 type errStr string
 
 func (e errStr) Error() string { return string(e) }
+
+type PAError struct {
+	Platform   string `json:"platform"`
+	Operation  string `json:"operation"`
+	StatusCode int    `json:"status_code"`
+	Code       string `json:"code,omitempty"`
+	Message    string `json:"message"`
+	Retryable  bool   `json:"retryable"`
+	Raw        []byte `json:"-"`
+}
+
+func (e *PAError) Error() string {
+	if e.Code != "" {
+		return fmt.Sprintf("%s %s failed: %s (%s)", e.Platform, e.Operation, e.Message, e.Code)
+	}
+	return fmt.Sprintf("%s %s failed: %s", e.Platform, e.Operation, e.Message)
+}

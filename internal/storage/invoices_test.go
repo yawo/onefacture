@@ -15,20 +15,20 @@ func createTestInvoice() *invoice.Invoice {
 	now := time.Now()
 	dueDate := now.Add(30 * 24 * time.Hour)
 	return &invoice.Invoice{
-		Status:   invoice.StatusDraft,
-		Profile:  invoice.ProfileEN16931,
-		TypeCode: invoice.TypeCommercialInvoice,
-		Number:   "INV-2024-001",
+		Status:    invoice.StatusDraft,
+		Profile:   invoice.ProfileEN16931,
+		TypeCode:  invoice.TypeCommercialInvoice,
+		Number:    "INV-2024-001",
 		IssueDate: now,
-		DueDate:  &dueDate,
-		Currency: "EUR",
+		DueDate:   &dueDate,
+		Currency:  "EUR",
 		Seller: invoice.Party{
 			Name:  "Seller Corp",
 			SIREN: "123456782",
 			Address: invoice.Address{
-				Line1: "123 Seller St",
-				City:  "Paris",
-				PostalCode: "75001",
+				Line1:       "123 Seller St",
+				City:        "Paris",
+				PostalCode:  "75001",
 				CountryCode: "FR",
 			},
 		},
@@ -36,9 +36,9 @@ func createTestInvoice() *invoice.Invoice {
 			Name:  "Buyer Inc",
 			SIREN: "987654321",
 			Address: invoice.Address{
-				Line1: "456 Buyer Ave",
-				City:  "Lyon",
-				PostalCode: "69000",
+				Line1:       "456 Buyer Ave",
+				City:        "Lyon",
+				PostalCode:  "69000",
 				CountryCode: "FR",
 			},
 		},

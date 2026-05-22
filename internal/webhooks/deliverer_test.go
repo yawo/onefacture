@@ -3,11 +3,19 @@ package webhooks
 import (
 	"bytes"
 	"context"
+	"crypto/rand"
+	"crypto/rsa"
+	"crypto/tls"
+	"crypto/x509"
+	"crypto/x509/pkix"
 	"encoding/json"
+	"encoding/pem"
 	"io"
 	"log/slog"
+	"math/big"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"regexp"
 	"testing"
 	"time"
@@ -121,6 +129,62 @@ func TestSignFunction(t *testing.T) {
 	require.Equal(t, sig, sig2)
 }
 
+func TestEndpointAllowedRejectsUnlistedResolvedIP(t *testing.T) {
+	ep := &storage.WebhookEndpoint{
+		URL:         "http://localhost/webhook",
+		IPAllowlist: []string{"203.0.113.10"},
+	}
+
+	err := endpointAllowed(context.Background(), ep)
+
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "ip_allowlist")
+}
+
+func TestParseMTLSCertRef(t *testing.T) {
+	certPath, keyPath, err := parseMTLSCertRef("/tmp/client.crt:/tmp/client.key")
+
+	require.NoError(t, err)
+	require.Equal(t, "/tmp/client.crt", certPath)
+	require.Equal(t, "/tmp/client.key", keyPath)
+}
+
+func TestParseMTLSCertRefRejectsEmpty(t *testing.T) {
+	_, _, err := parseMTLSCertRef("")
+
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "mtls_cert_ref")
+}
+
+func TestClientForEndpointPerformsMTLSHandshake(t *testing.T) {
+	certPEM, keyPEM := generateClientCert(t)
+	certPath := writeTempPEM(t, "client-*.crt", certPEM)
+	keyPath := writeTempPEM(t, "client-*.key", keyPEM)
+	d := NewDeliverer(slog.Default(), (*events.Bus)(nil), (*storage.Store)(nil))
+	client, err := d.clientForEndpoint(&storage.WebhookEndpoint{
+		MTLSRequired: true,
+		MTLSCertRef:  certPath + ":" + keyPath,
+	})
+	require.NoError(t, err)
+
+	server := httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		require.NotNil(t, r.TLS)
+		require.NotEmpty(t, r.TLS.PeerCertificates)
+		w.WriteHeader(http.StatusNoContent)
+	}))
+	server.TLS = &tls.Config{ClientAuth: tls.RequireAnyClientCert, MinVersion: tls.VersionTLS12}
+	server.StartTLS()
+	defer server.Close()
+	roots := x509.NewCertPool()
+	roots.AddCert(server.Certificate())
+	client.Transport.(*http.Transport).TLSClientConfig.RootCAs = roots
+
+	resp, err := client.Get(server.URL)
+	require.NoError(t, err)
+	defer func() { _ = resp.Body.Close() }()
+	require.Equal(t, http.StatusNoContent, resp.StatusCode)
+}
+
 func TestBackoffFunction(t *testing.T) {
 	t1 := backoff(0)
 	t2 := backoff(1)
@@ -188,9 +252,9 @@ func TestDelivererAttemptMalformedPayload(t *testing.T) {
 	}
 
 	delivery := storage.WebhookDelivery{
-		ID:        uuid.New(),
+		ID:         uuid.New(),
 		EndpointID: endpoint.ID,
-		EventType: "invoice.submitted",
+		EventType:  "invoice.submitted",
 		Payload: map[string]any{
 			"chan": make(chan int), // This cannot be marshaled to JSON
 		},
@@ -200,6 +264,35 @@ func TestDelivererAttemptMalformedPayload(t *testing.T) {
 	// Since we can't mock the store easily, just verify the structure
 	require.NotNil(t, delivery)
 	require.NotNil(t, deliverer)
+}
+
+func generateClientCert(t *testing.T) ([]byte, []byte) {
+	t.Helper()
+	key, err := rsa.GenerateKey(rand.Reader, 2048)
+	require.NoError(t, err)
+	tmpl := &x509.Certificate{
+		SerialNumber: big.NewInt(1),
+		Subject:      pkix.Name{CommonName: "onefacture-webhook-client"},
+		NotBefore:    time.Now().Add(-time.Minute),
+		NotAfter:     time.Now().Add(time.Hour),
+		KeyUsage:     x509.KeyUsageDigitalSignature,
+		ExtKeyUsage:  []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
+	}
+	der, err := x509.CreateCertificate(rand.Reader, tmpl, tmpl, &key.PublicKey, key)
+	require.NoError(t, err)
+	certPEM := pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: der})
+	keyPEM := pem.EncodeToMemory(&pem.Block{Type: "RSA PRIVATE KEY", Bytes: x509.MarshalPKCS1PrivateKey(key)})
+	return certPEM, keyPEM
+}
+
+func writeTempPEM(t *testing.T, pattern string, data []byte) string {
+	t.Helper()
+	file, err := os.CreateTemp(t.TempDir(), pattern)
+	require.NoError(t, err)
+	_, err = file.Write(data)
+	require.NoError(t, err)
+	require.NoError(t, file.Close())
+	return file.Name()
 }
 
 func TestSignatureFormat(t *testing.T) {
@@ -217,9 +310,9 @@ func TestSignatureFormat(t *testing.T) {
 
 func TestDeliveryPayloadSerialization(t *testing.T) {
 	delivery := storage.WebhookDelivery{
-		ID:        uuid.New(),
+		ID:         uuid.New(),
 		EndpointID: uuid.New(),
-		EventType: "invoice.submitted",
+		EventType:  "invoice.submitted",
 		Payload: map[string]any{
 			"type":            "invoice.submitted",
 			"occurred_at":     time.Now().UTC(),

@@ -32,6 +32,13 @@ func TestSpecHandlerContent(t *testing.T) {
 	require.Contains(t, body, "openapi:")
 	// Should contain some paths
 	require.Contains(t, body, "/v1/")
+	require.Contains(t, body, "Idempotency-Key")
+	require.Contains(t, body, "remediation_hint")
+	require.Contains(t, body, "retryable")
+	require.Contains(t, body, "commercial_invoice")
+	require.Contains(t, body, "credit_note")
+	require.Contains(t, body, "correction_invoice")
+	require.Contains(t, body, "/v1/invoices/{id}/retry")
 }
 
 func TestScalarHandler(t *testing.T) {

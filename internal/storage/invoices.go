@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -12,6 +13,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/yawo/onefacture/internal/core/invoice"
+	"github.com/yawo/onefacture/internal/security"
 )
 
 // Direction of an invoice as stored.
@@ -29,7 +31,18 @@ type InvoiceRow struct {
 	Invoice        *invoice.Invoice
 }
 
-type InvoiceRepo struct{ pool *pgxpool.Pool }
+const encryptedArtifactPrefix = "ofxenc1:"
+
+type InvoiceRepo struct {
+	pool      *pgxpool.Pool
+	encryptor *security.Encryptor
+}
+
+type EncryptedArtifactMetadata struct {
+	Encrypted bool   `json:"encrypted"`
+	KeyID     string `json:"key_id,omitempty"`
+	Field     string `json:"field,omitempty"`
+}
 
 // Create persists an invoice and returns the assigned ID.
 func (r *InvoiceRepo) Create(ctx context.Context, orgID uuid.UUID, dir Direction, inv *invoice.Invoice) (uuid.UUID, error) {
@@ -50,10 +63,18 @@ RETURNING id, created_at, updated_at`
 		due = *inv.DueDate
 	}
 	var created, updated time.Time
+	rawXML, err := r.encryptArtifact(ctx, orgID, id, "raw_xml", inv.RawXML)
+	if err != nil {
+		return uuid.Nil, err
+	}
+	rawPDF, err := r.encryptArtifact(ctx, orgID, id, "raw_pdf", inv.RawPDF)
+	if err != nil {
+		return uuid.Nil, err
+	}
 	err = r.pool.QueryRow(ctx, q,
 		id, orgID, dir, inv.Status, inv.Profile, inv.TypeCode, inv.Number, inv.Currency,
 		inv.IssueDate, due, inv.Seller.SIREN, inv.Buyer.SIREN, inv.PAID, inv.PARef,
-		payload, inv.RawXML, inv.RawPDF,
+		payload, rawXML, rawPDF,
 	).Scan(&inv.ID, &created, &updated)
 	if err != nil {
 		return uuid.Nil, fmt.Errorf("insert invoice: %w", err)
@@ -66,12 +87,13 @@ RETURNING id, created_at, updated_at`
 
 // Get fetches a single invoice scoped to the organization.
 func (r *InvoiceRepo) Get(ctx context.Context, orgID, id uuid.UUID) (*invoice.Invoice, error) {
-	const q = `SELECT payload, status, created_at, updated_at FROM invoices
+	const q = `SELECT payload, status, raw_xml, raw_pdf, created_at, updated_at FROM invoices
 WHERE id = $1 AND organization_id = $2`
 	var payload []byte
 	var status invoice.Status
+	var rawXML, rawPDF []byte
 	var created, updated time.Time
-	err := r.pool.QueryRow(ctx, q, id, orgID).Scan(&payload, &status, &created, &updated)
+	err := r.pool.QueryRow(ctx, q, id, orgID).Scan(&payload, &status, &rawXML, &rawPDF, &created, &updated)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return nil, ErrNotFound
 	}
@@ -83,11 +105,67 @@ WHERE id = $1 AND organization_id = $2`
 		return nil, fmt.Errorf("decode payload: %w", err)
 	}
 	inv.Status = status
+	inv.RawXML, err = r.decryptArtifact(ctx, orgID, id, "raw_xml", rawXML)
+	if err != nil {
+		return nil, err
+	}
+	inv.RawPDF, err = r.decryptArtifact(ctx, orgID, id, "raw_pdf", rawPDF)
+	if err != nil {
+		return nil, err
+	}
 	inv.ID = id.String()
 	inv.OrganizationID = orgID.String()
 	inv.CreatedAt = created
 	inv.UpdatedAt = updated
 	return inv, nil
+}
+
+func (r *InvoiceRepo) encryptArtifact(ctx context.Context, orgID, invoiceID uuid.UUID, field string, plaintext []byte) ([]byte, error) {
+	if len(plaintext) == 0 || r.encryptor == nil {
+		return plaintext, nil
+	}
+	env, err := r.encryptor.Encrypt(ctx, plaintext, artifactAAD(orgID, invoiceID, field))
+	if err != nil {
+		return nil, fmt.Errorf("encrypt %s: %w", field, err)
+	}
+	raw, err := json.Marshal(env)
+	if err != nil {
+		return nil, fmt.Errorf("marshal encrypted %s: %w", field, err)
+	}
+	return []byte(encryptedArtifactPrefix + string(raw)), nil
+}
+
+func (r *InvoiceRepo) decryptArtifact(ctx context.Context, orgID, invoiceID uuid.UUID, field string, raw []byte) ([]byte, error) {
+	if len(raw) == 0 || !strings.HasPrefix(string(raw), encryptedArtifactPrefix) {
+		return raw, nil
+	}
+	if r.encryptor == nil {
+		return nil, fmt.Errorf("decrypt %s: encryption key not configured", field)
+	}
+	var env security.Envelope
+	if err := json.Unmarshal([]byte(strings.TrimPrefix(string(raw), encryptedArtifactPrefix)), &env); err != nil {
+		return nil, fmt.Errorf("decode encrypted %s: %w", field, err)
+	}
+	plain, err := r.encryptor.Decrypt(ctx, env, artifactAAD(orgID, invoiceID, field))
+	if err != nil {
+		return nil, fmt.Errorf("decrypt %s: %w", field, err)
+	}
+	return plain, nil
+}
+
+func InspectEncryptedArtifact(field string, raw []byte) (EncryptedArtifactMetadata, error) {
+	if len(raw) == 0 || !strings.HasPrefix(string(raw), encryptedArtifactPrefix) {
+		return EncryptedArtifactMetadata{Encrypted: false, Field: field}, nil
+	}
+	var env security.Envelope
+	if err := json.Unmarshal([]byte(strings.TrimPrefix(string(raw), encryptedArtifactPrefix)), &env); err != nil {
+		return EncryptedArtifactMetadata{}, fmt.Errorf("decode encrypted %s metadata: %w", field, err)
+	}
+	return EncryptedArtifactMetadata{Encrypted: true, KeyID: env.KeyID, Field: field}, nil
+}
+
+func artifactAAD(orgID, invoiceID uuid.UUID, field string) []byte {
+	return []byte(orgID.String() + ":" + invoiceID.String() + ":" + field)
 }
 
 // UpdateStatus changes the invoice status (no state-machine check; callers enforce).

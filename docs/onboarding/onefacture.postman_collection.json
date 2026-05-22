@@ -1,0 +1,100 @@
+{
+  "info": {
+    "name": "onefacture 5 minutes to first invoice",
+    "description": "Copy/paste onboarding collection for public sandbox validation.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "https://sandbox.onefacture.example" },
+    { "key": "api_key", "value": "replace-with-sandbox-api-key" },
+    { "key": "invoice_id", "value": "" },
+    { "key": "webhook_url", "value": "https://example.com/webhooks/onefacture" },
+    { "key": "webhook_secret", "value": "replace-with-32-character-secret" }
+  ],
+  "item": [
+    {
+      "name": "Health check",
+      "request": {
+        "method": "GET",
+        "url": "{{base_url}}/healthz"
+      }
+    },
+    {
+      "name": "Create sandbox credentials",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Acme Sandbox\",\n  \"siren\": \"732829320\"\n}"
+        },
+        "url": "{{base_url}}/v1/sandbox/credentials"
+      }
+    },
+    {
+      "name": "Register webhook endpoint",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "X-API-Key", "value": "{{api_key}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"url\": \"{{webhook_url}}\",\n  \"secret\": \"{{webhook_secret}}\",\n  \"events\": [\"invoice.accepted\", \"invoice.rejected\"]\n}"
+        },
+        "url": "{{base_url}}/v1/webhooks"
+      }
+    },
+    {
+      "name": "Create and submit invoice",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const body = pm.response.json();",
+              "if (body.id) pm.collectionVariables.set('invoice_id', body.id);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "X-API-Key", "value": "{{api_key}}" },
+          { "key": "Idempotency-Key", "value": "postman-{{$timestamp}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"profile\": \"EN16931\",\n  \"type_code\": \"380\",\n  \"number\": \"INV-POSTMAN-0001\",\n  \"currency\": \"EUR\",\n  \"issue_date\": \"2026-05-22\",\n  \"seller\": {\n    \"name\": \"Acme SAS\",\n    \"siren\": \"732829320\",\n    \"address\": { \"line1\": \"1 rue Cler\", \"postal_code\": \"75007\", \"city\": \"Paris\", \"country_code\": \"FR\" }\n  },\n  \"buyer\": {\n    \"name\": \"Globex SAS\",\n    \"siren\": \"552120222\",\n    \"address\": { \"line1\": \"2 avenue Foch\", \"postal_code\": \"75116\", \"city\": \"Paris\", \"country_code\": \"FR\" }\n  },\n  \"lines\": [\n    { \"description\": \"Consulting\", \"quantity\": 10, \"unit_code\": \"HUR\", \"unit_price\": 150, \"tax_rate\": 20, \"tax_category\": \"S\" }\n  ]\n}"
+        },
+        "url": "{{base_url}}/v1/invoices?submit=true"
+      }
+    },
+    {
+      "name": "Inspect invoice timeline",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "X-API-Key", "value": "{{api_key}}" }
+        ],
+        "url": "{{base_url}}/v1/invoices/{{invoice_id}}/timeline"
+      }
+    },
+    {
+      "name": "Inspect webhook deliveries",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "X-API-Key", "value": "{{api_key}}" }
+        ],
+        "url": "{{base_url}}/v1/webhooks/deliveries?limit=10"
+      }
+    }
+  ]
+}

@@ -160,12 +160,12 @@ func TestLifecycleRecordComplexPayload(t *testing.T) {
 		PACode:     "PA001",
 		PAMessage:  "Submitted",
 		Payload: map[string]any{
-			"pa_ref": "ref-123456",
+			"pa_ref":    "ref-123456",
 			"timestamp": "2024-01-01T00:00:00Z",
 			"details": map[string]any{
 				"seller_siren": "123456782",
 				"buyer_siren":  "987654321",
-				"amount": 1500.50,
+				"amount":       1500.50,
 			},
 			"status_history": []any{
 				map[string]any{"status": "pending", "timestamp": "2024-01-01T00:00:00Z"},
@@ -484,7 +484,7 @@ func TestLifecycleRecordUnicodePayload(t *testing.T) {
 		ToStatus:   invoice.StatusValidated,
 		Payload: map[string]any{
 			"message": "Facture validée avec succès",
-			"vendor": "社内ベンダー",
+			"vendor":  "社内ベンダー",
 			"details": "Détails: Société Générale français",
 		},
 	}

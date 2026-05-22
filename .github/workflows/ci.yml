@@ -82,3 +82,114 @@ jobs:
       - name: Test
         working-directory: sidecar
         run: pytest -q
+
+  sdk-artifacts:
+    name: SDK install artifacts
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Verify SDK release artifacts
+        run: bash scripts/verify_sdk_release_artifacts.sh
+
+  backlog-acceptance-manifest:
+    name: Backlog acceptance manifest
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify backlog acceptance manifest
+        run: ruby scripts/verify_backlog_acceptance_manifest.rb
+
+  local-acceptance:
+    name: Local acceptance wrapper
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.23"
+          cache: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Verify local acceptance wrapper
+        run: make verify-local
+
+  external-gate-smokes:
+    name: External gate local smokes
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.23"
+          cache: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Verify external gate smokes
+        run: bash scripts/verify_external_gate_smokes.sh
+
+  external-evidence-verifier:
+    name: External evidence verifier
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify external evidence verifier
+        run: bash scripts/smoke_external_evidence_bundle.sh
+
+  backlog-completion-audit:
+    name: Backlog completion audit guard
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify backlog completion audit guard
+        run: bash scripts/smoke_backlog_completion_audit.sh
+
+  external-evidence-collector:
+    name: External evidence collector
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify external evidence collector
+        run: bash scripts/smoke_external_evidence_collector.sh
+
+  external-env-readiness:
+    name: External env readiness
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify external env readiness checker
+        run: bash scripts/smoke_external_acceptance_env.sh
+
+  external-evidence-review:
+    name: External evidence review
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify external evidence review helper
+        run: bash scripts/smoke_external_evidence_review.sh
+
+  helm-sandbox:
+    name: Helm sandbox profile
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: azure/setup-helm@v4
+      - name: Render sandbox chart
+        run: |
+          helm template onefacture-sandbox deploy/helm/onefacture \
+            -f deploy/helm/onefacture/values-sandbox.yaml \
+            --set postgres.dsn='postgres://user:pass@db:5432/onefacture?sslmode=require' \
+            --set secrets.hashPepper='test-pepper'

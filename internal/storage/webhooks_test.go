@@ -204,7 +204,7 @@ func TestWebhookListActiveMultipleEvents(t *testing.T) {
 	defer cleanup()
 
 	orgID := uuid.New()
-	ep, err := store.Webhooks.Create(ctx, orgID, "https://example.com/webhook", "secret", 
+	ep, err := store.Webhooks.Create(ctx, orgID, "https://example.com/webhook", "secret",
 		[]string{"invoice.submitted", "invoice.rejected"})
 	require.NoError(t, err)
 

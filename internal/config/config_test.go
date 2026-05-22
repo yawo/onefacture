@@ -112,11 +112,11 @@ func TestLoadValidationDevelopment(t *testing.T) {
 
 func TestEnvInt(t *testing.T) {
 	tests := []struct {
-		name    string
-		key     string
-		value   string
+		name     string
+		key      string
+		value    string
 		fallback int
-		want    int
+		want     int
 	}{
 		{"valid int", "TEST_INT", "42", 0, 42},
 		{"invalid int", "TEST_INT_INVALID", "not-a-number", 99, 99},
@@ -140,11 +140,11 @@ func TestEnvInt(t *testing.T) {
 
 func TestEnvInt32(t *testing.T) {
 	tests := []struct {
-		name    string
-		key     string
-		value   string
+		name     string
+		key      string
+		value    string
 		fallback int32
-		want    int32
+		want     int32
 	}{
 		{"valid int32", "TEST_INT32", "100", 0, 100},
 		{"invalid int32", "TEST_INT32_INVALID", "not-a-number", 50, 50},

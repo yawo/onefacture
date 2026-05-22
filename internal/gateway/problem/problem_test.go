@@ -1,6 +1,7 @@
 package problem
 
 import (
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -208,6 +209,69 @@ func TestDefaultTitle(t *testing.T) {
 
 	// Should have default title for 400 status
 	require.Contains(t, w.Body.String(), "Bad Request")
+}
+
+func TestWriteWithShortType(t *testing.T) {
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest(http.MethodGet, "/", nil)
+
+	Write(w, r, Problem{Type: "x", Status: http.StatusBadRequest})
+
+	require.Equal(t, http.StatusBadRequest, w.Code)
+	require.Contains(t, w.Body.String(), baseType+"x")
+}
+
+func TestHelpersIncludeEnrichedFields(t *testing.T) {
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest(http.MethodPost, "/v1/invoices", nil)
+
+	BadRequest(w, r, "bad payload")
+
+	var got map[string]any
+	require.NoError(t, json.Unmarshal(w.Body.Bytes(), &got))
+	require.NotEmpty(t, got["remediation_hint"])
+	require.NotEmpty(t, got["docs_url"])
+	require.Equal(t, false, got["retryable"])
+}
+
+func TestTopErrorHelpersHaveActionableEnrichment(t *testing.T) {
+	helpers := map[string]func(http.ResponseWriter, *http.Request, string){
+		"bad_request":     func(w http.ResponseWriter, r *http.Request, detail string) { BadRequest(w, r, detail) },
+		"unauthorized":    Unauthorized,
+		"forbidden":       Forbidden,
+		"not_found":       NotFound,
+		"conflict":        Conflict,
+		"internal":        Internal,
+		"too_many":        TooMany,
+		"not_implemented": NotImplemented,
+	}
+
+	for name, helper := range helpers {
+		t.Run(name, func(t *testing.T) {
+			w := httptest.NewRecorder()
+			r := httptest.NewRequest(http.MethodPost, "/v1/invoices", nil)
+
+			helper(w, r, "detail")
+
+			var got map[string]any
+			require.NoError(t, json.Unmarshal(w.Body.Bytes(), &got))
+			require.NotEmpty(t, got["remediation_hint"])
+			require.NotEmpty(t, got["docs_url"])
+			require.Contains(t, got["docs_url"], "https://onefacture.io/docs/")
+			require.Contains(t, got, "retryable")
+		})
+	}
+}
+
+func TestInternalErrorIsRetryable(t *testing.T) {
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest(http.MethodGet, "/v1/test", nil)
+
+	Internal(w, r, "temporary failure")
+
+	var got map[string]any
+	require.NoError(t, json.Unmarshal(w.Body.Bytes(), &got))
+	require.Equal(t, true, got["retryable"])
 }
 
 func TestWriteJSON(t *testing.T) {

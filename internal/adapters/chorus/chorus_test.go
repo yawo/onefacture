@@ -38,6 +38,9 @@ func TestNewWithEnv(t *testing.T) {
 	require.Equal(t, "test-client-id", adapter.clientID)
 	require.Equal(t, "test-client-secret", adapter.clientSecret)
 	require.Equal(t, "https://custom-url.example.com", adapter.baseURL)
+	require.Equal(t, "test-client-id", adapter.client.Auth.ClientID)
+	require.Equal(t, "test-client-secret", adapter.client.Auth.ClientSecret)
+	require.NotEmpty(t, adapter.client.Auth.TokenURL)
 }
 
 func TestName(t *testing.T) {

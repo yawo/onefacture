@@ -1,0 +1,49 @@
+# Public sandbox profile.
+# Override placeholders at deploy time:
+#   --set postgres.dsn=postgres://...
+#   --set secrets.hashPepper=...
+#   --set ingress.hosts[0].host=sandbox.onefacture.io
+replicaCount: 1
+
+env:
+  ONEFACTURE_ENV: sandbox
+  ONEFACTURE_PUBLIC_BASE_URL: https://sandbox.onefacture.io
+  ONEFACTURE_RATE_LIMIT_PER_MIN: "60"
+
+service:
+  type: ClusterIP
+  port: 80
+
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/proxy-body-size: "20m"
+  hosts:
+    - host: sandbox.onefacture.io
+      paths: ["/"]
+
+observability:
+  metrics:
+    enabled: true
+    path: /metrics
+  tracing:
+    enabled: false
+    endpoint: ""
+    serviceName: onefacture-sandbox-api
+  serviceMonitor:
+    enabled: false
+    namespace: ""
+    labels: {}
+    interval: 30s
+    scrapeTimeout: 10s
+    path: /metrics
+
+resources:
+  api:
+    requests: { cpu: 100m, memory: 128Mi }
+    limits: { cpu: 500m, memory: 512Mi }
+  sidecar:
+    requests: { cpu: 100m, memory: 256Mi }
+    limits: { cpu: 500m, memory: 768Mi }

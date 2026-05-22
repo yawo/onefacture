@@ -28,10 +28,44 @@ The API lives on `http://localhost:8080`, the Scalar docs on
 make test               # unit tests + coverage
 make test-integration   # integration tests (require docker)
 make lint               # golangci-lint
+make verify-local       # local acceptance gates for backlog delivery
+make verify-backlog-manifest # issue-to-artifact audit map
+make verify-external-smokes # local mocks/pre-publication checks for external gates
+make verify-sdk         # local installability checks for SDK packages
 ```
 
 The CI gate is **60 %** unit-test coverage today (climbing to 80 % as adapters
 get wired up).
+
+## Acceptance gates
+
+Some backlog criteria require live systems and cannot be closed from a local
+clone alone: PA sandbox round-trips, public sandbox onboarding, published SDK
+registry installs, deployed KMS broker checks, and production retry-outcome
+metrics.
+
+Run the local gate before opening a PR:
+
+```bash
+make verify-backlog-manifest
+make verify-external-smokes
+make verify-local
+```
+
+Use the external gates only when the required credentials and deployed services
+are available:
+
+```bash
+make verify-external
+make verify-live-pa
+make verify-public-sandbox
+make verify-sdk-registries
+make verify-kms-broker
+make verify-outcome-metrics
+```
+
+See `docs/operations/external-acceptance.md` for the required GitHub Actions
+variables, secrets, and the manual workflow.
 
 ## Repo layout
 

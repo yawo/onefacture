@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"bytes"
 	"context"
 	"log/slog"
 	"net/http"
@@ -9,6 +10,7 @@ import (
 	"testing"
 	"time"
 
+	chimw "github.com/go-chi/chi/v5/middleware"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
@@ -45,6 +47,35 @@ func TestAccessLogMiddleware(t *testing.T) {
 
 	require.Equal(t, http.StatusOK, w.Code)
 	require.Equal(t, "Hello", w.Body.String())
+}
+
+func TestRequestIDHeader(t *testing.T) {
+	handler := chimw.RequestID(RequestIDHeader(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusNoContent)
+	})))
+
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest(http.MethodGet, "/test", nil)
+
+	handler.ServeHTTP(w, r)
+
+	require.Equal(t, http.StatusNoContent, w.Code)
+	require.NotEmpty(t, w.Header().Get("X-Request-ID"))
+}
+
+func TestAccessLogIncludesRequestID(t *testing.T) {
+	var buf bytes.Buffer
+	logger := slog.New(slog.NewTextHandler(&buf, nil))
+	handler := chimw.RequestID(AccessLog(logger)(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	})))
+
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest(http.MethodGet, "/test", nil)
+
+	handler.ServeHTTP(w, r)
+
+	require.Contains(t, buf.String(), "request_id=")
 }
 
 func TestAccessLogRecordsStatus(t *testing.T) {

@@ -4,6 +4,8 @@ import (
 	"log/slog"
 	"net/http"
 	"time"
+
+	chimw "github.com/go-chi/chi/v5/middleware"
 )
 
 type responseWriter struct {
@@ -34,6 +36,7 @@ func AccessLog(logger *slog.Logger) func(http.Handler) http.Handler {
 			rw := &responseWriter{ResponseWriter: w}
 			next.ServeHTTP(rw, r)
 			logger.Info("http",
+				"request_id", chimw.GetReqID(r.Context()),
 				"method", r.Method,
 				"path", r.URL.Path,
 				"status", rw.status,
