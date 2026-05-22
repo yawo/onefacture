@@ -69,10 +69,10 @@ func TestInvoiceCreateSuccess(t *testing.T) {
 		t.Skip("Skipping integration test in short mode")
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 180*time.Second)
 	defer cancel()
 
-	store, cleanup := setupTestStore(t, ctx)
+	store, cleanup := setupTestStore(t)
 	defer cleanup()
 
 	orgID := uuid.New()
@@ -93,10 +93,10 @@ func TestInvoiceCreateInbound(t *testing.T) {
 		t.Skip("Skipping integration test in short mode")
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 180*time.Second)
 	defer cancel()
 
-	store, cleanup := setupTestStore(t, ctx)
+	store, cleanup := setupTestStore(t)
 	defer cleanup()
 
 	orgID := uuid.New()
@@ -114,10 +114,10 @@ func TestInvoiceGetSuccess(t *testing.T) {
 		t.Skip("Skipping integration test in short mode")
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 180*time.Second)
 	defer cancel()
 
-	store, cleanup := setupTestStore(t, ctx)
+	store, cleanup := setupTestStore(t)
 	defer cleanup()
 
 	orgID := uuid.New()
@@ -144,10 +144,10 @@ func TestInvoiceGetNotFound(t *testing.T) {
 		t.Skip("Skipping integration test in short mode")
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 180*time.Second)
 	defer cancel()
 
-	store, cleanup := setupTestStore(t, ctx)
+	store, cleanup := setupTestStore(t)
 	defer cleanup()
 
 	_, err := store.Invoices.Get(ctx, uuid.New(), uuid.New())
@@ -160,10 +160,10 @@ func TestInvoiceGetWrongOrganization(t *testing.T) {
 		t.Skip("Skipping integration test in short mode")
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 180*time.Second)
 	defer cancel()
 
-	store, cleanup := setupTestStore(t, ctx)
+	store, cleanup := setupTestStore(t)
 	defer cleanup()
 
 	orgID1 := uuid.New()
@@ -183,10 +183,10 @@ func TestInvoiceUpdateStatusSuccess(t *testing.T) {
 		t.Skip("Skipping integration test in short mode")
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 180*time.Second)
 	defer cancel()
 
-	store, cleanup := setupTestStore(t, ctx)
+	store, cleanup := setupTestStore(t)
 	defer cleanup()
 
 	orgID := uuid.New()
@@ -209,10 +209,10 @@ func TestInvoiceUpdateStatusNotFound(t *testing.T) {
 		t.Skip("Skipping integration test in short mode")
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 180*time.Second)
 	defer cancel()
 
-	store, cleanup := setupTestStore(t, ctx)
+	store, cleanup := setupTestStore(t)
 	defer cleanup()
 
 	err := store.Invoices.UpdateStatus(ctx, uuid.New(), uuid.New(), invoice.StatusSubmitted)
@@ -225,10 +225,10 @@ func TestInvoiceUpdateStatusWrongOrganization(t *testing.T) {
 		t.Skip("Skipping integration test in short mode")
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 180*time.Second)
 	defer cancel()
 
-	store, cleanup := setupTestStore(t, ctx)
+	store, cleanup := setupTestStore(t)
 	defer cleanup()
 
 	orgID1 := uuid.New()
@@ -248,10 +248,10 @@ func TestInvoiceListEmpty(t *testing.T) {
 		t.Skip("Skipping integration test in short mode")
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 180*time.Second)
 	defer cancel()
 
-	store, cleanup := setupTestStore(t, ctx)
+	store, cleanup := setupTestStore(t)
 	defer cleanup()
 
 	results, err := store.Invoices.List(ctx, uuid.New(), ListFilter{})
@@ -265,10 +265,10 @@ func TestInvoiceListSingle(t *testing.T) {
 		t.Skip("Skipping integration test in short mode")
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 180*time.Second)
 	defer cancel()
 
-	store, cleanup := setupTestStore(t, ctx)
+	store, cleanup := setupTestStore(t)
 	defer cleanup()
 
 	orgID := uuid.New()
@@ -289,10 +289,10 @@ func TestInvoiceListMultiple(t *testing.T) {
 		t.Skip("Skipping integration test in short mode")
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 180*time.Second)
 	defer cancel()
 
-	store, cleanup := setupTestStore(t, ctx)
+	store, cleanup := setupTestStore(t)
 	defer cleanup()
 
 	orgID := uuid.New()
@@ -315,10 +315,10 @@ func TestInvoiceListFilterByDirection(t *testing.T) {
 		t.Skip("Skipping integration test in short mode")
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 180*time.Second)
 	defer cancel()
 
-	store, cleanup := setupTestStore(t, ctx)
+	store, cleanup := setupTestStore(t)
 	defer cleanup()
 
 	orgID := uuid.New()
@@ -345,10 +345,10 @@ func TestInvoiceListFilterByStatus(t *testing.T) {
 		t.Skip("Skipping integration test in short mode")
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 180*time.Second)
 	defer cancel()
 
-	store, cleanup := setupTestStore(t, ctx)
+	store, cleanup := setupTestStore(t)
 	defer cleanup()
 
 	orgID := uuid.New()
@@ -377,10 +377,10 @@ func TestInvoiceListPagination(t *testing.T) {
 		t.Skip("Skipping integration test in short mode")
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 180*time.Second)
 	defer cancel()
 
-	store, cleanup := setupTestStore(t, ctx)
+	store, cleanup := setupTestStore(t)
 	defer cleanup()
 
 	orgID := uuid.New()
@@ -406,10 +406,10 @@ func TestInvoiceListLimitDefaults(t *testing.T) {
 		t.Skip("Skipping integration test in short mode")
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 180*time.Second)
 	defer cancel()
 
-	store, cleanup := setupTestStore(t, ctx)
+	store, cleanup := setupTestStore(t)
 	defer cleanup()
 
 	orgID := uuid.New()
@@ -431,10 +431,10 @@ func TestInvoiceListLimitCapped(t *testing.T) {
 		t.Skip("Skipping integration test in short mode")
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 180*time.Second)
 	defer cancel()
 
-	store, cleanup := setupTestStore(t, ctx)
+	store, cleanup := setupTestStore(t)
 	defer cleanup()
 
 	orgID := uuid.New()
@@ -456,10 +456,10 @@ func TestInvoiceCreateWithRawArtifacts(t *testing.T) {
 		t.Skip("Skipping integration test in short mode")
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 180*time.Second)
 	defer cancel()
 
-	store, cleanup := setupTestStore(t, ctx)
+	store, cleanup := setupTestStore(t)
 	defer cleanup()
 
 	orgID := uuid.New()
@@ -481,10 +481,10 @@ func TestInvoiceCreateMultipleOrganizations(t *testing.T) {
 		t.Skip("Skipping integration test in short mode")
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 180*time.Second)
 	defer cancel()
 
-	store, cleanup := setupTestStore(t, ctx)
+	store, cleanup := setupTestStore(t)
 	defer cleanup()
 
 	org1 := uuid.New()
@@ -513,10 +513,10 @@ func TestInvoiceListOrdered(t *testing.T) {
 		t.Skip("Skipping integration test in short mode")
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 180*time.Second)
 	defer cancel()
 
-	store, cleanup := setupTestStore(t, ctx)
+	store, cleanup := setupTestStore(t)
 	defer cleanup()
 
 	orgID := uuid.New()

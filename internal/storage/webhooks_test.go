@@ -31,10 +31,10 @@ func TestWebhookCreateSuccess(t *testing.T) {
 		t.Skip("Skipping integration test in short mode")
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 180*time.Second)
 	defer cancel()
 
-	store, cleanup := setupTestStore(t, ctx)
+	store, cleanup := setupTestStore(t)
 	defer cleanup()
 
 	orgID := uuid.New()
@@ -55,10 +55,10 @@ func TestWebhookCreateEmptyEvents(t *testing.T) {
 		t.Skip("Skipping integration test in short mode")
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 180*time.Second)
 	defer cancel()
 
-	store, cleanup := setupTestStore(t, ctx)
+	store, cleanup := setupTestStore(t)
 	defer cleanup()
 
 	orgID := uuid.New()
@@ -74,10 +74,10 @@ func TestWebhookCreateMultipleEvents(t *testing.T) {
 		t.Skip("Skipping integration test in short mode")
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 180*time.Second)
 	defer cancel()
 
-	store, cleanup := setupTestStore(t, ctx)
+	store, cleanup := setupTestStore(t)
 	defer cleanup()
 
 	orgID := uuid.New()
@@ -96,10 +96,10 @@ func TestWebhookGetEndpointSuccess(t *testing.T) {
 		t.Skip("Skipping integration test in short mode")
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 180*time.Second)
 	defer cancel()
 
-	store, cleanup := setupTestStore(t, ctx)
+	store, cleanup := setupTestStore(t)
 	defer cleanup()
 
 	orgID := uuid.New()
@@ -120,10 +120,10 @@ func TestWebhookGetEndpointNotFound(t *testing.T) {
 		t.Skip("Skipping integration test in short mode")
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 180*time.Second)
 	defer cancel()
 
-	store, cleanup := setupTestStore(t, ctx)
+	store, cleanup := setupTestStore(t)
 	defer cleanup()
 
 	_, err := store.Webhooks.GetEndpoint(ctx, uuid.New())
@@ -136,10 +136,10 @@ func TestWebhookListActiveEmpty(t *testing.T) {
 		t.Skip("Skipping integration test in short mode")
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 180*time.Second)
 	defer cancel()
 
-	store, cleanup := setupTestStore(t, ctx)
+	store, cleanup := setupTestStore(t)
 	defer cleanup()
 
 	endpoints, err := store.Webhooks.ListActive(ctx, uuid.New(), "invoice.submitted")
@@ -153,10 +153,10 @@ func TestWebhookListActiveSuccess(t *testing.T) {
 		t.Skip("Skipping integration test in short mode")
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 180*time.Second)
 	defer cancel()
 
-	store, cleanup := setupTestStore(t, ctx)
+	store, cleanup := setupTestStore(t)
 	defer cleanup()
 
 	orgID := uuid.New()
@@ -175,10 +175,10 @@ func TestWebhookListActiveWildcard(t *testing.T) {
 		t.Skip("Skipping integration test in short mode")
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 180*time.Second)
 	defer cancel()
 
-	store, cleanup := setupTestStore(t, ctx)
+	store, cleanup := setupTestStore(t)
 	defer cleanup()
 
 	orgID := uuid.New()
@@ -197,10 +197,10 @@ func TestWebhookListActiveMultipleEvents(t *testing.T) {
 		t.Skip("Skipping integration test in short mode")
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 180*time.Second)
 	defer cancel()
 
-	store, cleanup := setupTestStore(t, ctx)
+	store, cleanup := setupTestStore(t)
 	defer cleanup()
 
 	orgID := uuid.New()
@@ -227,10 +227,10 @@ func TestWebhookEnqueueSuccess(t *testing.T) {
 		t.Skip("Skipping integration test in short mode")
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 180*time.Second)
 	defer cancel()
 
-	store, cleanup := setupTestStore(t, ctx)
+	store, cleanup := setupTestStore(t)
 	defer cleanup()
 
 	endpointID := uuid.New()
@@ -248,10 +248,10 @@ func TestWebhookEnqueueEmptyPayload(t *testing.T) {
 		t.Skip("Skipping integration test in short mode")
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 180*time.Second)
 	defer cancel()
 
-	store, cleanup := setupTestStore(t, ctx)
+	store, cleanup := setupTestStore(t)
 	defer cleanup()
 
 	deliveryID, err := store.Webhooks.Enqueue(ctx, uuid.New(), "invoice.submitted", map[string]any{})
@@ -265,10 +265,10 @@ func TestWebhookEnqueueNilPayload(t *testing.T) {
 		t.Skip("Skipping integration test in short mode")
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 180*time.Second)
 	defer cancel()
 
-	store, cleanup := setupTestStore(t, ctx)
+	store, cleanup := setupTestStore(t)
 	defer cleanup()
 
 	deliveryID, err := store.Webhooks.Enqueue(ctx, uuid.New(), "invoice.submitted", nil)
@@ -282,10 +282,10 @@ func TestWebhookNextDueEmpty(t *testing.T) {
 		t.Skip("Skipping integration test in short mode")
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 180*time.Second)
 	defer cancel()
 
-	store, cleanup := setupTestStore(t, ctx)
+	store, cleanup := setupTestStore(t)
 	defer cleanup()
 
 	deliveries, err := store.Webhooks.NextDue(ctx, 10)
@@ -299,10 +299,10 @@ func TestWebhookMarkDeliveredSuccess(t *testing.T) {
 		t.Skip("Skipping integration test in short mode")
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 180*time.Second)
 	defer cancel()
 
-	store, cleanup := setupTestStore(t, ctx)
+	store, cleanup := setupTestStore(t)
 	defer cleanup()
 
 	deliveryID, err := store.Webhooks.Enqueue(ctx, uuid.New(), "invoice.submitted", map[string]any{})
@@ -318,10 +318,10 @@ func TestWebhookMarkDeliveredNotFound(t *testing.T) {
 		t.Skip("Skipping integration test in short mode")
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 180*time.Second)
 	defer cancel()
 
-	store, cleanup := setupTestStore(t, ctx)
+	store, cleanup := setupTestStore(t)
 	defer cleanup()
 
 	err := store.Webhooks.MarkDelivered(ctx, uuid.New())
@@ -334,10 +334,10 @@ func TestWebhookMarkFailedSuccess(t *testing.T) {
 		t.Skip("Skipping integration test in short mode")
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 180*time.Second)
 	defer cancel()
 
-	store, cleanup := setupTestStore(t, ctx)
+	store, cleanup := setupTestStore(t)
 	defer cleanup()
 
 	deliveryID, err := store.Webhooks.Enqueue(ctx, uuid.New(), "invoice.submitted", map[string]any{})
@@ -354,10 +354,10 @@ func TestWebhookMarkFailedMultipleAttempts(t *testing.T) {
 		t.Skip("Skipping integration test in short mode")
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 180*time.Second)
 	defer cancel()
 
-	store, cleanup := setupTestStore(t, ctx)
+	store, cleanup := setupTestStore(t)
 	defer cleanup()
 
 	deliveryID, err := store.Webhooks.Enqueue(ctx, uuid.New(), "invoice.submitted", map[string]any{})
@@ -375,10 +375,10 @@ func TestWebhookCreateMultipleEndpoints(t *testing.T) {
 		t.Skip("Skipping integration test in short mode")
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 180*time.Second)
 	defer cancel()
 
-	store, cleanup := setupTestStore(t, ctx)
+	store, cleanup := setupTestStore(t)
 	defer cleanup()
 
 	orgID := uuid.New()
@@ -398,10 +398,10 @@ func TestWebhookIsolationByOrganization(t *testing.T) {
 		t.Skip("Skipping integration test in short mode")
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 180*time.Second)
 	defer cancel()
 
-	store, cleanup := setupTestStore(t, ctx)
+	store, cleanup := setupTestStore(t)
 	defer cleanup()
 
 	org1 := uuid.New()
@@ -428,10 +428,10 @@ func TestWebhookComplexPayload(t *testing.T) {
 		t.Skip("Skipping integration test in short mode")
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 180*time.Second)
 	defer cancel()
 
-	store, cleanup := setupTestStore(t, ctx)
+	store, cleanup := setupTestStore(t)
 	defer cleanup()
 
 	payload := map[string]any{
@@ -462,10 +462,10 @@ func TestWebhookEnqueueMultiple(t *testing.T) {
 		t.Skip("Skipping integration test in short mode")
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 180*time.Second)
 	defer cancel()
 
-	store, cleanup := setupTestStore(t, ctx)
+	store, cleanup := setupTestStore(t)
 	defer cleanup()
 
 	endpointID := uuid.New()
@@ -484,10 +484,10 @@ func TestWebhookCreateWithUnicodeURL(t *testing.T) {
 		t.Skip("Skipping integration test in short mode")
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 180*time.Second)
 	defer cancel()
 
-	store, cleanup := setupTestStore(t, ctx)
+	store, cleanup := setupTestStore(t)
 	defer cleanup()
 
 	orgID := uuid.New()

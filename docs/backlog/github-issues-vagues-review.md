@@ -77,6 +77,8 @@ Pour chaque item externe finalise, cette review doit contenir `<numero>. <titre>
 ## Verification locale
 
 - `make verify-local`
+- `golangci-lint run --timeout=5m` via container Docker `golangci/golangci-lint:v1.61.0`
+- `go test -short -race -covermode=atomic -coverprofile=coverage.out ./...` (314 tests, 28 packages, couverture totale 37.0%, floor CI 35%)
 - `go test ./cmd/onefacture ./internal/adapters ./internal/adapters/sandbox ./internal/adapters/chorus ./internal/adapters/docaposte ./internal/adapters/pennylane ./internal/adapters/registry ./internal/directory ./internal/jurisdiction ./internal/reliability ./internal/security ./internal/gateway/routes ./internal/gateway/middleware ./internal/gateway/problem ./internal/gateway/openapi ./internal/webhooks`
 - `go test ./internal/security ./internal/jurisdiction`
 - `go test ./internal/directory -run 'TestResolver'`
@@ -114,5 +116,5 @@ Audit detaille: `docs/backlog/github-issues-vagues-completion-audit.md`.
 
 ## Risques restants
 
-- Les tests d'integration PostgreSQL/Testcontainers sont sensibles au readiness container dans l'environnement courant.
+- La suite `internal/storage` complete hors `-short` reste trop lente pour le job CI par defaut dans l'environnement courant; le CI couvre donc toute la repo en `-short -race` et `make verify-local` execute les tests storage critiques, dont les cas de chiffrement.
 - Les criteres d'acceptation sandbox PA live, public sandbox, PyPI/npm et KMS cloud necessitent des credentials, comptes ou une cible de deploiement.

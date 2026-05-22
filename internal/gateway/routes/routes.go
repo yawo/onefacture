@@ -225,7 +225,7 @@ func CreateInvoice(deps Dependencies) http.HandlerFunc {
 			problem.BadRequest(w, r, "read request body: "+err.Error())
 			return
 		}
-		_, replay, ok := reserveIdempotency(w, r, deps, orgID, idemKey, body)
+		replay, ok := reserveIdempotency(w, r, deps, orgID, idemKey, body)
 		if !ok {
 			return
 		}
@@ -430,7 +430,7 @@ func SubmitInvoice(deps Dependencies) http.HandlerFunc {
 		if !ok {
 			return
 		}
-		_, replay, ok := reserveIdempotency(w, r, deps, orgID, idemKey, nil)
+		replay, ok := reserveIdempotency(w, r, deps, orgID, idemKey, nil)
 		if !ok {
 			return
 		}
@@ -1071,12 +1071,12 @@ func ComplianceDashboardUI(w http.ResponseWriter, _ *http.Request) {
   <section class="grid" aria-label="Score hebdomadaire">
     <div class="panel"><div class="label">Score 7 jours</div><div class="metric" id="score">-</div></div>
     <div class="panel"><div class="label">Evenements</div><div class="metric" id="total">-</div></div>
-    <div class="panel"><div class="label">Acceptes</div><div class="metric" id="accepted">-</div></div>
+    <div class="panel"><div class="label">Accepted</div><div class="metric" id="accepted">-</div></div>
     <div class="panel"><div class="label">Rejetes</div><div class="metric" id="rejected">-</div></div>
-    <div class="panel"><div class="label">Retry acceptes</div><div class="metric" id="retryRate">-</div></div>
+    <div class="panel"><div class="label">Retry accepted</div><div class="metric" id="retryRate">-</div></div>
   </section>
   <table aria-label="Tendances mensuelles">
-    <thead><tr><th>Mois</th><th>Score</th><th>Total</th><th>Acceptes</th><th>Rejetes</th></tr></thead>
+    <thead><tr><th>Mois</th><th>Score</th><th>Total</th><th>Accepted</th><th>Rejetes</th></tr></thead>
     <tbody id="trends"><tr><td colspan="5">Aucune donnee chargee.</td></tr></tbody>
   </table>
 </main>
@@ -1207,29 +1207,29 @@ func idempotencyKey(w http.ResponseWriter, r *http.Request) (string, bool) {
 	return key, true
 }
 
-func reserveIdempotency(w http.ResponseWriter, r *http.Request, deps Dependencies, orgID uuid.UUID, key string, body []byte) (*storage.IdempotencyRecord, bool, bool) {
+func reserveIdempotency(w http.ResponseWriter, r *http.Request, deps Dependencies, orgID uuid.UUID, key string, body []byte) (bool, bool) {
 	sum := sha256.Sum256(body)
 	rec, created, err := deps.Store.Idempotency.Reserve(r.Context(), orgID, key, r.Method, r.URL.RequestURI(), hex.EncodeToString(sum[:]))
 	if errors.Is(err, storage.ErrIdempotencyConflict) {
 		problem.Conflict(w, r, err.Error())
-		return nil, false, false
+		return false, false
 	}
 	if errors.Is(err, storage.ErrIdempotencyInProgress) {
 		problem.Conflict(w, r, err.Error())
-		return nil, false, false
+		return false, false
 	}
 	if err != nil {
 		problem.Internal(w, r, err.Error())
-		return nil, false, false
+		return false, false
 	}
 	if !created {
 		w.Header().Set("Content-Type", "application/json")
 		w.Header().Set("X-Idempotent-Replay", "true")
 		w.WriteHeader(rec.StatusCode)
 		_, _ = w.Write(rec.ResponseBody)
-		return rec, true, true
+		return true, true
 	}
-	return rec, false, true
+	return false, true
 }
 
 func writeIdempotentJSON(w http.ResponseWriter, r *http.Request, deps Dependencies, orgID uuid.UUID, key string, status int, body any, resourceType, resourceID string) bool {

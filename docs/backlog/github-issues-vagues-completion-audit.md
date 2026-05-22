@@ -143,6 +143,8 @@ Pour chaque item externe finalise, la review doit contenir `<numero>. <titre>: c
 ## Verification executee
 
 - `make verify-local`
+- `golangci-lint run --timeout=5m` via container Docker `golangci/golangci-lint:v1.61.0`
+- `go test -short -race -covermode=atomic -coverprofile=coverage.out ./...` (314 tests, 28 packages, couverture totale 37.0%, floor CI 35%)
 - `go test ./cmd/onefacture ./internal/adapters ./internal/adapters/mock ./internal/adapters/sandbox ./internal/adapters/chorus ./internal/adapters/docaposte ./internal/adapters/pennylane ./internal/adapters/registry ./internal/config ./internal/core/facturx ./internal/core/invoice ./internal/directory ./internal/events ./internal/gateway ./internal/jurisdiction ./internal/reliability ./internal/security ./internal/validation ./internal/gateway/routes ./internal/gateway/middleware ./internal/gateway/problem ./internal/gateway/openapi ./internal/webhooks ./internal/workers`
 - `go test -short ./internal/storage`
 - `go test ./internal/storage -run 'Test(InvoiceRepoEncryptsAndDecryptsArtifacts|InvoiceRepoLeavesArtifactsPlainWithoutEncryptor)'`

@@ -48,6 +48,7 @@ func New(ctx context.Context, cfg config.DatabaseConfig) (*Store, error) {
 		return nil, fmt.Errorf("pool: %w", err)
 	}
 	if err := pool.Ping(ctx); err != nil {
+		pool.Close()
 		return nil, fmt.Errorf("ping: %w", err)
 	}
 

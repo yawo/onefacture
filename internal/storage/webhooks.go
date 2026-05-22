@@ -61,6 +61,9 @@ func (r *WebhookRepo) CreateWithOptions(ctx context.Context, orgID uuid.UUID, ur
 	if len(events) == 0 {
 		events = []string{"*"}
 	}
+	if opts.IPAllowlist == nil {
+		opts.IPAllowlist = []string{}
+	}
 	ep := &WebhookEndpoint{
 		ID: uuid.New(), OrganizationID: orgID, URL: url, Events: events, Active: true,
 		SecretHash: HashSecret(secret), IPAllowlist: opts.IPAllowlist, MTLSRequired: opts.MTLSRequired, MTLSCertRef: opts.MTLSCertRef,
@@ -141,10 +144,10 @@ func (r *WebhookRepo) MarkDelivered(ctx context.Context, id uuid.UUID) error {
 
 func (r *WebhookRepo) MarkFailed(ctx context.Context, id uuid.UUID, attempts int, nextAt time.Time, errMsg string) error {
 	const q = `UPDATE webhook_deliveries
-SET status = CASE WHEN $3 < 8 THEN 'RETRYING' ELSE 'FAILED' END,
-    attempts = $3, last_error = $4, next_attempt_at = $5
+SET status = CASE WHEN $2 < 8 THEN 'RETRYING' ELSE 'FAILED' END,
+    attempts = $2, last_error = $3, next_attempt_at = $4
 WHERE id = $1`
-	_, err := r.pool.Exec(ctx, q, id, attempts, attempts, errMsg, nextAt)
+	_, err := r.pool.Exec(ctx, q, id, attempts, errMsg, nextAt)
 	if err != nil {
 		return fmt.Errorf("mark failed: %w", err)
 	}

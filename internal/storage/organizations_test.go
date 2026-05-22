@@ -14,10 +14,10 @@ func TestOrganizationCreateSuccess(t *testing.T) {
 		t.Skip("Skipping integration test in short mode")
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 180*time.Second)
 	defer cancel()
 
-	store, cleanup := setupTestStore(t, ctx)
+	store, cleanup := setupTestStore(t)
 	defer cleanup()
 
 	org := &Organization{
@@ -44,10 +44,10 @@ func TestOrganizationCreateWithID(t *testing.T) {
 		t.Skip("Skipping integration test in short mode")
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 180*time.Second)
 	defer cancel()
 
-	store, cleanup := setupTestStore(t, ctx)
+	store, cleanup := setupTestStore(t)
 	defer cleanup()
 
 	id := uuid.New()
@@ -69,10 +69,10 @@ func TestOrganizationCreateEmptySIREN(t *testing.T) {
 		t.Skip("Skipping integration test in short mode")
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 180*time.Second)
 	defer cancel()
 
-	store, cleanup := setupTestStore(t, ctx)
+	store, cleanup := setupTestStore(t)
 	defer cleanup()
 
 	org := &Organization{
@@ -93,10 +93,10 @@ func TestOrganizationCreateEmptyPAID(t *testing.T) {
 		t.Skip("Skipping integration test in short mode")
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 180*time.Second)
 	defer cancel()
 
-	store, cleanup := setupTestStore(t, ctx)
+	store, cleanup := setupTestStore(t)
 	defer cleanup()
 
 	org := &Organization{
@@ -117,10 +117,10 @@ func TestOrganizationCreateNilSettings(t *testing.T) {
 		t.Skip("Skipping integration test in short mode")
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 180*time.Second)
 	defer cancel()
 
-	store, cleanup := setupTestStore(t, ctx)
+	store, cleanup := setupTestStore(t)
 	defer cleanup()
 
 	org := &Organization{
@@ -141,10 +141,10 @@ func TestOrganizationGetSuccess(t *testing.T) {
 		t.Skip("Skipping integration test in short mode")
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 180*time.Second)
 	defer cancel()
 
-	store, cleanup := setupTestStore(t, ctx)
+	store, cleanup := setupTestStore(t)
 	defer cleanup()
 
 	created := &Organization{
@@ -175,10 +175,10 @@ func TestOrganizationGetNotFound(t *testing.T) {
 		t.Skip("Skipping integration test in short mode")
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 180*time.Second)
 	defer cancel()
 
-	store, cleanup := setupTestStore(t, ctx)
+	store, cleanup := setupTestStore(t)
 	defer cleanup()
 
 	_, err := store.Organizations.Get(ctx, uuid.New())
@@ -191,10 +191,10 @@ func TestOrganizationGetMultiple(t *testing.T) {
 		t.Skip("Skipping integration test in short mode")
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 180*time.Second)
 	defer cancel()
 
-	store, cleanup := setupTestStore(t, ctx)
+	store, cleanup := setupTestStore(t)
 	defer cleanup()
 
 	org1 := &Organization{
@@ -227,10 +227,10 @@ func TestOrganizationCreateEmptyName(t *testing.T) {
 		t.Skip("Skipping integration test in short mode")
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 180*time.Second)
 	defer cancel()
 
-	store, cleanup := setupTestStore(t, ctx)
+	store, cleanup := setupTestStore(t)
 	defer cleanup()
 
 	org := &Organization{
@@ -251,10 +251,10 @@ func TestOrganizationGetEmptyFieldsCoalesced(t *testing.T) {
 		t.Skip("Skipping integration test in short mode")
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 180*time.Second)
 	defer cancel()
 
-	store, cleanup := setupTestStore(t, ctx)
+	store, cleanup := setupTestStore(t)
 	defer cleanup()
 
 	created := &Organization{
@@ -277,10 +277,10 @@ func TestOrganizationCreateComplexSettings(t *testing.T) {
 		t.Skip("Skipping integration test in short mode")
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 180*time.Second)
 	defer cancel()
 
-	store, cleanup := setupTestStore(t, ctx)
+	store, cleanup := setupTestStore(t)
 	defer cleanup()
 
 	complexSettings := map[string]any{

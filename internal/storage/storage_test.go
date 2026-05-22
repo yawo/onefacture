@@ -25,7 +25,7 @@ func startPostgresContainer(ctx context.Context) (string, func(), error) {
 			"POSTGRES_PASSWORD": "password",
 			"POSTGRES_DB":       "onefacture_test",
 		},
-		WaitingFor: wait.ForLog("database system is ready to accept connections"),
+		WaitingFor: wait.ForListeningPort("5432/tcp").WithStartupTimeout(60 * time.Second),
 	}
 	container, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
 		ContainerRequest: req,
@@ -60,7 +60,7 @@ func TestNewStoreSuccess(t *testing.T) {
 		t.Skip("Skipping integration test in short mode")
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 180*time.Second)
 	defer cancel()
 
 	dsn, cleanup, err := startPostgresContainer(ctx)
@@ -74,8 +74,22 @@ func TestNewStoreSuccess(t *testing.T) {
 		StatementCache: true,
 	}
 
-	store, err := New(ctx, cfg)
-	require.NoError(t, err)
+	var store *Store
+	deadline := time.Now().Add(30 * time.Second)
+	for {
+		store, err = New(ctx, cfg)
+		if err == nil {
+			break
+		}
+		if time.Now().After(deadline) {
+			require.NoError(t, err)
+		}
+		select {
+		case <-ctx.Done():
+			require.NoError(t, ctx.Err())
+		case <-time.After(250 * time.Millisecond):
+		}
+	}
 	require.NotNil(t, store)
 	defer store.Close()
 

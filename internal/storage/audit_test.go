@@ -15,10 +15,10 @@ func TestAuditAppendFirstEntry(t *testing.T) {
 		t.Skip("Skipping integration test in short mode")
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 180*time.Second)
 	defer cancel()
 
-	store, cleanup := setupTestStore(t, ctx)
+	store, cleanup := setupTestStore(t)
 	defer cleanup()
 
 	orgID := uuid.New()
@@ -34,10 +34,10 @@ func TestAuditAppendMultipleEntries(t *testing.T) {
 		t.Skip("Skipping integration test in short mode")
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 180*time.Second)
 	defer cancel()
 
-	store, cleanup := setupTestStore(t, ctx)
+	store, cleanup := setupTestStore(t)
 	defer cleanup()
 
 	orgID := uuid.New()
@@ -61,10 +61,10 @@ func TestAuditAppendEmptyMetadata(t *testing.T) {
 		t.Skip("Skipping integration test in short mode")
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 180*time.Second)
 	defer cancel()
 
-	store, cleanup := setupTestStore(t, ctx)
+	store, cleanup := setupTestStore(t)
 	defer cleanup()
 
 	orgID := uuid.New()
@@ -78,10 +78,10 @@ func TestAuditAppendNilMetadata(t *testing.T) {
 		t.Skip("Skipping integration test in short mode")
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 180*time.Second)
 	defer cancel()
 
-	store, cleanup := setupTestStore(t, ctx)
+	store, cleanup := setupTestStore(t)
 	defer cleanup()
 
 	orgID := uuid.New()
@@ -95,10 +95,10 @@ func TestAuditAppendComplexMetadata(t *testing.T) {
 		t.Skip("Skipping integration test in short mode")
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 180*time.Second)
 	defer cancel()
 
-	store, cleanup := setupTestStore(t, ctx)
+	store, cleanup := setupTestStore(t)
 	defer cleanup()
 
 	orgID := uuid.New()
@@ -128,10 +128,10 @@ func TestAuditAppendEmptyFields(t *testing.T) {
 		t.Skip("Skipping integration test in short mode")
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 180*time.Second)
 	defer cancel()
 
-	store, cleanup := setupTestStore(t, ctx)
+	store, cleanup := setupTestStore(t)
 	defer cleanup()
 
 	orgID := uuid.New()
@@ -145,10 +145,10 @@ func TestAuditAppendDifferentOrganizations(t *testing.T) {
 		t.Skip("Skipping integration test in short mode")
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 180*time.Second)
 	defer cancel()
 
-	store, cleanup := setupTestStore(t, ctx)
+	store, cleanup := setupTestStore(t)
 	defer cleanup()
 
 	org1 := uuid.New()
@@ -169,10 +169,10 @@ func TestAuditAppendDifferentResourceTypes(t *testing.T) {
 		t.Skip("Skipping integration test in short mode")
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 180*time.Second)
 	defer cancel()
 
-	store, cleanup := setupTestStore(t, ctx)
+	store, cleanup := setupTestStore(t)
 	defer cleanup()
 
 	orgID := uuid.New()
@@ -189,10 +189,10 @@ func TestAuditAppendDifferentActions(t *testing.T) {
 		t.Skip("Skipping integration test in short mode")
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 180*time.Second)
 	defer cancel()
 
-	store, cleanup := setupTestStore(t, ctx)
+	store, cleanup := setupTestStore(t)
 	defer cleanup()
 
 	orgID := uuid.New()
@@ -209,10 +209,10 @@ func TestAuditAppendLongStrings(t *testing.T) {
 		t.Skip("Skipping integration test in short mode")
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 180*time.Second)
 	defer cancel()
 
-	store, cleanup := setupTestStore(t, ctx)
+	store, cleanup := setupTestStore(t)
 	defer cleanup()
 
 	orgID := uuid.New()
@@ -234,10 +234,10 @@ func TestAuditAppendUnicodeCharacters(t *testing.T) {
 		t.Skip("Skipping integration test in short mode")
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 180*time.Second)
 	defer cancel()
 
-	store, cleanup := setupTestStore(t, ctx)
+	store, cleanup := setupTestStore(t)
 	defer cleanup()
 
 	orgID := uuid.New()
@@ -256,10 +256,10 @@ func TestAuditHashChain(t *testing.T) {
 		t.Skip("Skipping integration test in short mode")
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 180*time.Second)
 	defer cancel()
 
-	store, cleanup := setupTestStore(t, ctx)
+	store, cleanup := setupTestStore(t)
 	defer cleanup()
 
 	orgID := uuid.New()
@@ -292,10 +292,10 @@ func TestAuditAppendManyEntries(t *testing.T) {
 		t.Skip("Skipping integration test in short mode")
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 180*time.Second)
 	defer cancel()
 
-	store, cleanup := setupTestStore(t, ctx)
+	store, cleanup := setupTestStore(t)
 	defer cleanup()
 
 	orgID := uuid.New()
@@ -316,7 +316,7 @@ func TestAuditAppendConcurrency(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 120*time.Second)
 	defer cancel()
 
-	store, cleanup := setupTestStore(t, ctx)
+	store, cleanup := setupTestStore(t)
 	defer cleanup()
 
 	orgID := uuid.New()
