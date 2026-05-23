@@ -7,8 +7,8 @@
 <h4 align="center">La passerelle API Open Source pour la Facturation Électronique Française (Réforme 2026)</h4>
 
 <p align="center">
-  <a href="#vision--le-problème">Vision</a> •
-  <a href="#la-solution--onefacture">La Solution</a> •
+  <a href="#vision--le-problème">Problème</a> •
+  <a href="#la-solution--onefacture">Solution</a> •
   <a href="#architecture">Architecture</a> •
   <a href="#feuille-de-route-roadmap">Roadmap</a> •
   <a href="#démarrage-rapide">Démarrage rapide</a>
@@ -16,7 +16,7 @@
 
 ---
 
-## 🇫🇷 Vision : Le Problème
+## 🇫🇷  Problème
 
 À partir du **1er septembre 2026**, l'État français rend obligatoire l'émission, la transmission et la réception de factures au format électronique pour toutes les transactions B2B nationales assujetties à la TVA. Il ne s'agit pas d'un simple échange de PDF : cela implique des formats de données stricts (Factur-X, UBL, CII) et un routage via un réseau complexe de **Plateformes de Dématérialisation Partenaires (PDP)** et du **Portail Public de Facturation (PPF)** (le fameux "schéma en Y").
 
@@ -25,7 +25,7 @@ Pour les éditeurs d'ERP, les plateformes SaaS et les systèmes d'information in
 - **Complexité :** Générer des fichiers PDF/A-3 conformes avec XML embarqué (Factur-X) et les valider face à des centaines de règles métier (Schematron / AFNOR) est un défi majeur.
 - **Enfermement propriétaire (Vendor Lock-in) :** Se connecter directement à une seule PDP lie la logique de facturation de votre système à leur infrastructure spécifique.
 
-##  La Solution : onefacture
+##  Solution : onefacture
 
 **onefacture** est une API Gateway unifiée et open source qui abstrait l'intégralité de la complexité de l'écosystème de facturation électronique français.
 
