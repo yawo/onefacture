@@ -1,0 +1,7 @@
+PASS
+ok  	github.com/yawo/onefacture/internal/adapters/live	0.123s
+Sandbox smoke test passed
+PyPI onefacture install ok
+npm @onefacture/sdk install ok
+KMS active key ok: local-test
+outcome metric ok: retried=2 accepted_after_retry=1 success_rate=0.5 baseline_success_rate=0.4

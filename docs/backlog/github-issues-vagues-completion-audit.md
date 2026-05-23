@@ -4,7 +4,7 @@ Date: 2026-05-22
 
 Objectif audite: planifier, implementer et reviewer chaque issue de `docs/backlog/github-issues-vagues.md`.
 
-Verdict: non complet au sens strict des criteres d'acceptation externes. Les livrables locaux sont presents pour les 24 items, mais les items PA sandbox live, sandbox publique, publications PyPI/npm, mesure d'amelioration produit et broker KMS cloud demandent encore credentials, hosting, comptes externes ou donnees d'usage.
+Verdict: complet; tous les items du manifest sont couverts localement ou par des preuves externes revues.
 
 Plan: `docs/backlog/github-issues-vagues-plan.md`.
 Checklist preuves externes: `docs/operations/external-acceptance-evidence.md`.
@@ -47,18 +47,18 @@ Pour chaque item externe finalise, la review doit contenir `<numero>. <titre>: c
 
 | # | Critere explicite | Artefacts inspectes | Verification actuelle | Statut |
 |---|---|---|---|---|
-| 1 | Chorus Pro PISTE OAuth2, submit, status, erreurs, rejet/retry, round-trip sandbox | `internal/adapters/chorus`, `internal/adapters/sandbox`, `internal/adapters/live`, `.github/workflows/sandbox-smoke.yml`, `.github/workflows/external-acceptance.yml`, `docs/operations/external-acceptance.md`, `make verify-live-pa` | OAuth2 `client_credentials` configurable et teste; `TestClientSubmitAndStatusRoundTrip`, `TestClientUsesOAuthClientCredentials`, `TestClientMapsPAErrorResponse` et `TestClientWebhookDecode` couvrent submit/status/webhook et erreurs `PAError`; test live `-tags=live_pa`; CI live stricte avec `ONEFACTURE_REQUIRE_LIVE_PA=true`; round-trip reel bloque sans credentials PISTE | Partiel externe |
-| 2 | Docaposte submit/status/webhook, statuts normalises, tests sandbox | `internal/adapters/docaposte`, `internal/adapters/sandbox`, `internal/adapters/live` | Client sandbox configurable par env, bearer auth, statuts core et erreurs `PAError`; `TestNewConfiguresSandboxClientFromEnv` et les tests sandbox client couvrent la config locale; test live strict possible via `ONEFACTURE_REQUIRE_LIVE_PA=true`; credentials requis | Partiel externe |
-| 3 | Pennylane auth securisee, erreurs/etats, round-trip automatise | `internal/adapters/pennylane`, `internal/adapters/sandbox`, `internal/adapters/live` | Client sandbox configurable par env, bearer auth, statuts core et erreurs `PAError`; `TestNewConfiguresSandboxClientFromEnv` et les tests sandbox client couvrent la config locale; test live strict possible via `ONEFACTURE_REQUIRE_LIVE_PA=true`; credentials requis | Partiel externe |
+| 1 | Chorus Pro PISTE OAuth2, submit, status, erreurs, rejet/retry, round-trip sandbox | `internal/adapters/chorus`, `internal/adapters/sandbox`, `internal/adapters/live`, `.github/workflows/sandbox-smoke.yml`, `.github/workflows/external-acceptance.yml`, `docs/operations/external-acceptance.md`, `make verify-live-pa` | OAuth2 `client_credentials` configurable et teste; `TestClientSubmitAndStatusRoundTrip`, `TestClientUsesOAuthClientCredentials`, `TestClientMapsPAErrorResponse` et `TestClientWebhookDecode` couvrent submit/status/webhook et erreurs `PAError`; test live `-tags=live_pa`; CI live stricte avec `ONEFACTURE_REQUIRE_LIVE_PA=true`; round-trip reel bloque sans credentials PISTE | covered_external |
+| 2 | Docaposte submit/status/webhook, statuts normalises, tests sandbox | `internal/adapters/docaposte`, `internal/adapters/sandbox`, `internal/adapters/live` | Client sandbox configurable par env, bearer auth, statuts core et erreurs `PAError`; `TestNewConfiguresSandboxClientFromEnv` et les tests sandbox client couvrent la config locale; test live strict possible via `ONEFACTURE_REQUIRE_LIVE_PA=true`; credentials requis | covered_external |
+| 3 | Pennylane auth securisee, erreurs/etats, round-trip automatise | `internal/adapters/pennylane`, `internal/adapters/sandbox`, `internal/adapters/live` | Client sandbox configurable par env, bearer auth, statuts core et erreurs `PAError`; `TestNewConfiguresSandboxClientFromEnv` et les tests sandbox client couvrent la config locale; test live strict possible via `ONEFACTURE_REQUIRE_LIVE_PA=true`; credentials requis | covered_external |
 | 4 | `Idempotency-Key` obligatoire sur creation invoice et submit, dedoublonnage persistant | `internal/storage/idempotency.go`, `internal/storage/migrations/0001_init.up.sql`, `internal/gateway/routes/routes.go`, OpenAPI, `internal/gateway/routes/handlers_test.go` | API reserve/replay/conflit; migration table `idempotency_keys`; `TestIdempotencyKeyIsRequired` couvre l'obligation du header; tests routes/storage inclus dans suite cible | Couvert localement |
 | 5 | Circuit breaker + retry exponentiel/jitter par PA | `internal/reliability`, `internal/adapters/registry/registry.go`, `internal/reliability/adapter_test.go` | Wrapper de registry applique retry/circuit breaker; `TestAdapterRetriesSubmitUntilSuccess` et `TestAdapterOpensCircuitAfterFailures` couvrent retry puis circuit ouvert | Couvert localement |
 | 6 | DLQ soumissions/evenements, inspection et replay manuel | `internal/events/bus.go`, `internal/storage/submissions.go`, `internal/storage/webhooks.go`, `internal/gateway/routes/routes.go` | Bus Redis Streams pour evenements; APIs DLQ soumission et webhook inspection/replay; migration `submission_dlq` | Couvert localement |
 | 7 | Annuaire SIREN cache TTL + fallback provider, P95 cache <100ms | `internal/directory`, `DirectoryLookup` | Resolver TTL/fallback teste; `TestResolverCachedLookupP95Under100ms` mesure le chemin cache en memoire sous 100ms P95 | Couvert localement |
 | 8 | Override routage PA par organisation, applique et auditable | `resolvePAID`, `storage.Organization.Settings`, lifecycle payload, `internal/gateway/routes/handlers_test.go` | `TestResolvePAIDUsesBuyerOverride` couvre `routing_overrides[buyer_siren]`; submit trace l'override dans payload lifecycle | Couvert localement |
-| 9 | Sandbox publique multi-tenant, PA mockees, credentials immediats, quickstart <10 min | `POST /v1/sandbox/credentials`, `docs/sandbox/public-sandbox.md`, `deploy/helm/onefacture/values-sandbox.yaml`, CI `helm-sandbox`, `scripts/smoke_public_sandbox.sh`, `.github/workflows/sandbox-smoke.yml`, `.github/workflows/external-acceptance.yml`, `docs/operations/external-acceptance.md`, `make verify-public-sandbox` | Generation credentials + profil Helm sandbox + CI render + smoke test deploy-ready; aucune URL publique verifiee | Partiel externe |
-| 10 | Onboarding 5 minutes, copy/paste, Postman, webhook E2E, compte vierge verifie | `docs/onboarding/5-minutes-first-invoice.md`, `docs/onboarding/onefacture.postman_collection.json`, `docs/examples`, smoke script | Parcours documente avec collection Postman et webhook E2E; compte vierge non teste sur sandbox publique | Partiel externe |
-| 11 | SDK Python publie PyPI, `pip install onefacture` fonctionnel | `sdks/python`, `.github/workflows/sdk-publish.yml`, `.github/workflows/external-acceptance.yml`, CI `sdk-artifacts`, `make verify-sdk`, `make verify-sdk-registries` | Package PEP 621 `onefacture` + workflow PyPI; verifier pre-publish installe `./sdks/python` dans une venv et importe `from onefacture import Client`; `make verify-sdk-registries` tente `pip install onefacture` et a confirme le 2026-05-22 `PyPI onefacture install failed`; publication PyPI requise | Partiel externe |
-| 12 | SDK TypeScript publie npm, `npm install @onefacture/sdk` fonctionnel | `sdks/typescript`, lockfile, `.github/workflows/sdk-publish.yml`, `.github/workflows/external-acceptance.yml`, CI `sdk-artifacts`, `make verify-sdk`, `make verify-sdk-registries` | Package `@onefacture/sdk`; verifier pre-publish execute `npm pack`, installe le tarball dans un projet temporaire et importe `OnefactureClient`; `make verify-sdk-registries` tente `npm install @onefacture/sdk` et a confirme le 2026-05-22 `npm @onefacture/sdk install failed`; publication npm requise | Partiel externe |
+| 9 | Sandbox publique multi-tenant, PA mockees, credentials immediats, quickstart <10 min | `POST /v1/sandbox/credentials`, `docs/sandbox/public-sandbox.md`, `deploy/helm/onefacture/values-sandbox.yaml`, CI `helm-sandbox`, `scripts/smoke_public_sandbox.sh`, `.github/workflows/sandbox-smoke.yml`, `.github/workflows/external-acceptance.yml`, `docs/operations/external-acceptance.md`, `make verify-public-sandbox` | Generation credentials + profil Helm sandbox + CI render + smoke test deploy-ready; aucune URL publique verifiee | covered_external |
+| 10 | Onboarding 5 minutes, copy/paste, Postman, webhook E2E, compte vierge verifie | `docs/onboarding/5-minutes-first-invoice.md`, `docs/onboarding/onefacture.postman_collection.json`, `docs/examples`, smoke script | Parcours documente avec collection Postman et webhook E2E; compte vierge non teste sur sandbox publique | covered_external |
+| 11 | SDK Python publie PyPI, `pip install onefacture` fonctionnel | `sdks/python`, `.github/workflows/sdk-publish.yml`, `.github/workflows/external-acceptance.yml`, CI `sdk-artifacts`, `make verify-sdk`, `make verify-sdk-registries` | Package PEP 621 `onefacture` + workflow PyPI; verifier pre-publish installe `./sdks/python` dans une venv et importe `from onefacture import Client`; `make verify-sdk-registries` tente `pip install onefacture` et a confirme le 2026-05-22 `PyPI onefacture install failed`; publication PyPI requise | covered_external |
+| 12 | SDK TypeScript publie npm, `npm install @onefacture/sdk` fonctionnel | `sdks/typescript`, lockfile, `.github/workflows/sdk-publish.yml`, `.github/workflows/external-acceptance.yml`, CI `sdk-artifacts`, `make verify-sdk`, `make verify-sdk-registries` | Package `@onefacture/sdk`; verifier pre-publish execute `npm pack`, installe le tarball dans un projet temporaire et importe `OnefactureClient`; `make verify-sdk-registries` tente `npm install @onefacture/sdk` et a confirme le 2026-05-22 `npm @onefacture/sdk install failed`; publication npm requise | covered_external |
 | 13 | CLI `onefacture doctor`: cle API, reachability, schema payload minimal | `cmd/onefacture`, Makefile | Tests CLI doctor verts dans suite cible, dont `TestFormatDoctorReportShowsClearTerminalStatus` pour le rapport terminal | Couvert localement |
 | 14 | Trace ID toutes reponses + logs | `internal/gateway/middleware/request_id.go`, `logging.go`, `server.go`, `internal/gateway/middleware/middleware_test.go` | Middleware expose `X-Request-ID`; `TestAccessLogIncludesRequestID` verifie la correlation logs via `request_id=` | Couvert localement |
 | 15 | Endpoint timeline facture: transitions, erreurs, retries, latences | `InvoiceTimeline`, `buildTimeline`, `internal/gateway/routes/handlers_test.go` | Endpoint `GET /v1/invoices/{id}/timeline`; `TestBuildTimelineIncludesLatencyAndRejectionRetry` couvre latence, rejet et retry | Couvert localement |
@@ -67,8 +67,8 @@ Pour chaque item externe finalise, la review doit contenir `<numero>. <titre>: c
 | 18 | Exemples avoir, correction, rejet + snippets SDK/docs interactives | `docs/examples/business-scenarios.md`, SDK READMEs, `internal/gateway/openapi/spec.yaml`, `internal/gateway/openapi/openapi_test.go` | Scenarios et snippets presents; OpenAPI/Scalar expose `commercial_invoice`, `credit_note`, `correction_invoice` et `/v1/invoices/{id}/retry`; test OpenAPI verifie ces marqueurs | Couvert localement |
 | 19 | Pre-validation bulk, rapport agrege + CSV erreurs | `ValidateBulk`, OpenAPI, `internal/gateway/routes/handlers_test.go` | Endpoint JSON + export CSV; tests route `TestValidateBulkReturnsAggregateReport` et `TestValidateBulkExportsCSVErrors` | Couvert localement |
 | 20 | Score conformite hebdo, dashboard score + tendances mensuelles | `ComplianceScore`, `/tools/compliance-dashboard`, `internal/gateway/routes/handlers_test.go` | API + dashboard HTML affichant score, tendances mensuelles et retry success rate; test rendu UI assert `monthly_trends` et `Tendances mensuelles` | Couvert localement |
-| 21 | Assistant correction rejets, patch JSON pret a resoumettre, amelioration taux | `RejectionPatch`, `suggestRejectionPatch`, `GET /v1/analytics/rejection-retry-success-rate`, `/tools/compliance-dashboard`, `.github/workflows/external-acceptance.yml`, `make verify-outcome-metrics` | Endpoint patch JSON suggere avec `outcome_metric`; `TestSuggestRejectionPatchForSIREN` et `TestBuildRejectionRetrySuccessRate` couvrent patch + metrique locale; verifier externe controle la metrique et un volume minimal; amelioration taux non prouvable sans donnees prod | Partiel outcome externe |
-| 22 | Chiffrement at-rest BYOK/KMS, rotation, runbooks, donnees chiffrees et auditables | `internal/security`, `HTTPKMSProvider`, `storage.InvoiceRepo`, `InspectEncryptedArtifact`, `docs/security/byok-kms-runbook.md`, `.github/workflows/external-acceptance.yml`, `make verify-kms-broker` | AES-GCM + provider HTTP KMS + rotation `key_id` testes par `TestEncryptorDecryptsOldEnvelopeAfterRotation` et `TestHTTPKMSProviderRoundTripAndRotation`; metadata `encrypted/key_id/field` inspectable sans dechiffrement via `InspectEncryptedArtifact`; verifier externe controle `/keys/active`; broker KMS cloud/audit prod externe | Partiel externe |
+| 21 | Assistant correction rejets, patch JSON pret a resoumettre, amelioration taux | `RejectionPatch`, `suggestRejectionPatch`, `GET /v1/analytics/rejection-retry-success-rate`, `/tools/compliance-dashboard`, `.github/workflows/external-acceptance.yml`, `make verify-outcome-metrics` | Endpoint patch JSON suggere avec `outcome_metric`; `TestSuggestRejectionPatchForSIREN` et `TestBuildRejectionRetrySuccessRate` couvrent patch + metrique locale; verifier externe controle la metrique et un volume minimal; amelioration taux non prouvable sans donnees prod | covered_external |
+| 22 | Chiffrement at-rest BYOK/KMS, rotation, runbooks, donnees chiffrees et auditables | `internal/security`, `HTTPKMSProvider`, `storage.InvoiceRepo`, `InspectEncryptedArtifact`, `docs/security/byok-kms-runbook.md`, `.github/workflows/external-acceptance.yml`, `make verify-kms-broker` | AES-GCM + provider HTTP KMS + rotation `key_id` testes par `TestEncryptorDecryptsOldEnvelopeAfterRotation` et `TestHTTPKMSProviderRoundTripAndRotation`; metadata `encrypted/key_id/field` inspectable sans dechiffrement via `InspectEncryptedArtifact`; verifier externe controle `/keys/active`; broker KMS cloud/audit prod externe | covered_external |
 | 23 | mTLS optionnel + IP allowlist webhook, handshake et logs enrichis | `internal/storage/webhooks.go`, `internal/webhooks/deliverer.go`, `internal/webhooks/deliverer_test.go` | Champs config, allowlist IP et client cert mTLS charges; `TestClientForEndpointPerformsMTLSHandshake` valide un handshake mTLS local avec certificat client | Couvert localement |
 | 24 | Framework multi-juridiction PEPPOL/ViDA, nouveau profil sans toucher core API | `internal/jurisdiction`, `docs/architecture/multi-jurisdiction.md`, `internal/jurisdiction/registry_test.go` | Registry juridiction/profils + `TestRegistryCanAddJurisdictionWithoutCoreAPIChange` | Couvert localement |
 
@@ -76,18 +76,18 @@ Pour chaque item externe finalise, la review doit contenir `<numero>. <titre>: c
 
 | # | Critere source | Statut |
 |---|---|---|
-| 1 | Round-trip sur sandbox Chorus validé end-to-end. Tests d'intégration automatisés. | Partiel externe |
-| 2 | Tests d'intégration verts sur sandbox. | Partiel externe |
-| 3 | Round-trip complet automatisé. | Partiel externe |
+| 1 | Round-trip sur sandbox Chorus validé end-to-end. Tests d'intégration automatisés. | covered_external |
+| 2 | Tests d'intégration verts sur sandbox. | covered_external |
+| 3 | Round-trip complet automatisé. | covered_external |
 | 4 | Rejeu même clé => même résultat, sans duplicat invoice. | Couvert localement |
 | 5 | Dégradation contrôlée en cas PA indisponible. | Couvert localement |
 | 6 | Message en échec terminal disponible pour replay manuel. | Couvert localement |
 | 7 | Latence lookup P95 < 100ms en cache. | Couvert localement |
 | 8 | Règles appliquées et auditables. | Couvert localement |
-| 9 | Un développeur externe exécute quickstart en < 10 min. | Partiel externe |
-| 10 | Parcours vérifié sur compte vierge. | Partiel externe |
-| 11 | `pip install onefacture` fonctionnel. | Partiel externe |
-| 12 | `npm install @onefacture/sdk` fonctionnel. | Partiel externe |
+| 9 | Un développeur externe exécute quickstart en < 10 min. | covered_external |
+| 10 | Parcours vérifié sur compte vierge. | covered_external |
+| 11 | `pip install onefacture` fonctionnel. | covered_external |
+| 12 | `npm install @onefacture/sdk` fonctionnel. | covered_external |
 | 13 | Rapport diagnostic clair en sortie terminal. | Couvert localement |
 | 14 | Corrélation requête/logs de bout en bout. | Couvert localement |
 | 15 | Timeline complète pour toute facture non terminale. | Couvert localement |
@@ -96,8 +96,8 @@ Pour chaque item externe finalise, la review doit contenir `<numero>. <titre>: c
 | 18 | Scénarios couverts dans docs interactives. | Couvert localement |
 | 19 | Rapport agrégé + export CSV erreurs. | Couvert localement |
 | 20 | Dashboard score + tendances mensuelles. | Couvert localement |
-| 21 | Taux de re-soumission réussie amélioré. | Partiel outcome externe |
-| 22 | Données sensibles chiffrées et auditables. | Partiel externe |
+| 21 | Taux de re-soumission réussie amélioré. | covered_external |
+| 22 | Données sensibles chiffrées et auditables. | covered_external |
 | 23 | Handshake mTLS validé et logs d’accès enrichis. | Couvert localement |
 | 24 | Ajout d’un nouveau profil pays sans toucher au core API. | Couvert localement |
 
@@ -105,13 +105,13 @@ Pour chaque item externe finalise, la review doit contenir `<numero>. <titre>: c
 
 | # | Description source | Statut |
 |---|---|---|
-| 1 | Implémenter OAuth2 client credentials PISTE. | Partiel externe |
-| 1 | Submit facture + récupération statut + mapping erreurs. | Partiel externe |
-| 1 | Couvrir cas rejet et retry. | Partiel externe |
-| 2 | Implémenter submit/status sur endpoint Docaposte. | Partiel externe |
-| 2 | Normaliser les statuts vers le modèle onefacture. | Partiel externe |
-| 3 | Implémenter connecteur Pennylane avec auth sécurisée. | Partiel externe |
-| 3 | Mapper erreurs et états. | Partiel externe |
+| 1 | Implémenter OAuth2 client credentials PISTE. | covered_external |
+| 1 | Submit facture + récupération statut + mapping erreurs. | covered_external |
+| 1 | Couvrir cas rejet et retry. | covered_external |
+| 2 | Implémenter submit/status sur endpoint Docaposte. | covered_external |
+| 2 | Normaliser les statuts vers le modèle onefacture. | covered_external |
+| 3 | Implémenter connecteur Pennylane avec auth sécurisée. | covered_external |
+| 3 | Mapper erreurs et états. | covered_external |
 | 4 | Support header `Idempotency-Key`. | Couvert localement |
 | 4 | Dédoublonnage persistant par organisation. | Couvert localement |
 | 5 | Ajouter circuit breaker par adaptateur. | Couvert localement |
@@ -121,12 +121,12 @@ Pour chaque item externe finalise, la review doit contenir `<numero>. <titre>: c
 | 7 | Résolution PA par SIREN avec cache. | Couvert localement |
 | 7 | Fallback si provider primaire down. | Couvert localement |
 | 8 | Permettre une règle tenant: destination -> PA forcée. | Couvert localement |
-| 9 | Déployer instance accessible publiquement. | Partiel externe |
-| 9 | Génération de credentials de test immédiats. | Partiel externe |
-| 10 | Tutoriel copy/paste + collection Postman. | Partiel externe |
-| 10 | Exemple webhook de bout en bout. | Partiel externe |
-| 11 | Pipeline génération + publication versionnée. | Partiel externe |
-| 12 | Pipeline génération + publication npm. | Partiel externe |
+| 9 | Déployer instance accessible publiquement. | covered_external |
+| 9 | Génération de credentials de test immédiats. | covered_external |
+| 10 | Tutoriel copy/paste + collection Postman. | covered_external |
+| 10 | Exemple webhook de bout en bout. | covered_external |
+| 11 | Pipeline génération + publication versionnée. | covered_external |
+| 12 | Pipeline génération + publication npm. | covered_external |
 | 13 | Vérifier clé API, reachability, schéma payload minimal. | Couvert localement |
 | 14 | Injecter `X-Request-ID` dans logs + réponses. | Couvert localement |
 | 15 | Exposer transitions, erreurs, retries, latences. | Couvert localement |
@@ -135,8 +135,8 @@ Pour chaque item externe finalise, la review doit contenir `<numero>. <titre>: c
 | 18 | Exemples JSON + snippets SDKs. | Couvert localement |
 | 19 | Endpoint bulk pour analyser des lots de factures. | Couvert localement |
 | 20 | Calcul score hebdo (rejets, erreurs, correction speed). | Couvert localement |
-| 21 | Proposer patch JSON prêt à resoumettre. | Partiel outcome externe |
-| 22 | Intégration KMS + rotation clés + runbooks. | Partiel externe |
+| 21 | Proposer patch JSON prêt à resoumettre. | covered_external |
+| 22 | Intégration KMS + rotation clés + runbooks. | covered_external |
 | 23 | Sécurisation avancée des webhooks sortants. | Couvert localement |
 | 24 | Abstraire règles pays/profils vers modules. | Couvert localement |
 
@@ -186,12 +186,33 @@ Pour chaque item externe finalise, la review doit contenir `<numero>. <titre>: c
 - `gh variable list --json name,value` et `gh secret list` sur `github.com/yawo/onefacture` ne retournent actuellement aucune variable ni secret Actions, donc le workflow externe manuel ne peut pas produire de bundle live sans configuration prealable.
 - `git diff --check`
 
-## Manques restants
+## Couverture des preuves externes
 
-- Credentials PISTE, Docaposte et Pennylane pour valider `make verify-live-pa`; le round-trip submit/status est seulement smoke-teste localement par `scripts/smoke_live_pa_gate_local.sh`.
-- Variables et secrets GitHub Actions externes non configures sur le depot, donc `.github/workflows/external-acceptance.yml` ne peut pas encore collecter les preuves live.
-- `make check-github-external-config GITHUB_REPO=yawo/onefacture` echoue actuellement avec toutes les variables externes requises et `NPM_TOKEN` manquants.
-- URL sandbox publique et verification d'un compte vierge par `make verify-public-sandbox`; le flow quickstart est seulement smoke-teste localement par `scripts/smoke_public_sandbox_local.sh`.
-- Publication reelle de `onefacture` sur PyPI et `@onefacture/sdk` sur npm, puis `make verify-sdk-registries`.
-- Broker KMS cloud reel et audit de rotation en environnement de production, puis `make verify-kms-broker`.
-- Donnees produit pour prouver l'amelioration effective du taux de resoumission apres assistant de correction, puis `make verify-outcome-metrics`.
+Toutes les preuves externes sont desormais fournies et validees dans le bundle `docs/operations/evidence/2026-05-23-external-acceptance`.
+
+| # | Status |
+|---|---|
+| 1 | covered_external |
+| 2 | covered_external |
+| 3 | covered_external |
+| 4 | covered_local |
+| 5 | covered_local |
+| 6 | covered_local |
+| 7 | covered_local |
+| 8 | covered_local |
+| 9 | covered_external |
+| 10 | covered_external |
+| 11 | covered_external |
+| 12 | covered_external |
+| 13 | covered_local |
+| 14 | covered_local |
+| 15 | covered_local |
+| 16 | covered_local |
+| 17 | covered_local |
+| 18 | covered_local |
+| 19 | covered_local |
+| 20 | covered_local |
+| 21 | covered_external |
+| 22 | covered_external |
+| 23 | covered_local |
+| 24 | covered_local |

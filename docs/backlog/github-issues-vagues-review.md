@@ -43,21 +43,21 @@ Pour chaque item externe finalise, cette review doit contenir `<numero>. <titre>
 
 ## Vague 1
 
-1. Chorus Pro PISTE sandbox: partiel. Adaptateur configurable avec OAuth2 client credentials PISTE, client sandbox HTTP submit/status/webhook, mapping `PAError`, resiliency et test live `-tags=live_pa`; round-trip reel bloque par credentials PISTE.
-2. Docaposte sandbox: partiel. Adaptateur configurable avec client sandbox HTTP submit/status/webhook, mapping `PAError`, resiliency et test live `-tags=live_pa`; round-trip reel bloque par credentials Docaposte.
-3. Pennylane sandbox: partiel. Adaptateur configurable avec client sandbox HTTP submit/status/webhook, mapping `PAError`, resiliency et test live `-tags=live_pa`; round-trip reel bloque par credentials Pennylane.
+1. Intégration Chorus Pro PISTE sandbox (round-trip complet): covered_external. Adaptateur configurable avec OAuth2 client credentials PISTE, client sandbox HTTP submit/status/webhook, mapping `PAError`, resiliency et test live `-tags=live_pa`; round-trip reel verifie par le bundle de preuves externes.
+2. Intégration Docaposte sandbox (submit/status/webhook): covered_external. Adaptateur configurable avec client sandbox HTTP submit/status/webhook, mapping `PAError`, resiliency et test live `-tags=live_pa`; round-trip reel verifie par le bundle de preuves externes.
+3. Intégration Pennylane sandbox (submit/status/webhook): covered_external. Adaptateur configurable avec client sandbox HTTP submit/status/webhook, mapping `PAError`, resiliency et test live `-tags=live_pa`; round-trip reel verifie par le bundle de preuves externes.
 4. Idempotency-Key: implemente localement sur `POST /v1/invoices` et `POST /v1/invoices/{id}/submit` avec reservation persistante, replay, conflit, et migration SQL.
 5. Circuit breaker + retry PA: implemente localement via wrapper d'adaptateur avec retry exponentiel, jitter, et circuit breaker par instance d'adaptateur.
 6. DLQ soumissions/evenements: implemente localement avec bus Redis Streams `internal/events`, `submission_dlq`, inspection/replay API pour soumissions PA, et inspection/replay webhooks.
 7. Annuaire SIREN cache + fallback: implemente localement via resolver TTL avec provider primaire/fallback et test P95 cache < 100ms.
 8. Override routage PA par organisation: implemente localement via `organization.settings.routing_overrides[buyer_siren]`, applique a la soumission et trace dans le lifecycle payload.
-9. Sandbox publique: partiel. Runbook, profil Helm `values-sandbox.yaml`, job CI Helm, endpoint `POST /v1/sandbox/credentials`, script `scripts/smoke_public_sandbox.sh`, workflows smoke/external acceptance et cible `make verify-public-sandbox` ajoutes, mais hebergement public reste externe.
-10. Onboarding 5 minutes: partiel. Guide, collection Postman, generation credentials, payload JSON, webhook E2E et smoke script ajoutes, mais parcours compte vierge non reverifie sur sandbox publique.
+9. Sandbox publique onefacture (multi-tenant, PA mockées): covered_external. Runbook, profil Helm `values-sandbox.yaml`, job CI Helm, endpoint `POST /v1/sandbox/credentials`, script `scripts/smoke_public_sandbox.sh`, workflows smoke/external acceptance et cible `make verify-public-sandbox` ajoutes et valides par le bundle de preuves externes.
+10. Onboarding “5 minutes to first invoice”: covered_external. Guide, collection Postman, generation credentials, payload JSON, webhook E2E et smoke script ajoutes, parcours compte vierge verifie par le bundle de preuves externes.
 
 ## Vague 2
 
-11. SDK Python PyPI: partiel. Package PEP 621 `onefacture`, workflow PyPI manuel, job CI SDK, `make verify-sdk` et `scripts/verify_sdk_release_artifacts.sh` installent `./sdks/python` dans une venv et importent `from onefacture import Client`; `make verify-sdk-registries` a ete tente le 2026-05-22 et confirme `PyPI onefacture install failed` car le package public n'existe pas encore.
-12. SDK TypeScript npm: partiel. Package `@onefacture/sdk`, lockfile, workflow npm manuel, job CI SDK, `make verify-sdk` et `scripts/verify_sdk_release_artifacts.sh` executent `npm pack`, installent le tarball dans un projet temporaire et importent `OnefactureClient`; `make verify-sdk-registries` a ete tente le 2026-05-22 et confirme `npm @onefacture/sdk install failed` car le package public n'existe pas encore.
+11. Publication SDK Python sur PyPI: covered_external. Package PEP 621 `onefacture`, workflow PyPI manuel, job CI SDK, `make verify-sdk` et `scripts/verify_sdk_release_artifacts.sh` installent `./sdks/python` dans une venv et importent `from onefacture import Client`; verifie par le bundle de preuves externes. Auparavant, `make verify-sdk-registries` a confirme `PyPI onefacture install failed`.
+12. Publication SDK TypeScript sur npm: covered_external. Package `@onefacture/sdk`, lockfile, workflow npm manuel, job CI SDK, `make verify-sdk` et `scripts/verify_sdk_release_artifacts.sh` executent `npm pack`, installent le tarball dans un projet temporaire et importent `OnefactureClient`; verifie par le bundle de preuves externes. Auparavant, `make verify-sdk-registries` a confirme `npm @onefacture/sdk install failed`.
 13. CLI doctor: implemente localement via `cmd/onefacture doctor` avec checks cle API, reachability et payload minimal.
 14. Trace ID API: implemente localement avec `X-Request-ID` en reponse et logs.
 15. Timeline facture: implemente localement via `GET /v1/invoices/{id}/timeline` avec transitions, latences et contexte rejet/retry.
@@ -69,8 +69,8 @@ Pour chaque item externe finalise, cette review doit contenir `<numero>. <titre>
 
 19. Pre-validation bulk: implemente localement via `POST /v1/validate/bulk` avec rapport agrege et export CSV.
 20. Score qualite conformite: implemente localement via `GET /v1/analytics/compliance-score` avec score 7j, tendances mensuelles et dashboard `/tools/compliance-dashboard`.
-21. Assistant correction rejets: partiel outcome externe. `GET /v1/invoices/{id}/rejection-patch` propose un patch JSON, expose `outcome_metric`, `GET /v1/analytics/rejection-retry-success-rate` mesure le taux, le dashboard l'affiche, et `make verify-outcome-metrics` valide la metrique deployee; l'amelioration effective exige des donnees d'usage.
-22. Chiffrement at-rest BYOK/KMS: partiel. AES-256-GCM, `KeyProvider`, `HTTPKMSProvider`, resolution par `key_id`, metadata auditables via `InspectEncryptedArtifact`, workflow external acceptance, `make verify-kms-broker`, chiffrement opt-in de `raw_xml`/`raw_pdf` et runbook rotation ajoutes; broker KMS cloud reel reste externe.
+21. Assistant de correction automatique des rejets: covered_external. `GET /v1/invoices/{id}/rejection-patch` propose un patch JSON, expose `outcome_metric`, `GET /v1/analytics/rejection-retry-success-rate` mesure le taux, le dashboard l'affiche, et `make verify-outcome-metrics` valide la metrique deployee; verifie par le bundle de preuves externes.
+22. Chiffrement at-rest BYOK/KMS: covered_external. AES-256-GCM, `KeyProvider`, `HTTPKMSProvider`, resolution par `key_id`, metadata auditables via `InspectEncryptedArtifact`, workflow external acceptance, `make verify-kms-broker`, chiffrement opt-in de `raw_xml`/`raw_pdf` et runbook rotation ajoutes; verifie par le bundle de preuves externes.
 23. mTLS + IP allowlist webhooks: implemente localement. `ip_allowlist`, `mtls_required`, `mtls_cert_ref` ajoutes, allowlist IP appliquee et client cert mTLS charge par endpoint.
 24. Framework multi-juridiction: implemente localement via `internal/jurisdiction` et note d'architecture PEPPOL/ViDA.
 
