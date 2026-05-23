@@ -25,7 +25,7 @@ Pour les éditeurs d'ERP, les plateformes SaaS et les systèmes d'information in
 - **Complexité :** Générer des fichiers PDF/A-3 conformes avec XML embarqué (Factur-X) et les valider face à des centaines de règles métier (Schematron / AFNOR) est un défi majeur.
 - **Enfermement propriétaire (Vendor Lock-in) :** Se connecter directement à une seule PDP lie la logique de facturation de votre système à leur infrastructure spécifique.
 
-## 💡 La Solution : onefacture
+##  La Solution : onefacture
 
 **onefacture** est une API Gateway unifiée et open source qui abstrait l'intégralité de la complexité de l'écosystème de facturation électronique français.
 
@@ -33,15 +33,15 @@ Au lieu de développer des dizaines d'intégrations point-à-point, votre applic
 
 ### Fonctionnalités Clés
 
-- 🔌 **API Unifiée :** Une seule interface OpenAPI 3.1 orientée développeur pour tous vos besoins de facturation.
-- 🚦 **Routage Intelligent :** Envoyez une facture ; `onefacture` interroge automatiquement l'Annuaire national et la route vers la PDP choisie par le destinataire.
-- 🛡️ **Validation Blindée :** Un pipeline de validation intégré à 6 couches (XSD + Schematron) garantit que vos factures ne seront jamais rejetées par l'administration fiscale.
-- 📄 **Natif Factur-X :** Génération à la volée de fichiers PDF/A-3 conformes avec XML embarqué (profils MINIMUM, BASIC, EN16931, EXTENDED).
-- 🔄 **Webhooks Standardisés :** Recevez des événements de cycle de vie normalisés (ex: `invoice.submitted`, `invoice.paid`) quelles que soient les spécificités de la PDP sous-jacente.
+-  **API Unifiée :** Une seule interface OpenAPI 3.1 orientée développeur pour tous vos besoins de facturation.
+-  **Routage Intelligent :** Envoyez une facture ; `onefacture` interroge automatiquement l'Annuaire national et la route vers la PDP choisie par le destinataire.
+-  **Validation Blindée :** Un pipeline de validation intégré à 6 couches (XSD + Schematron) garantit que vos factures ne seront jamais rejetées par l'administration fiscale.
+-  **Natif Factur-X :** Génération à la volée de fichiers PDF/A-3 conformes avec XML embarqué (profils MINIMUM, BASIC, EN16931, EXTENDED).
+-  **Webhooks Standardisés :** Recevez des événements de cycle de vie normalisés (ex: `invoice.submitted`, `invoice.paid`) quelles que soient les spécificités de la PDP sous-jacente.
 
 ---
 
-## 🏗️ Architecture
+##  Architecture
 
 `onefacture` est conçu pour offrir un haut débit, une faible latence et une fiabilité à toute épreuve, en respectant les standards de connectivité **AFNOR XP Z12-013**.
 
@@ -62,7 +62,7 @@ graph LR
 
 ---
 
-## 🛣️ Feuille de route (Roadmap)
+##  Feuille de route (Roadmap)
 
 Nous sommes en plein développement actif pour respecter les échéances réglementaires de 2026.
 
@@ -77,7 +77,7 @@ Nous sommes en plein développement actif pour respecter les échéances réglem
 
 ---
 
-## 🚀 Démarrage rapide
+##  Démarrage rapide
 
 ### 1. Lancer via Docker Compose
 ```bash
@@ -119,7 +119,7 @@ curl -X POST "http://localhost:8080/v1/invoices?submit=true" \
 
 ---
 
-## 🤝 Contribuer
+##  Contribuer
 
 Les contributions sont les bienvenues ! Que ce soit pour construire un adaptateur pour une PDP spécifique, améliorer le moteur de validation, ou enrichir la documentation, votre aide est essentielle pour démocratiser la facturation électronique en France.
 
@@ -139,6 +139,6 @@ make check-external-env
 make check-github-external-config GITHUB_REPO=yawo/onefacture
 ```
 
-## 📄 Licence
+##  Licence
 
 Ce projet est sous licence **Apache 2.0** - voir le fichier `LICENSE` pour plus de détails.
