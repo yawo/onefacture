@@ -2,6 +2,8 @@ import pytest
 from fastapi.testclient import TestClient
 from main import app
 import base64
+from io import BytesIO
+from pypdf import PdfReader
 
 client = TestClient(app)
 
@@ -29,7 +31,6 @@ def test_generate_basic():
     assert pdf_bytes.startswith(b"%PDF-1.7")
 
     # Verify that the XML is extractible (real Factur-X requirement)
-    from pypdf import PdfReader
     reader = PdfReader(BytesIO(pdf_bytes))
     attachments = reader.attachments
     assert "factur-x.xml" in attachments

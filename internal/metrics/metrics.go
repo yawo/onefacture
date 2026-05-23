@@ -81,6 +81,6 @@ var (
 			Name: "onefacture_adapter_calls_total",
 			Help: "Total calls to PA adapters",
 		},
-		[]string{"pa_id", "operation", "status"},  # operation: submit, get_status, etc.
+		[]string{"pa_id", "operation", "status"}, // operation: submit, get_status, etc.
 	)
 )
