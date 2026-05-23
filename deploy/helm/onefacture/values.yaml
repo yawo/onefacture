@@ -58,6 +58,11 @@ observability:
     scrapeTimeout: 10s
     path: /metrics
 
+  prometheusRules:
+    enabled: false
+    namespace: ""
+    labels: {}
+
 podAnnotations:
   prometheus.io/scrape: "true"
   prometheus.io/port: "8080"

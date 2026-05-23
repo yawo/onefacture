@@ -17,6 +17,10 @@ func TestRegistryIncludesFranceAndPEPPOLReadyProfile(t *testing.T) {
 	eu, err := reg.Get("EU")
 	require.NoError(t, err)
 	require.Contains(t, eu.Formats, "UBL")
+
+	vida, err := reg.Get("EU-ViDA")
+	require.NoError(t, err)
+	require.Equal(t, "ViDA / EN16931 (2028+)", vida.Name)
 }
 
 func TestRegistryCanAddJurisdictionWithoutCoreAPIChange(t *testing.T) {

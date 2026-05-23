@@ -1,4 +1,6 @@
 name: Publish SDKs
+# Vague 4 #27 — Automatically publishes both SDKs when a `v*` GitHub Release is created.
+# Manual dispatch is still supported for hotfixes.
 
 on:
   workflow_dispatch:
@@ -12,13 +14,34 @@ on:
         required: true
         default: "false"
 
+  release:
+    types: [published]
+
 permissions:
-  contents: read
+  contents: write   # needed to attach artifacts to GitHub Release
   id-token: write
 
 jobs:
+  determine-publish:
+    runs-on: ubuntu-latest
+    outputs:
+      publish_python: ${{ steps.flags.outputs.python }}
+      publish_typescript: ${{ steps.flags.outputs.typescript }}
+    steps:
+      - name: Determine publish flags
+        id: flags
+        run: |
+          if [ "${{ github.event_name }}" = "release" ]; then
+            echo "python=true" >> $GITHUB_OUTPUT
+            echo "typescript=true" >> $GITHUB_OUTPUT
+          else
+            echo "python=${{ inputs.publish_python }}" >> $GITHUB_OUTPUT
+            echo "typescript=${{ inputs.publish_typescript }}" >> $GITHUB_OUTPUT
+          fi
+
   python:
-    if: ${{ inputs.publish_python == 'true' }}
+    needs: determine-publish
+    if: ${{ needs.determine-publish.outputs.publish_python == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -35,13 +58,21 @@ jobs:
         run: |
           python -m pip install --upgrade build
           python -m build
+      - name: Upload Python artifacts (for release attachment)
+        if: github.event_name == 'release'
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-sdk-dist
+          path: sdks/python/dist/*
+          retention-days: 1
       - name: Publish Python SDK
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           packages-dir: sdks/python/dist
 
   typescript:
-    if: ${{ inputs.publish_typescript == 'true' }}
+    needs: determine-publish
+    if: ${{ needs.determine-publish.outputs.publish_typescript == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -59,8 +90,44 @@ jobs:
         run: |
           npm ci
           npm run build
+      - name: Upload TypeScript artifacts (for release attachment)
+        if: github.event_name == 'release'
+        uses: actions/upload-artifact@v4
+        with:
+          name: typescript-sdk-dist
+          path: sdks/typescript/*.tgz
+          retention-days: 1
       - name: Publish TypeScript SDK
         working-directory: sdks/typescript
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: npm publish --access public
+
+  attach-to-release:
+    needs: [python, typescript]
+    if: github.event_name == 'release' && startsWith(github.event.release.tag_name, 'v')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all built artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dists
+          merge-multiple: true
+
+      - name: Generate SHA256 checksums
+        run: |
+          cd dists
+          sha256sum * > ../checksums.sha256 2>/dev/null || true
+          ls -la
+
+      - name: Attach SDKs + checksums to GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "Attaching artifacts for ${{ github.event.release.tag_name }}"
+          gh release upload "${{ github.event.release.tag_name }}" \
+            dists/* checksums.sha256 \
+            --repo ${{ github.repository }} \
+            --clobber
+        # We allow partial failure (e.g. if no new files) but log clearly
+        continue-on-error: true

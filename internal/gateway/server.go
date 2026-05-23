@@ -9,6 +9,7 @@ import (
 	chi "github.com/go-chi/chi/v5"
 	chimw "github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 
 	"github.com/yawo/onefacture/internal/adapters/registry"
 	"github.com/yawo/onefacture/internal/config"
@@ -55,6 +56,7 @@ func (s *Server) buildRouter() *chi.Mux {
 	r.Use(chimw.RealIP)
 	r.Use(chimw.Recoverer)
 	r.Use(middleware.AccessLog(s.opts.Logger))
+	r.Use(middleware.Metrics)
 	r.Use(cors.Handler(cors.Options{
 		AllowedOrigins:   []string{"*"},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
@@ -82,6 +84,7 @@ func (s *Server) buildRouter() *chi.Mux {
 	// Public endpoints.
 	r.Get("/healthz", routes.Health)
 	r.Get("/readyz", routes.Ready(s.opts.Store, s.opts.Events))
+	r.Get("/metrics", promhttp.Handler().ServeHTTP)
 	r.Get("/docs", openapi.ScalarHandler(s.opts.Config.HTTP.PublicBaseURL))
 	r.Get("/tools/compliance-dashboard", routes.ComplianceDashboardUI)
 	r.Get("/tools/webhook-inspector", routes.WebhookInspectorUI)

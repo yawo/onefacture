@@ -29,6 +29,7 @@ import (
 	"github.com/yawo/onefacture/internal/events"
 	"github.com/yawo/onefacture/internal/gateway/middleware"
 	"github.com/yawo/onefacture/internal/gateway/problem"
+	"github.com/yawo/onefacture/internal/metrics"
 	"github.com/yawo/onefacture/internal/storage"
 	"github.com/yawo/onefacture/internal/validation"
 )
@@ -319,6 +320,8 @@ func submitNow(r *http.Request, deps Dependencies, orgID, invID uuid.UUID, inv *
 	}
 	res, err := a.Submit(r.Context(), inv)
 	if err != nil {
+		metrics.PASubmissionTotal.WithLabelValues(paID, "error").Inc()
+		metrics.DLQEnqueuedTotal.WithLabelValues(paID).Inc()
 		_ = deps.Store.Submissions.EnqueueDLQ(r.Context(), orgID, invID, paID, err.Error(), map[string]any{
 			"invoice_id": invID.String(),
 			"pa_id":      paID,
@@ -329,6 +332,7 @@ func submitNow(r *http.Request, deps Dependencies, orgID, invID uuid.UUID, inv *
 		}
 		return fmt.Errorf("submit: %w", err)
 	}
+	metrics.PASubmissionTotal.WithLabelValues(paID, "accepted").Inc()
 	inv.PAID = a.Name()
 	inv.PARef = res.PARef
 	if err := deps.Store.Invoices.SetSubmissionMetadata(r.Context(), orgID, invID, inv.PAID, inv.PARef); err != nil {

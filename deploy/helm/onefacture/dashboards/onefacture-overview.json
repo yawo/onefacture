@@ -1,0 +1,58 @@
+{
+  "dashboard": {
+    "title": "onefacture - Production Overview",
+    "tags": ["onefacture", "pa", "compliance"],
+    "time": {
+      "from": "now-6h",
+      "to": "now"
+    },
+    "panels": [
+      {
+        "title": "API Requests / min",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "rate(http_requests_total{job=\"onefacture-api\"}[1m])",
+            "legendFormat": "{{method}} {{path}}"
+          }
+        ]
+      },
+      {
+        "title": "PA Submission Success Rate",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "sum(rate(onefacture_pa_submission_total{status=\"accepted\"}[5m])) / sum(rate(onefacture_pa_submission_total[5m]))"
+          }
+        ]
+      },
+      {
+        "title": "Submission Latency P95 (ms)",
+        "type": "graph",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, sum(rate(onefacture_submission_duration_seconds_bucket[5m])) by (le, pa_id))"
+          }
+        ]
+      },
+      {
+        "title": "DLQ Depth",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "onefacture_dlq_depth"
+          }
+        ]
+      },
+      {
+        "title": "Compliance Score (last 7d)",
+        "type": "gauge",
+        "targets": [
+          {
+            "expr": "onefacture_compliance_score_7d"
+          }
+        ]
+      }
+    ]
+  }
+}

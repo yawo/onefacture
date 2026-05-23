@@ -22,6 +22,8 @@ func TestNewDefault(t *testing.T) {
 	// Should have mock adapter
 	names := reg.Names()
 	require.Contains(t, names, "mock")
+	require.Contains(t, names, "cegid")
+	require.Contains(t, names, "qonto")
 }
 
 func TestRegisterAdapter(t *testing.T) {

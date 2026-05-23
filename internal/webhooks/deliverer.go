@@ -4,15 +4,11 @@ package webhooks
 import (
 	"bytes"
 	"context"
-	"crypto/hmac"
-	"crypto/sha256"
 	"crypto/tls"
-	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io"
 	"log/slog"
-	"net"
 	"net/http"
 	"net/url"
 	"os"
@@ -22,6 +18,7 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/yawo/onefacture/internal/events"
+	"github.com/yawo/onefacture/internal/metrics"
 	"github.com/yawo/onefacture/internal/storage"
 )
 
@@ -146,9 +143,11 @@ func (d *Deliverer) attempt(ctx context.Context, delivery storage.WebhookDeliver
 	}
 	defer func() { _ = resp.Body.Close() }()
 	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
+		metrics.WebhookDeliveryTotal.WithLabelValues("success").Inc()
 		_ = d.store.Webhooks.MarkDelivered(ctx, delivery.ID)
 		return
 	}
+	metrics.WebhookDeliveryTotal.WithLabelValues("failed").Inc()
 	body, _ := io.ReadAll(io.LimitReader(resp.Body, 1024))
 	_ = d.store.Webhooks.MarkFailed(ctx, delivery.ID, attempts, backoff(attempts),
 		fmt.Sprintf("status=%d body=%s", resp.StatusCode, string(body)))

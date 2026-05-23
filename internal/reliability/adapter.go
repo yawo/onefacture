@@ -10,6 +10,7 @@ import (
 
 	"github.com/yawo/onefacture/internal/adapters"
 	"github.com/yawo/onefacture/internal/core/invoice"
+	"github.com/yawo/onefacture/internal/metrics"
 )
 
 var ErrCircuitOpen = errors.New("adapter circuit breaker open")
@@ -96,12 +97,14 @@ func (a *Adapter) Submit(ctx context.Context, inv *invoice.Invoice) (*adapters.S
 		res, err := a.inner.Submit(ctx, inv)
 		a.breaker.after(err)
 		if err == nil {
+			metrics.AdapterCallsTotal.WithLabelValues(a.inner.Name(), "submit", "success").Inc()
 			return res, nil
 		}
 		if errors.Is(err, adapters.ErrNotImplemented) {
 			return nil, err
 		}
 		last = err
+		metrics.AdapterCallsTotal.WithLabelValues(a.inner.Name(), "submit", "error").Inc()
 		if i < attempts-1 {
 			if err := sleep(ctx, jitteredDelay(a.policy, i)); err != nil {
 				return nil, err

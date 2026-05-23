@@ -52,13 +52,14 @@ type errStr string
 func (e errStr) Error() string { return string(e) }
 
 type PAError struct {
-	Platform   string `json:"platform"`
-	Operation  string `json:"operation"`
-	StatusCode int    `json:"status_code"`
-	Code       string `json:"code,omitempty"`
-	Message    string `json:"message"`
-	Retryable  bool   `json:"retryable"`
-	Raw        []byte `json:"-"`
+	Platform    string `json:"platform"`
+	Operation   string `json:"operation"`
+	StatusCode  int    `json:"status_code"`
+	Code        string `json:"code,omitempty"`
+	Message     string `json:"message"`
+	Retryable   bool   `json:"retryable"`
+	Remediation string `json:"remediation,omitempty"`
+	Raw         []byte `json:"-"`
 }
 
 func (e *PAError) Error() string {

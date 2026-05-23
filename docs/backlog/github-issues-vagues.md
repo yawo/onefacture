@@ -201,20 +201,26 @@
 ### 26. Charts Helm de production + observabilité minimale (Prometheus + Grafana + OTel)
 **Labels**: `infra`, `observability`, `priority:p1`, `wave:4`
 **Description**:
-- Ajouter `values-prod.yaml` avec configuration pour HPA, PDB, network policies et dashboards de base.
+- Ajouter `values-prod.yaml` (HPA, PDB, resources, tracing) et `templates/prometheusrule.yaml` avec alertes réelles (DLQ, taux d'échec PA, latence).
+- Ajouter un dashboard Grafana de base et configurer ServiceMonitor.
 **Critères d'acceptation**:
-- `helm template -f deploy/helm/onefacture/values-prod.yaml` produit des manifests valides incluant les monitors.
+- `helm template -f deploy/helm/onefacture/values-prod.yaml` produit des manifests valides incluant ServiceMonitor et PrometheusRule.
+- Les alertes et le dashboard sont présents dans le chart.
 
 ### 27. Publication SDK automatisée sur GitHub Releases
 **Labels**: `dx`, `ci`, `sdk`, `priority:p1`, `wave:4`
 **Description**:
-- Modifier le workflow `sdk-publish.yml` pour se déclencher automatiquement sur `release` (types: published) pour les tags `v*` et attacher les artefacts.
+- Modifier le workflow `sdk-publish.yml` pour se déclencher automatiquement sur `release: published` (tags `v*`).
+- Publier les deux SDKs et attacher les artefacts buildés (wheel + tarball) à la GitHub Release.
 **Critères d'acceptation**:
-- Un tag `v0.2.0` fictif déclenche le job (vérifié par smoke).
+- Un tag `v*` déclenche le workflow, publie les SDKs et attache les artefacts à la Release.
 
 ### 28. Adaptateurs supplémentaires (Cegid, Qonto) + extension multi-juridiction
 **Labels**: `adapter`, `architecture`, `priority:p2`, `wave:4`
 **Description**:
-- Ajouter les packages `internal/adapters/cegid` et `internal/adapters/qonto` (même pattern) et enrichir le registry/jurisdiction pour ViDA/PEPPOL.
+- Ajouter les packages complets `internal/adapters/cegid` et `internal/adapters/qonto` (même pattern que Pennylane).
+- Enregistrer les adapters dans le Registry par défaut.
+- Ajouter le profil `EU-ViDA` dans le jurisdiction registry et mettre à jour les tests.
 **Critères d'acceptation**:
 - `Registry.Names()` inclut "cegid" et "qonto".
+- `go test ./internal/jurisdiction` passe avec le nouveau profil ViDA.

@@ -1,0 +1,106 @@
+{{- if .Values.observability.prometheusRules.enabled -}}
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: {{ include "onefacture.fullname" . }}-alerts
+  {{- with .Values.observability.prometheusRules.namespace }}
+  namespace: {{ . | quote }}
+  {{- end }}
+  labels:
+    {{- include "onefacture.labels" . | nindent 4 }}
+    {{- with .Values.observability.prometheusRules.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  groups:
+    - name: onefacture.pa
+      rules:
+        - alert: OnefactureHighDLQDepth
+          expr: onefacture_dlq_depth > 50
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "onefacture DLQ depth is high"
+            description: "Dead letter queue has {{ $value }} messages"
+
+        - alert: OnefactureLowPASuccessRate
+          expr: |
+            sum(rate(onefacture_pa_submission_total{status="accepted"}[5m]))
+            / sum(rate(onefacture_pa_submission_total[5m])) < 0.85
+          for: 15m
+          labels:
+            severity: critical
+          annotations:
+            summary: "PA submission success rate dropped"
+            description: "Success rate below 85% for 15 minutes"
+
+        - alert: OnefactureHighSubmissionLatency
+          expr: histogram_quantile(0.95, onefacture_submission_duration_seconds_bucket) > 30
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "High PA submission latency (P95 > 30s)"
+
+        - alert: OnefactureHighAdapterErrorRate
+          expr: |
+            sum(rate(onefacture_pa_submission_total{status=~"error|rejected"}[5m]))
+            / sum(rate(onefacture_pa_submission_total[5m])) > 0.15
+          for: 10m
+          labels:
+            severity: critical
+          annotations:
+            summary: "High PA adapter error/rejection rate"
+            description: "More than 15% of submissions to PAs are failing"
+
+        - alert: OnefactureHighAPIMemory
+          expr: |
+            container_memory_working_set_bytes{container="onefacture-api"} / 1024 / 1024 > 800
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "onefacture API high memory usage"
+            description: "API container memory > 800Mi for 5 minutes"
+
+        - alert: OnefactureHighWebhookFailureRate
+          expr: |
+            sum(rate(onefacture_webhook_delivery_total{status="failed"}[5m]))
+            / sum(rate(onefacture_webhook_delivery_total[5m])) > 0.10
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "High webhook delivery failure rate"
+            description: "More than 10% of webhooks are failing"
+
+        - alert: OnefactureLowComplianceScore7d
+          expr: onefacture_compliance_score_7d < 70
+          for: 1h
+          labels:
+            severity: critical
+          annotations:
+            summary: "Compliance score dropped below 70"
+            description: "7-day compliance score is too low"
+
+        - alert: OnefactureHighWorkerBacklog
+          expr: onefacture_worker_queue_depth > 200
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Worker queue backlog is high"
+            description: "Too many pending submissions in the worker queue"
+
+        - alert: OnefactureHighAPI5xxRate
+          expr: |
+            sum(rate(http_requests_total{status=~"5.."}[5m]))
+            / sum(rate(http_requests_total[5m])) > 0.05
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "High 5xx error rate on the API"
+            description: "More than 5% of requests are returning 5xx errors"
+{{- end -}}

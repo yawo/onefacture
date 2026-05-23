@@ -114,9 +114,10 @@ Pour chaque item externe finalise, la review doit contenir `<numero>. <titre>: c
 | 25 | Quand le sidecar est configuré, le vrai PDF/A-3 + XML embarqué est produit. | Couvert localement |
 | 25 | Le fichier commence par `%PDF-1.7` et contient les marqueurs PDF/A-3 + le XML. | Couvert localement |
 | 25 | Intégration dans le endpoint d'émission (le PDF retourné est utilisable). | Couvert localement |
-| 26 | `helm template -f deploy/helm/onefacture/values-prod.yaml` produit des manifests valides incluant les monitors. | Couvert localement |
-| 27 | Un tag `v0.2.0` fictif déclenche le job (vérifié par smoke). | Couvert localement |
-| 28 | `Registry.Names()` inclut "cegid" et "qonto". | Couvert localement |
+| 26 | `helm template -f deploy/helm/onefacture/values-prod.yaml` produit des manifests valides incluant ServiceMonitor et PrometheusRule. | Couvert localement |
+| 26 | Les alertes et le dashboard sont présents dans le chart. | Couvert localement |
+| 27 | Un tag `v*` déclenche le workflow, publie les SDKs et attache les artefacts à la Release. | Couvert localement |
+| 28 | `Registry.Names()` inclut "cegid" et "qonto". `go test ./internal/jurisdiction` passe avec le nouveau profil ViDA. | Couvert localement |
 
 ## Descriptions source couvertes
 
@@ -158,9 +159,13 @@ Pour chaque item externe finalise, la review doit contenir `<numero>. <titre>: c
 | 24 | Abstraire règles pays/profils vers modules. | Couvert localement |
 | 25 | Émettre un conteneur PDF minimal valide (%PDF-1.7 + métadonnées) afin que le pipeline d’émission soit end-to-end testable. | Couvert localement |
 | 25 | Déléguer la génération réelle PDF/A-3 + attachment du XML CII + layout visuel au sidecar Python quand `ONEFACTURE_PDF_SIDECAR_URL` est défini. | Couvert localement |
-| 26 | Ajouter `values-prod.yaml` avec configuration pour HPA, PDB, network policies et dashboards de base. | Couvert localement |
-| 27 | Modifier le workflow `sdk-publish.yml` pour se déclencher automatiquement sur `release` (types: published) pour les tags `v*` et attacher les artefacts. | Couvert localement |
-| 28 | Ajouter les packages `internal/adapters/cegid` et `internal/adapters/qonto` (même pattern) et enrichir le registry/jurisdiction pour ViDA/PEPPOL. | Couvert localement |
+| 26 | Ajouter `values-prod.yaml` (HPA, PDB, resources, tracing) et `templates/prometheusrule.yaml` avec alertes réelles (DLQ, taux d'échec PA, latence). | Couvert localement |
+| 26 | Ajouter un dashboard Grafana de base et configurer ServiceMonitor. | Couvert localement |
+| 27 | Modifier le workflow `sdk-publish.yml` pour se déclencher automatiquement sur `release: published` (tags `v*`). | Couvert localement |
+| 27 | Publier les deux SDKs et attacher les artefacts buildés (wheel + tarball) à la GitHub Release. | Couvert localement |
+| 28 | Ajouter les packages complets `internal/adapters/cegid` et `internal/adapters/qonto` (même pattern que Pennylane). | Couvert localement |
+| 28 | Enregistrer les adapters dans le Registry par défaut. | Couvert localement |
+| 28 | Ajouter le profil `EU-ViDA` dans le jurisdiction registry et mettre à jour les tests. | Couvert localement |
 
 ## Couverture des preuves externes
 

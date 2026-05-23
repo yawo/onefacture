@@ -81,9 +81,9 @@ Pour chaque item externe finalise, cette review doit contenir `<numero>. <titre>
 ## Vague 4
 
 25. Génération PDF/A-3 wire-complete: couvert localement. Conteneur minimal PDF valide produit (tests verts) ; full PDF/A-3 + embedding + layout fournis par le sidecar optionnel quand ONEFACTURE_PDF_SIDECAR_URL est défini.
-26. Helm + observabilité: couvert localement. values-sandbox + structure helm existante ; extension prod/observabilité documentée comme next step.
-27. Publication SDK automatisée: couvert localement. Workflow sdk-publish.yml présent et déclenchable ; automatisation sur release tag ajoutée comme amélioration du gate.
-28. Adaptateurs Cegid/Qonto + ViDA: couvert localement. Registry et jurisdiction extensibles ; nouveaux adapters suivent le même pattern que les existants (sandbox + live).
+26. Helm + observabilité: implémenté. values-prod.yaml + PrometheusRule (alertes DLQ, taux d'échec, latence) + dashboard Grafana + ServiceMonitor. Chart prêt pour production.
+27. Publication SDK automatisée: implémenté. Le workflow se déclenche sur release published (v*), publie les deux SDKs et attache automatiquement les artefacts buildés à la Release.
+28. Adaptateurs Cegid/Qonto + ViDA: implémenté. Packages complets créés (même pattern que Pennylane), enregistrés dans le Registry par défaut, et profil EU-ViDA ajouté au jurisdiction registry (tests verts).
 
  ## Verification locale
 

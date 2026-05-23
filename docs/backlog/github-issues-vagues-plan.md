@@ -106,9 +106,9 @@ Ce plan est le point d'ancrage avant implementation. Les preuves finales sont da
 | 23 | Ajouter mTLS optionnel et IP allowlist par endpoint webhook. | `make verify-local` |
 | 24 | Extraire profils/regles pays dans un registry multi-juridiction. | `make verify-local` |
 | 25 | Émettre conteneur PDF minimal valide + wiring sidecar pour vrai PDF/A-3 + Factur-X embedding. | `make verify-local` |
-| 26 | Étendre Helm avec values-prod, ServiceMonitor et dashboards Grafana de base. | `make verify-local` |
-| 27 | Rendre le workflow sdk-publish déclenché par release tag (v*). | `make verify-local` |
-| 28 | Ajouter adapters Cegid/Qonto et profils ViDA/PEPPOL dans le registry. | `make verify-local` |
+| 26 | Ajouter values-prod.yaml, PrometheusRule avec alertes, et dashboard Grafana. | `make verify-local` |
+| 27 | Auto-trigger sur release v* + build + publish + attachement des artefacts à la Release. | `make verify-local` |
+| 28 | Packages cegid/qonto complets + enregistrement Registry + profil EU-ViDA dans jurisdiction. | `make verify-local` |
 
 ## Ordre d'execution
 

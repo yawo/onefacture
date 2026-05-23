@@ -20,6 +20,7 @@ func NewRegistry() *Registry {
 	r := &Registry{profiles: map[string]Profile{}}
 	r.Register(Profile{CountryCode: "FR", Name: "Factur-X EN16931", Formats: []string{"FACTUR-X", "CII", "UBL"}})
 	r.Register(Profile{CountryCode: "EU", Name: "PEPPOL BIS Billing", Formats: []string{"UBL"}})
+	r.Register(Profile{CountryCode: "EU-ViDA", Name: "ViDA / EN16931 (2028+)", Formats: []string{"CII", "UBL"}})
 	return r
 }
 

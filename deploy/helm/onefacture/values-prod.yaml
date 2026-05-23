@@ -1,0 +1,82 @@
+# Production profile for onefacture (Vague 4 #26)
+# This is a starting point — tune per environment.
+
+replicaCount: 3
+
+env:
+  ONEFACTURE_ENV: production
+  ONEFACTURE_PUBLIC_BASE_URL: https://api.onefacture.io
+  ONEFACTURE_RATE_LIMIT_PER_MIN: "300"
+
+service:
+  type: ClusterIP
+  port: 80
+
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/proxy-body-size: "20m"
+  hosts:
+    - host: api.onefacture.io
+      paths: ["/"]
+
+# High availability
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 2
+
+autoscaling:
+  enabled: true
+  minReplicas: 3
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 65
+
+observability:
+  metrics:
+    enabled: true
+    path: /metrics
+  tracing:
+    enabled: true
+    endpoint: "http://tempo:4317"
+    serviceName: onefacture-api
+  serviceMonitor:
+    enabled: true
+    namespace: monitoring
+    labels:
+      release: prometheus
+    interval: 15s
+    scrapeTimeout: 10s
+    path: /metrics
+
+  prometheusRules:
+    enabled: true
+    namespace: monitoring
+    labels:
+      release: prometheus
+
+resources:
+  api:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+  sidecar:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 768Mi
+
+# Production security
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  fsGroup: 2000
+
+networkPolicy:
+  enabled: true

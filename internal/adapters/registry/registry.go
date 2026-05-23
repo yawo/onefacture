@@ -7,10 +7,12 @@ import (
 	"sync"
 
 	"github.com/yawo/onefacture/internal/adapters"
+	"github.com/yawo/onefacture/internal/adapters/cegid"
 	"github.com/yawo/onefacture/internal/adapters/chorus"
 	"github.com/yawo/onefacture/internal/adapters/docaposte"
 	"github.com/yawo/onefacture/internal/adapters/mock"
 	"github.com/yawo/onefacture/internal/adapters/pennylane"
+	"github.com/yawo/onefacture/internal/adapters/qonto"
 	"github.com/yawo/onefacture/internal/reliability"
 )
 
@@ -31,6 +33,8 @@ func NewDefault(logger *slog.Logger) *Registry {
 	r.Register(reliability.WrapAdapter(chorus.New()))
 	r.Register(reliability.WrapAdapter(pennylane.New()))
 	r.Register(reliability.WrapAdapter(docaposte.New()))
+	r.Register(reliability.WrapAdapter(cegid.New()))
+	r.Register(reliability.WrapAdapter(qonto.New()))
 	return r
 }
 
