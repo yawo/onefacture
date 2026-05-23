@@ -39,6 +39,9 @@ func (a *Adapter) Submit(ctx context.Context, inv *invoice.Invoice) (*adapters.S
 	if err != nil {
 		return nil, a.mapCegidError("submit", err)
 	}
+	if res != nil {
+		res.Status = invoice.Status(NormalizeLifecycleStatus(string(res.Status)))
+	}
 	return res, nil
 }
 

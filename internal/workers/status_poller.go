@@ -11,6 +11,7 @@ import (
 	"github.com/yawo/onefacture/internal/adapters/registry"
 	"github.com/yawo/onefacture/internal/core/invoice"
 	"github.com/yawo/onefacture/internal/events"
+	"github.com/yawo/onefacture/internal/metrics"
 	"github.com/yawo/onefacture/internal/storage"
 )
 
@@ -39,6 +40,7 @@ func (p *StatusPoller) Run(ctx context.Context) {
 		case <-ctx.Done():
 			return
 		case <-ticker.C:
+			metrics.StatusPollsTotal.Inc()
 			p.tick(ctx)
 		}
 	}

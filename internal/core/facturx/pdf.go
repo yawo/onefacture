@@ -40,11 +40,13 @@ func PackagePDFA3(inv *invoice.Invoice, xml []byte) ([]byte, error) {
 }
 
 type pdfSidecarRequest struct {
-	InvoiceNumber string `json:"invoice_number"`
-	Profile       string `json:"profile"`
-	XMLBase64     string `json:"xml_base64"`
-	SellerName    string `json:"seller_name"`
-	BuyerName     string `json:"buyer_name"`
+	InvoiceNumber string  `json:"invoice_number"`
+	Profile       string  `json:"profile"`
+	XMLBase64     string  `json:"xml_base64"`
+	SellerName    string  `json:"seller_name"`
+	BuyerName     string  `json:"buyer_name"`
+	TotalHT       float64 `json:"total_ht,omitempty"`
+	TotalTTC      float64 `json:"total_ttc,omitempty"`
 }
 
 type pdfSidecarResponse struct {
@@ -60,6 +62,8 @@ func callPDFSidecar(baseURL string, inv *invoice.Invoice, xml []byte) ([]byte, e
 		XMLBase64:     base64.StdEncoding.EncodeToString(xml),
 		SellerName:    inv.Seller.Name,
 		BuyerName:     inv.Buyer.Name,
+		TotalHT:       inv.Totals.TaxExclusiveAmount,
+		TotalTTC:      inv.Totals.TaxInclusiveAmount,
 	}
 
 	body, _ := json.Marshal(req)

@@ -83,4 +83,11 @@ var (
 		},
 		[]string{"pa_id", "operation", "status"}, // operation: submit, get_status, etc.
 	)
+
+	StatusPollsTotal = promauto.NewCounter(
+		prometheus.CounterOpts{
+			Name: "onefacture_status_polls_total",
+			Help: "Total status poll ticks by the worker",
+		},
+	)
 )

@@ -14,6 +14,8 @@ class GeneratePDFRequest(BaseModel):
     xml_base64: str
     seller_name: str = "Seller"
     buyer_name: str = "Buyer"
+    total_ht: float = 0.0
+    total_ttc: float = 0.0
 
 @app.post("/generate")
 async def generate_facturx_pdf(req: GeneratePDFRequest):
@@ -38,7 +40,7 @@ async def generate_facturx_pdf(req: GeneratePDFRequest):
         c.setFont("Helvetica", 10)
         c.drawString(50, height - 190, "1. Prestation de service ................ 1 200,00 €")
         c.drawString(50, height - 205, "2. Frais de dossier ......................  80,00 €")
-        c.drawString(50, height - 230, "Total HT: 1 280,00 € | TVA 20%: 256,00 € | Total TTC: 1 536,00 €")
+        c.drawString(50, height - 230, f"Total HT: {req.total_ht:.2f} € | Total TTC: {req.total_ttc:.2f} €")
 
         c.drawString(50, height - 270, "[Factur-X XML attaché - généré par sidecar]")
 

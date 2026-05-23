@@ -10,6 +10,8 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+
+	"github.com/yawo/onefacture/internal/metrics"
 )
 
 type SubmissionDLQEntry struct {
@@ -36,6 +38,8 @@ VALUES ($1,$2,$3,$4,$5)`
 	if _, err := r.pool.Exec(ctx, q, orgID, invoiceID, paID, errMsg, raw); err != nil {
 		return fmt.Errorf("insert submission dlq: %w", err)
 	}
+	metrics.DLQDepth.Add(1)
+	metrics.DLQEnqueuedTotal.WithLabelValues(paID).Inc()
 	return nil
 }
 
@@ -90,5 +94,6 @@ WHERE organization_id = $1 AND id = $2`
 	if tag.RowsAffected() == 0 {
 		return ErrNotFound
 	}
+	metrics.DLQDepth.Add(-1)
 	return nil
 }
