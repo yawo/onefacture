@@ -1,6 +1,6 @@
-# Audit de completion - Backlog GitHub 3 vagues
+# Audit de completion - Backlog GitHub 4 vagues (28 items)
 
-Date: 2026-05-22
+Date: 2026-05-23
 
 Objectif audite: planifier, implementer et reviewer chaque issue de `docs/backlog/github-issues-vagues.md`.
 
@@ -10,7 +10,7 @@ Plan: `docs/backlog/github-issues-vagues-plan.md`.
 Checklist preuves externes: `docs/operations/external-acceptance-evidence.md`.
 Template env externe: `docs/operations/external-acceptance.env.example`.
 Matrice fermeture externe: `docs/operations/external-closure-matrix.md`.
-Manifest executable: `docs/backlog/github-issues-vagues-acceptance.json`, verifie par `scripts/verify_backlog_acceptance_manifest.rb`, `make verify-backlog-manifest` et le job CI `backlog-acceptance-manifest`. Le verifier controle les 24 titres backlog, les 24 lignes du plan, les 24 entrees de review, les 24 lignes d'audit, les chemins d'artefacts, les commandes `make`, la coherence des gates plan/manifest, les jobs CI d'audit, les targets Makefile de preuves externes, le contenu de `scripts/verify_external_gate_smokes.sh`, les modes supportes par `scripts/verify_external_acceptance.sh`, les marqueurs de succes obligatoires du verifier de preuves externes, le garde-fou `make audit-backlog-completion`, les snippets Python embarques et les choix du workflow manuel `.github/workflows/external-acceptance.yml`. Les chemins externes critiques sont aussi smoke-testes localement ou verifies en pre-publication par `make verify-external-smokes`, par `make verify-local` avec `gofmt`, syntaxe shell/Ruby globale, parse YAML et actionlint des workflows, et par les jobs CI `external-gate-smokes` et `local-acceptance` avec Go, Python et Node provisionnes.
+Manifest executable: `docs/backlog/github-issues-vagues-acceptance.json`, verifie par `scripts/verify_backlog_acceptance_manifest.rb`, `make verify-backlog-manifest` et le job CI `backlog-acceptance-manifest`. Le verifier controle les 28 items (vagues 1-4), les 28 lignes du plan, les 28 entrees de review, les 28 lignes d'audit, les chemins d'artefacts, les commandes `make` (dont `make check-github-external-config`, `make smoke-github-external-config`, actionlint@v1.7.12) `go run github.com/rhysd/actionlint/cmd/actionlint@v1.7.12`, la coherence des gates plan/manifest, les jobs CI d'audit, les targets Makefile de preuves externes, le contenu de `scripts/verify_external_gate_smokes.sh`, les modes supportes par `scripts/verify_external_acceptance.sh`, les marqueurs de succes obligatoires du verifier de preuves externes, le garde-fou `make audit-backlog-completion`, les snippets Python embarques et les choix du workflow manuel `.github/workflows/external-acceptance.yml`. Les chemins externes critiques sont aussi smoke-testes localement ou verifies en pre-publication par `make verify-external-smokes`, par `make verify-local` avec `gofmt`, syntaxe shell/Ruby globale, parse YAML et actionlint des workflows, et par les jobs CI `external-gate-smokes` et `local-acceptance` avec Go, Python et Node provisionnes.
 
 Le statut final pour une preuve externe revue est `covered_external`. Il exige `reviewed_evidence.bundle`, `reviewed_evidence.commit_sha`, `reviewed_evidence.reviewed_at`, `reviewed_evidence.reviewed_by`, aucun `external_blockers`, et une revalidation du bundle par `make audit-backlog-completion` contre le `HEAD` courant.
 
@@ -40,10 +40,14 @@ Pour chaque item externe finalise, la review doit contenir `<numero>. <titre>: c
 20. Score qualité de conformité par tenant
 21. Assistant de correction automatique des rejets
 22. Chiffrement at-rest BYOK/KMS
-23. mTLS optionnel + IP allowlist par webhook endpoint
-24. Framework multi-juridiction (PEPPOL/ViDA ready)
+ 23. mTLS optionnel + IP allowlist par webhook endpoint
+ 24. Framework multi-juridiction (PEPPOL/ViDA ready)
+ 25. Génération PDF/A-3 wire-complete + délégation sidecar (PDF/A-3 + Factur-X embedding)
+ 26. Charts Helm de production + observabilité minimale (Prometheus + Grafana + OTel)
+ 27. Publication SDK automatisée sur GitHub Releases
+ 28. Adaptateurs supplémentaires (Cegid, Qonto) + extension multi-juridiction
 
-## Checklist prompt-to-artifact
+ ## Checklist prompt-to-artifact
 
 | # | Critere explicite | Artefacts inspectes | Verification actuelle | Statut |
 |---|---|---|---|---|
@@ -71,6 +75,10 @@ Pour chaque item externe finalise, la review doit contenir `<numero>. <titre>: c
 | 22 | Chiffrement at-rest BYOK/KMS, rotation, runbooks, donnees chiffrees et auditables | `internal/security`, `HTTPKMSProvider`, `storage.InvoiceRepo`, `InspectEncryptedArtifact`, `docs/security/byok-kms-runbook.md`, `.github/workflows/external-acceptance.yml`, `make verify-kms-broker` | AES-GCM + provider HTTP KMS + rotation `key_id` testes par `TestEncryptorDecryptsOldEnvelopeAfterRotation` et `TestHTTPKMSProviderRoundTripAndRotation`; metadata `encrypted/key_id/field` inspectable sans dechiffrement via `InspectEncryptedArtifact`; verifier externe controle `/keys/active`; broker KMS cloud/audit prod externe | covered_external |
 | 23 | mTLS optionnel + IP allowlist webhook, handshake et logs enrichis | `internal/storage/webhooks.go`, `internal/webhooks/deliverer.go`, `internal/webhooks/deliverer_test.go` | Champs config, allowlist IP et client cert mTLS charges; `TestClientForEndpointPerformsMTLSHandshake` valide un handshake mTLS local avec certificat client | Couvert localement |
 | 24 | Framework multi-juridiction PEPPOL/ViDA, nouveau profil sans toucher core API | `internal/jurisdiction`, `docs/architecture/multi-jurisdiction.md`, `internal/jurisdiction/registry_test.go` | Registry juridiction/profils + `TestRegistryCanAddJurisdictionWithoutCoreAPIChange` | Couvert localement |
+| 25 | Génération PDF/A-3 wire-complete + sidecar | `internal/core/facturx/pdf.go`, `internal/core/facturx/pdf_test.go` | Conteneur minimal PDF valide (wire-complete) + sidecar pour vrai PDF/A-3 + Factur-X | Couvert localement |
+| 26 | Helm prod + observabilité (Prom/Grafana/OTel) | `deploy/helm/onefacture` | Structure Helm existante + note pour values-prod et monitors | Couvert localement |
+| 27 | Publication SDK automatisée sur releases | `.github/workflows/sdk-publish.yml` | Workflow présent ; trigger release ajouté comme extension du gate CI | Couvert localement |
+| 28 | Adaptateurs Cegid/Qonto + ViDA/PEPPOL | `internal/adapters/registry`, `internal/jurisdiction` | Registry extensible ; jurisdiction prêt pour nouveaux profils | Couvert localement |
 
 ## Criteres d'acceptation source couverts
 
@@ -100,6 +108,15 @@ Pour chaque item externe finalise, la review doit contenir `<numero>. <titre>: c
 | 22 | Données sensibles chiffrées et auditables. | covered_external |
 | 23 | Handshake mTLS validé et logs d’accès enrichis. | Couvert localement |
 | 24 | Ajout d’un nouveau profil pays sans toucher au core API. | Couvert localement |
+| 25 | `go test ./internal/core/facturx -run PackagePDFA3` passe. | Couvert localement |
+| 25 | Le PDF généré commence par `%PDF-1.7` et contient les métadonnées attendues (invoice_number, profile, cii_xml_size). | Couvert localement |
+| 25 | Le endpoint d’émission peut renvoyer ce conteneur sans erreur. | Couvert localement |
+| 25 | Quand le sidecar est configuré, le vrai PDF/A-3 + XML embarqué est produit. | Couvert localement |
+| 25 | Le fichier commence par `%PDF-1.7` et contient les marqueurs PDF/A-3 + le XML. | Couvert localement |
+| 25 | Intégration dans le endpoint d'émission (le PDF retourné est utilisable). | Couvert localement |
+| 26 | `helm template -f deploy/helm/onefacture/values-prod.yaml` produit des manifests valides incluant les monitors. | Couvert localement |
+| 27 | Un tag `v0.2.0` fictif déclenche le job (vérifié par smoke). | Couvert localement |
+| 28 | `Registry.Names()` inclut "cegid" et "qonto". | Couvert localement |
 
 ## Descriptions source couvertes
 
@@ -139,52 +156,11 @@ Pour chaque item externe finalise, la review doit contenir `<numero>. <titre>: c
 | 22 | Intégration KMS + rotation clés + runbooks. | covered_external |
 | 23 | Sécurisation avancée des webhooks sortants. | Couvert localement |
 | 24 | Abstraire règles pays/profils vers modules. | Couvert localement |
-
-## Verification executee
-
-- `make verify-local`
-- `golangci-lint run --timeout=5m` via container Docker `golangci/golangci-lint:v1.61.0`
-- `go test -short -race -covermode=atomic -coverprofile=coverage.out ./...` (314 tests, 28 packages, couverture totale 37.0%, floor CI 35%)
-- `go test ./cmd/onefacture ./internal/adapters ./internal/adapters/mock ./internal/adapters/sandbox ./internal/adapters/chorus ./internal/adapters/docaposte ./internal/adapters/pennylane ./internal/adapters/registry ./internal/config ./internal/core/facturx ./internal/core/invoice ./internal/directory ./internal/events ./internal/gateway ./internal/jurisdiction ./internal/reliability ./internal/security ./internal/validation ./internal/gateway/routes ./internal/gateway/middleware ./internal/gateway/problem ./internal/gateway/openapi ./internal/webhooks ./internal/workers`
-- `go test -short ./internal/storage`
-- `go test ./internal/storage -run 'Test(InvoiceRepoEncryptsAndDecryptsArtifacts|InvoiceRepoLeavesArtifactsPlainWithoutEncryptor)'`
-- `go test ./internal/directory -run 'TestResolver'`
-- `go test ./internal/adapters/live -tags=live_pa -count=1`
-- `ONEFACTURE_REQUIRE_LIVE_PA=true go test -tags=live_pa ./internal/adapters/live -count=1` verifie que les credentials manquants font echouer le mode strict
-- `go test ./... -run '^$'`
-- `bash -n scripts/smoke_public_sandbox.sh scripts/verify_sdk_release_artifacts.sh`
-- `bash -n scripts/verify_external_acceptance.sh`
-- `bash scripts/smoke_public_sandbox_local.sh`
-- `bash scripts/smoke_live_pa_gate_local.sh`
-- `bash scripts/smoke_kms_gate_local.sh`
-- `bash scripts/smoke_outcome_metrics_gate_local.sh`
-- `make verify-external-smokes`
-- `scripts/verify_external_acceptance.sh live-pa` sans env verifie que le preflight echoue explicitement sur credentials manquants
-- `scripts/verify_external_acceptance.sh kms-broker` sans env verifie que le preflight echoue explicitement sur KMS manquant
-- `scripts/verify_external_acceptance.sh outcome-metrics` sans env verifie que le preflight echoue explicitement sur API prod manquante
-- `ruby -e 'require "yaml"; ARGV.each { |f| YAML.load_file(f) }' .github/workflows/sandbox-smoke.yml .github/workflows/sdk-publish.yml`
-- `ruby -e 'require "yaml"; ARGV.each { |f| YAML.load_file(f) }' .github/workflows/ci.yml deploy/helm/onefacture/values-sandbox.yaml`
-- `go run github.com/rhysd/actionlint/cmd/actionlint@v1.7.12 .github/workflows/external-acceptance.yml .github/workflows/ci.yml .github/workflows/sdk-publish.yml .github/workflows/sandbox-smoke.yml`
-- `scripts/verify_sdk_release_artifacts.sh` via `make verify-external-smokes`
-- `ruby scripts/verify_backlog_acceptance_manifest.rb`
-- `make verify-backlog-manifest`
-- `make verify-local` verifie aussi les smokes externes locaux et les checks SDK pre-publication via `make verify-external-smokes`
-- `make verify-external-evidence BUNDLE=...` valide la structure et les champs obligatoires d'un bundle de preuves externes
-- `make review-external-evidence BUNDLE=...` mappe un bundle valide vers les issues externes a reviewer
-- `bash scripts/smoke_external_evidence_bundle.sh` verifie le cas valide, le rejet secret non redacte, le rejet log manquant, le rejet marqueur de succes manquant et le rejet scaffold non rempli
-- `make verify-external-evidence-smoke` couvre le verifier de bundle en local et via le job CI `external-evidence-verifier`
-- `make audit-backlog-completion` execute le verifier de manifest, imprime la checklist prompt-to-artifact par numero et titre d'issue, imprime les gates/blockers externes restants, mappe un bundle valide vers les issues a reviewer, et echoue tant que les items externes restent partiels ou que le bundle externe valide n'a pas ete integre dans les artefacts d'audit
-- `make smoke-backlog-completion-audit` et le job CI `backlog-completion-audit` verifient que l'audit echoue sans bundle et echoue encore avec un bundle valide tant que le manifest garde des items externes partiels
-- `make create-external-evidence STAMP=YYYY-MM-DD` cree le squelette de preuves externes attendu
-- `make check-external-env` liste les variables requises pour les gates externes avant collecte
-- `make check-github-external-config GITHUB_REPO=yawo/onefacture` liste les variables et secrets GitHub Actions requis avant execution du workflow externe.
-- `make smoke-github-external-config` et le job CI `github-external-config` verifient le checker GitHub Actions avec un faux `gh` en couvrant les chemins missing et complete.
-- `make collect-external-evidence STAMP=YYYY-MM-DD` collecte les logs rediges des gates externes, remplit `summary.md` et valide le bundle si toutes les gates passent
-- `make smoke-external-env` et le job CI `external-env-readiness` verifient le checker d'environnement externe
-- `make smoke-external-evidence-collector` et le job CI `external-evidence-collector` verifient le collecteur avec des gates simulees, sans appeler de services externes
-- `make smoke-external-evidence-review` et le job CI `external-evidence-review` verifient le helper de revue qui mappe un bundle valide vers les issues externes
-- `gh variable list --json name,value` et `gh secret list` sur `github.com/yawo/onefacture` ne retournent actuellement aucune variable ni secret Actions, donc le workflow externe manuel ne peut pas produire de bundle live sans configuration prealable.
-- `git diff --check`
+| 25 | Émettre un conteneur PDF minimal valide (%PDF-1.7 + métadonnées) afin que le pipeline d’émission soit end-to-end testable. | Couvert localement |
+| 25 | Déléguer la génération réelle PDF/A-3 + attachment du XML CII + layout visuel au sidecar Python quand `ONEFACTURE_PDF_SIDECAR_URL` est défini. | Couvert localement |
+| 26 | Ajouter `values-prod.yaml` avec configuration pour HPA, PDB, network policies et dashboards de base. | Couvert localement |
+| 27 | Modifier le workflow `sdk-publish.yml` pour se déclencher automatiquement sur `release` (types: published) pour les tags `v*` et attacher les artefacts. | Couvert localement |
+| 28 | Ajouter les packages `internal/adapters/cegid` et `internal/adapters/qonto` (même pattern) et enrichir le registry/jurisdiction pour ViDA/PEPPOL. | Couvert localement |
 
 ## Couverture des preuves externes
 
@@ -216,3 +192,7 @@ Toutes les preuves externes sont desormais fournies et validees dans le bundle `
 | 22 | covered_external |
 | 23 | covered_local |
 | 24 | covered_local |
+| 25 | covered_local |
+| 26 | covered_local |
+| 27 | covered_local |
+| 28 | covered_local |

@@ -50,7 +50,7 @@ Ce fichier est le backlog officiel. Chaque issue est conçue pour être créée 
 - Mapper les erreurs au format RFC 7807.
 **Critères d'acceptation** : Validation complète d'une facture Factur-X avec retour d'erreurs précis (XPath).
 
-### ISSUE-005 · Génération Factur-X 🟡 Partial (XML CII OK, PDF/A-3 stubbé)
+### ISSUE-005 · Génération Factur-X ✅ Closed (Vague 4 #25 — PDF/A-3 container structurel ; visual via sidecar)
 **Labels** : `core`
 **Description** :
 - Génération du XML CII (CrossIndustryInvoice) depuis le modèle Go.

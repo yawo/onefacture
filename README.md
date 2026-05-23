@@ -71,7 +71,7 @@ Nous sommes en plein développement actif pour respecter les échéances réglem
 - [x] **Phase 2 :** API Gateway (CRUD Factures, définitions OpenAPI 3.1, Scalar docs).
 - [x] **Phase 3 :** Adaptateurs PA — interface, registre et mock fonctionnel ; Chorus/Pennylane/Docaposte à brancher sur leurs sandboxes.
 - [x] **Phase 4 :** Workers Asynchrones (Redis Streams, webhooks signés HMAC, polling lifecycle).
-- [ ] **Phase 5 :** Expérience Développeur (Sandbox publique, SDKs Python/TS — scaffolding en place).
+- [x] **Phase 5 :** Expérience Développeur (Vagues 1-4 complétées : sandbox, SDKs, PDF/A-3, Helm/obs, publication auto).
 
 *(Consultez [ISSUES.md](./ISSUES.md) pour le backlog détaillé, [les exemples metier](./docs/examples/business-scenarios.md) pour les cas avoir/correction/rejet, et [les gates d'acceptance externes](./docs/operations/external-acceptance.md) pour les validations qui exigent des services reels).*
 

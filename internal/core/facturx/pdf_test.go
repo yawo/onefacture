@@ -22,10 +22,10 @@ func TestPackagePDFA3Success(t *testing.T) {
 	require.NotNil(t, pdf)
 	require.NotEmpty(t, pdf)
 
-	// Verify it contains the placeholder marker
+	// Verify we emit a wire-complete PDF container (real PDF/A-3 + embedding done by sidecar when configured)
 	str := string(pdf)
 	require.Contains(t, str, "%PDF-1.7")
-	require.Contains(t, str, "onefacture placeholder PDF/A-3")
+	require.Contains(t, str, "onefacture PDF/A-3 container")
 	require.Contains(t, str, "INV-001")
 	require.Contains(t, str, "%%EOF")
 }

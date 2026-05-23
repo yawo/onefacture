@@ -1,6 +1,6 @@
 # External acceptance evidence checklist
 
-Date: 2026-05-22
+Date: 2026-05-23
 
 This checklist defines the proof bundle required before marking the external acceptance criteria in `docs/backlog/github-issues-vagues.md` complete. Local smokes are useful regression evidence, but they do not replace these live proofs.
 

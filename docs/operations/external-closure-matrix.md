@@ -1,6 +1,6 @@
 # External closure matrix
 
-Date: 2026-05-22
+Date: 2026-05-23
 
 This matrix is the issue-by-issue handoff for the acceptance criteria that cannot be closed by local implementation alone. Use it after `make verify-local` is green.
 

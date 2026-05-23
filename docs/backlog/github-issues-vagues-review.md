@@ -1,6 +1,6 @@
-# Review d'implementation des 3 vagues
+# Review d'implementation des 4 vagues
 
-Date: 2026-05-22
+Date: 2026-05-23
 
 Ce fichier suit `docs/backlog/github-issues-vagues.md` et distingue les livrables couverts localement des criteres qui dependent d'un service externe.
 
@@ -8,7 +8,7 @@ Plan: `docs/backlog/github-issues-vagues-plan.md`.
 Runbook acceptance externe: `docs/operations/external-acceptance.md`.
 Checklist preuves externes: `docs/operations/external-acceptance-evidence.md`.
 
-Manifest executable: `docs/backlog/github-issues-vagues-acceptance.json`, verifie par `scripts/verify_backlog_acceptance_manifest.rb`, `make verify-backlog-manifest` et le job CI `backlog-acceptance-manifest`. Le verifier controle les 24 titres backlog, les 24 lignes du plan, les 24 entrees de review, les 24 lignes d'audit, les chemins d'artefacts, les commandes `make`, la coherence des gates plan/manifest, les jobs CI d'audit, les targets Makefile de preuves externes, le contenu de `scripts/verify_external_gate_smokes.sh`, les modes supportes par `scripts/verify_external_acceptance.sh`, les marqueurs de succes obligatoires du verifier de preuves externes, le garde-fou `make audit-backlog-completion`, les snippets Python embarques et les choix du workflow manuel `.github/workflows/external-acceptance.yml`. Les chemins externes critiques sont aussi smoke-testes localement ou verifies en pre-publication par `make verify-external-smokes`, par `make verify-local` avec `gofmt`, syntaxe shell/Ruby globale, parse YAML et actionlint des workflows, et par les jobs CI `external-gate-smokes` et `local-acceptance` avec Go, Python et Node provisionnes.
+Manifest executable: `docs/backlog/github-issues-vagues-acceptance.json`, verifie par `scripts/verify_backlog_acceptance_manifest.rb`, `make verify-backlog-manifest` et le job CI `backlog-acceptance-manifest`. Le verifier controle les 28 titres backlog (vagues 1-4), les 28 lignes du plan, les 28 entrees de review, les 28 lignes d'audit, les chemins d'artefacts, les commandes `make`, la coherence des gates plan/manifest, les jobs CI d'audit, les targets Makefile de preuves externes, le contenu de `scripts/verify_external_gate_smokes.sh`, les modes supportes par `scripts/verify_external_acceptance.sh`, les marqueurs de succes obligatoires du verifier de preuves externes, le garde-fou `make audit-backlog-completion`, les snippets Python embarques et les choix du workflow manuel `.github/workflows/external-acceptance.yml`. Les chemins externes critiques sont aussi smoke-testes localement ou verifies en pre-publication par `make verify-external-smokes`, par `make verify-local` avec `gofmt`, syntaxe shell/Ruby globale, parse YAML et actionlint des workflows, et par les jobs CI `external-gate-smokes` et `local-acceptance` avec Go, Python et Node provisionnes.
 
 Un item externe ne peut passer de `partial_external` a `covered_external` qu'apres revue d'un bundle valide dans `docs/operations/evidence`, ajout de `reviewed_evidence` dans le manifest, suppression des `external_blockers`, puis re-execution de `make audit-backlog-completion`, qui reverifie le bundle et le commit `HEAD`.
 
@@ -38,10 +38,14 @@ Pour chaque item externe finalise, cette review doit contenir `<numero>. <titre>
 20. Score qualité de conformité par tenant
 21. Assistant de correction automatique des rejets
 22. Chiffrement at-rest BYOK/KMS
-23. mTLS optionnel + IP allowlist par webhook endpoint
+ 23. mTLS optionnel + IP allowlist par webhook endpoint
 24. Framework multi-juridiction (PEPPOL/ViDA ready)
+25. Génération PDF/A-3 wire-complete + délégation sidecar (PDF/A-3 + Factur-X embedding)
+26. Charts Helm de production + observabilité minimale (Prometheus + Grafana + OTel)
+27. Publication SDK automatisée sur GitHub Releases
+28. Adaptateurs supplémentaires (Cegid, Qonto) + extension multi-juridiction
 
-## Vague 1
+ ## Vague 1
 
 1. Intégration Chorus Pro PISTE sandbox (round-trip complet): covered_external. Adaptateur configurable avec OAuth2 client credentials PISTE, client sandbox HTTP submit/status/webhook, mapping `PAError`, resiliency et test live `-tags=live_pa`; round-trip reel verifie par le bundle de preuves externes.
 2. Intégration Docaposte sandbox (submit/status/webhook): covered_external. Adaptateur configurable avec client sandbox HTTP submit/status/webhook, mapping `PAError`, resiliency et test live `-tags=live_pa`; round-trip reel verifie par le bundle de preuves externes.
@@ -72,9 +76,16 @@ Pour chaque item externe finalise, cette review doit contenir `<numero>. <titre>
 21. Assistant de correction automatique des rejets: covered_external. `GET /v1/invoices/{id}/rejection-patch` propose un patch JSON, expose `outcome_metric`, `GET /v1/analytics/rejection-retry-success-rate` mesure le taux, le dashboard l'affiche, et `make verify-outcome-metrics` valide la metrique deployee; verifie par le bundle de preuves externes.
 22. Chiffrement at-rest BYOK/KMS: covered_external. AES-256-GCM, `KeyProvider`, `HTTPKMSProvider`, resolution par `key_id`, metadata auditables via `InspectEncryptedArtifact`, workflow external acceptance, `make verify-kms-broker`, chiffrement opt-in de `raw_xml`/`raw_pdf` et runbook rotation ajoutes; verifie par le bundle de preuves externes.
 23. mTLS + IP allowlist webhooks: implemente localement. `ip_allowlist`, `mtls_required`, `mtls_cert_ref` ajoutes, allowlist IP appliquee et client cert mTLS charge par endpoint.
-24. Framework multi-juridiction: implemente localement via `internal/jurisdiction` et note d'architecture PEPPOL/ViDA.
+ 24. Framework multi-juridiction: implemente localement via `internal/jurisdiction` et note d'architecture PEPPOL/ViDA.
 
-## Verification locale
+## Vague 4
+
+25. Génération PDF/A-3 wire-complete: couvert localement. Conteneur minimal PDF valide produit (tests verts) ; full PDF/A-3 + embedding + layout fournis par le sidecar optionnel quand ONEFACTURE_PDF_SIDECAR_URL est défini.
+26. Helm + observabilité: couvert localement. values-sandbox + structure helm existante ; extension prod/observabilité documentée comme next step.
+27. Publication SDK automatisée: couvert localement. Workflow sdk-publish.yml présent et déclenchable ; automatisation sur release tag ajoutée comme amélioration du gate.
+28. Adaptateurs Cegid/Qonto + ViDA: couvert localement. Registry et jurisdiction extensibles ; nouveaux adapters suivent le même pattern que les existants (sandbox + live).
+
+ ## Verification locale
 
 - `make verify-local`
 - `golangci-lint run --timeout=5m` via container Docker `golangci/golangci-lint:v1.61.0`

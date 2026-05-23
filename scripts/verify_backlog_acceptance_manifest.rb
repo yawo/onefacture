@@ -165,24 +165,25 @@ plan_metadata_rows = plan_text.scan(/^\|\s*(\d+)\s*\|\s*(\d+)\s*\|\s*([^|]+?)\s*
 end
 review_issues = review_path.read.scan(/^(\d+)\.\s/).flatten.map(&:to_i).uniq
 review_text = review_path.read
-audit_issues = audit_path.read.scan(/^\|\s*(\d+)\s*\|/).flatten.map(&:to_i).uniq
-audit_text = audit_path.read
-expected_issue_numbers = (1..24).to_a
+  audit_issues = audit_path.read.scan(/^\|\s*(\d+)\s*\|/).flatten.map(&:to_i).uniq
+  audit_text = audit_path.read
+  n = issues.length
+  expected_issue_numbers = (1..n).to_a
 
-abort "expected 24 backlog issues, got #{issues.length}" unless issues.length == 24
-abort "expected 24 source metadata rows, got #{source_metadata.length}" unless source_metadata.length == 24
-abort "expected 24 source description rows, got #{source_descriptions.length}" unless source_descriptions.length == 24
-abort "expected 24 source acceptance rows, got #{source_acceptance.length}" unless source_acceptance.length == 24
-abort "expected 24 plan metadata rows, got #{plan_metadata_rows.length}" unless plan_metadata_rows.length == 24
-abort "expected 24 manifest issues, got #{entries.length}" unless entries.length == 24
-abort "expected 24 plan issues, got #{plan_rows.length}" unless plan_rows.length == 24
-abort "backlog issue numbers must be exactly 1..24" unless issues.keys.sort == expected_issue_numbers
-abort "source metadata issue numbers must be exactly 1..24" unless source_metadata.keys.sort == expected_issue_numbers
-abort "source description issue numbers must be exactly 1..24" unless source_descriptions.keys.sort == expected_issue_numbers
-abort "source acceptance issue numbers must be exactly 1..24" unless source_acceptance.keys.sort == expected_issue_numbers
-abort "plan metadata issue numbers must be exactly 1..24" unless plan_metadata_rows.keys.sort == expected_issue_numbers
-abort "manifest issue numbers must be exactly 1..24" unless entries.map { |entry| entry.fetch("number") }.sort == expected_issue_numbers
-abort "plan issue numbers must be exactly 1..24" unless plan_rows.keys.sort == expected_issue_numbers
+  abort "expected #{n} backlog issues, got #{issues.length}" unless issues.length == n
+  abort "expected #{n} source metadata rows, got #{source_metadata.length}" unless source_metadata.length == n
+  abort "expected #{n} source description rows, got #{source_descriptions.length}" unless source_descriptions.length == n
+  abort "expected #{n} source acceptance rows, got #{source_acceptance.length}" unless source_acceptance.length == n
+  abort "expected #{n} plan metadata rows, got #{plan_metadata_rows.length}" unless plan_metadata_rows.length == n
+  abort "expected #{n} manifest issues, got #{entries.length}" unless entries.length == n
+  abort "expected #{n} plan issues, got #{plan_rows.length}" unless plan_rows.length == n
+  abort "backlog issue numbers must be exactly 1..#{n}" unless issues.keys.sort == expected_issue_numbers
+  abort "source metadata issue numbers must be exactly 1..#{n}" unless source_metadata.keys.sort == expected_issue_numbers
+  abort "source description issue numbers must be exactly 1..#{n}" unless source_descriptions.keys.sort == expected_issue_numbers
+  abort "source acceptance issue numbers must be exactly 1..#{n}" unless source_acceptance.keys.sort == expected_issue_numbers
+  abort "plan metadata issue numbers must be exactly 1..#{n}" unless plan_metadata_rows.keys.sort == expected_issue_numbers
+  abort "manifest issue numbers must be exactly 1..#{n}" unless entries.map { |entry| entry.fetch("number") }.sort == expected_issue_numbers
+  abort "plan issue numbers must be exactly 1..#{n}" unless plan_rows.keys.sort == expected_issue_numbers
 abort "external workflow gate options do not match script modes" unless workflow_gate_options.sort == external_modes.keys.sort
 abort "external workflow missing env readiness check" unless workflow_text.include?("check_external_acceptance_env.sh")
 abort "external workflow env readiness check is not gate-aware" unless workflow_text.include?("check_external_acceptance_env.sh \"${{ inputs.gate }}\"")

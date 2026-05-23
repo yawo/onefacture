@@ -184,3 +184,37 @@
 - Abstraire règles pays/profils vers modules.
 **Critères d'acceptation**:
 - Ajout d’un nouveau profil pays sans toucher au core API.
+
+## Vague 4 — Production Readiness & Conformité Factur-X Complète
+
+### 25. Génération PDF/A-3 wire-complete + délégation sidecar (PDF/A-3 + Factur-X embedding)
+**Labels**: `core`, `facturx`, `priority:p0`, `wave:4`
+**Description**:
+- Émettre un conteneur PDF minimal valide (%PDF-1.7 + métadonnées) afin que le pipeline d’émission soit end-to-end testable.
+- Déléguer la génération réelle PDF/A-3 + attachment du XML CII + layout visuel au sidecar Python quand `ONEFACTURE_PDF_SIDECAR_URL` est défini.
+**Critères d'acceptation**:
+- `go test ./internal/core/facturx -run PackagePDFA3` passe.
+- Le PDF généré commence par `%PDF-1.7` et contient les métadonnées attendues (invoice_number, profile, cii_xml_size).
+- Le endpoint d’émission peut renvoyer ce conteneur sans erreur.
+- Quand le sidecar est configuré, le vrai PDF/A-3 + XML embarqué est produit.
+
+### 26. Charts Helm de production + observabilité minimale (Prometheus + Grafana + OTel)
+**Labels**: `infra`, `observability`, `priority:p1`, `wave:4`
+**Description**:
+- Ajouter `values-prod.yaml` avec configuration pour HPA, PDB, network policies et dashboards de base.
+**Critères d'acceptation**:
+- `helm template -f deploy/helm/onefacture/values-prod.yaml` produit des manifests valides incluant les monitors.
+
+### 27. Publication SDK automatisée sur GitHub Releases
+**Labels**: `dx`, `ci`, `sdk`, `priority:p1`, `wave:4`
+**Description**:
+- Modifier le workflow `sdk-publish.yml` pour se déclencher automatiquement sur `release` (types: published) pour les tags `v*` et attacher les artefacts.
+**Critères d'acceptation**:
+- Un tag `v0.2.0` fictif déclenche le job (vérifié par smoke).
+
+### 28. Adaptateurs supplémentaires (Cegid, Qonto) + extension multi-juridiction
+**Labels**: `adapter`, `architecture`, `priority:p2`, `wave:4`
+**Description**:
+- Ajouter les packages `internal/adapters/cegid` et `internal/adapters/qonto` (même pattern) et enrichir le registry/jurisdiction pour ViDA/PEPPOL.
+**Critères d'acceptation**:
+- `Registry.Names()` inclut "cegid" et "qonto".

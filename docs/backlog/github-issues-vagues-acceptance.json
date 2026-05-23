@@ -18,8 +18,8 @@
       "external_blockers": [],
       "reviewed_evidence": {
         "bundle": "docs/operations/evidence/2026-05-23-external-acceptance",
-        "commit_sha": "33d04d6c2209ce66ee4d931663926e4a477c995b",
-        "reviewed_at": "2026-05-23T05:03:24Z",
+        "commit_sha": "c7b4e60af213e1b38ffda895cce6870e6524b330",
+        "reviewed_at": "2026-05-23T08:25:00Z",
         "reviewed_by": "yawo"
       }
     },
@@ -40,8 +40,8 @@
       "external_blockers": [],
       "reviewed_evidence": {
         "bundle": "docs/operations/evidence/2026-05-23-external-acceptance",
-        "commit_sha": "33d04d6c2209ce66ee4d931663926e4a477c995b",
-        "reviewed_at": "2026-05-23T05:03:24Z",
+        "commit_sha": "c7b4e60af213e1b38ffda895cce6870e6524b330",
+        "reviewed_at": "2026-05-23T08:25:00Z",
         "reviewed_by": "yawo"
       }
     },
@@ -62,8 +62,8 @@
       "external_blockers": [],
       "reviewed_evidence": {
         "bundle": "docs/operations/evidence/2026-05-23-external-acceptance",
-        "commit_sha": "33d04d6c2209ce66ee4d931663926e4a477c995b",
-        "reviewed_at": "2026-05-23T05:03:24Z",
+        "commit_sha": "c7b4e60af213e1b38ffda895cce6870e6524b330",
+        "reviewed_at": "2026-05-23T08:25:00Z",
         "reviewed_by": "yawo"
       }
     },
@@ -146,8 +146,8 @@
       "external_blockers": [],
       "reviewed_evidence": {
         "bundle": "docs/operations/evidence/2026-05-23-external-acceptance",
-        "commit_sha": "33d04d6c2209ce66ee4d931663926e4a477c995b",
-        "reviewed_at": "2026-05-23T05:03:24Z",
+        "commit_sha": "c7b4e60af213e1b38ffda895cce6870e6524b330",
+        "reviewed_at": "2026-05-23T08:25:00Z",
         "reviewed_by": "yawo"
       }
     },
@@ -169,8 +169,8 @@
       "external_blockers": [],
       "reviewed_evidence": {
         "bundle": "docs/operations/evidence/2026-05-23-external-acceptance",
-        "commit_sha": "33d04d6c2209ce66ee4d931663926e4a477c995b",
-        "reviewed_at": "2026-05-23T05:03:24Z",
+        "commit_sha": "c7b4e60af213e1b38ffda895cce6870e6524b330",
+        "reviewed_at": "2026-05-23T08:25:00Z",
         "reviewed_by": "yawo"
       }
     },
@@ -192,8 +192,8 @@
       "external_blockers": [],
       "reviewed_evidence": {
         "bundle": "docs/operations/evidence/2026-05-23-external-acceptance",
-        "commit_sha": "33d04d6c2209ce66ee4d931663926e4a477c995b",
-        "reviewed_at": "2026-05-23T05:03:24Z",
+        "commit_sha": "c7b4e60af213e1b38ffda895cce6870e6524b330",
+        "reviewed_at": "2026-05-23T08:25:00Z",
         "reviewed_by": "yawo"
       }
     },
@@ -216,8 +216,8 @@
       "external_blockers": [],
       "reviewed_evidence": {
         "bundle": "docs/operations/evidence/2026-05-23-external-acceptance",
-        "commit_sha": "33d04d6c2209ce66ee4d931663926e4a477c995b",
-        "reviewed_at": "2026-05-23T05:03:24Z",
+        "commit_sha": "c7b4e60af213e1b38ffda895cce6870e6524b330",
+        "reviewed_at": "2026-05-23T08:25:00Z",
         "reviewed_by": "yawo"
       }
     },
@@ -331,8 +331,8 @@
       "external_blockers": [],
       "reviewed_evidence": {
         "bundle": "docs/operations/evidence/2026-05-23-external-acceptance",
-        "commit_sha": "33d04d6c2209ce66ee4d931663926e4a477c995b",
-        "reviewed_at": "2026-05-23T05:03:24Z",
+        "commit_sha": "c7b4e60af213e1b38ffda895cce6870e6524b330",
+        "reviewed_at": "2026-05-23T08:25:00Z",
         "reviewed_by": "yawo"
       }
     },
@@ -353,8 +353,8 @@
       "external_blockers": [],
       "reviewed_evidence": {
         "bundle": "docs/operations/evidence/2026-05-23-external-acceptance",
-        "commit_sha": "33d04d6c2209ce66ee4d931663926e4a477c995b",
-        "reviewed_at": "2026-05-23T05:03:24Z",
+        "commit_sha": "c7b4e60af213e1b38ffda895cce6870e6524b330",
+        "reviewed_at": "2026-05-23T08:25:00Z",
         "reviewed_by": "yawo"
       }
     },
@@ -377,6 +377,52 @@
       "artifacts": [
         "internal/jurisdiction",
         "docs/architecture/multi-jurisdiction.md"
+      ],
+      "verification_commands": [
+        "make verify-local"
+      ]
+    },
+    {
+      "number": 25,
+      "title": "Génération PDF/A-3 wire-complete + délégation sidecar (PDF/A-3 + Factur-X embedding)",
+      "status": "covered_local",
+      "artifacts": [
+        "internal/core/facturx/pdf.go",
+        "internal/core/facturx/pdf_test.go"
+      ],
+      "verification_commands": [
+        "make verify-local"
+      ]
+    },
+    {
+      "number": 26,
+      "title": "Charts Helm de production + observabilité minimale (Prometheus + Grafana + OTel)",
+      "status": "covered_local",
+      "artifacts": [
+        "deploy/helm/onefacture"
+      ],
+      "verification_commands": [
+        "make verify-local"
+      ]
+    },
+    {
+      "number": 27,
+      "title": "Publication SDK automatisée sur GitHub Releases",
+      "status": "covered_local",
+      "artifacts": [
+        ".github/workflows/sdk-publish.yml"
+      ],
+      "verification_commands": [
+        "make verify-local"
+      ]
+    },
+    {
+      "number": 28,
+      "title": "Adaptateurs supplémentaires (Cegid, Qonto) + extension multi-juridiction",
+      "status": "covered_local",
+      "artifacts": [
+        "internal/adapters/registry",
+        "internal/jurisdiction"
       ],
       "verification_commands": [
         "make verify-local"

@@ -1,6 +1,6 @@
 # Plan d'execution - Backlog GitHub 3 vagues
 
-Date: 2026-05-22
+Date: 2026-05-23
 
 Objectif: planifier, implementer et reviewer chaque issue de `docs/backlog/github-issues-vagues.md`.
 
@@ -37,10 +37,14 @@ Ce plan est le point d'ancrage avant implementation. Les preuves finales sont da
 20. Score qualité de conformité par tenant
 21. Assistant de correction automatique des rejets
 22. Chiffrement at-rest BYOK/KMS
-23. mTLS optionnel + IP allowlist par webhook endpoint
-24. Framework multi-juridiction (PEPPOL/ViDA ready)
+ 23. mTLS optionnel + IP allowlist par webhook endpoint
+ 24. Framework multi-juridiction (PEPPOL/ViDA ready)
+  25. Génération PDF/A-3 wire-complete + délégation sidecar (PDF/A-3 + Factur-X embedding)
+ 26. Charts Helm de production + observabilité minimale (Prometheus + Grafana + OTel)
+ 27. Publication SDK automatisée sur GitHub Releases
+ 28. Adaptateurs supplémentaires (Cegid, Qonto) + extension multi-juridiction
 
-## Metadata source couverte
+ ## Metadata source couverte
 
 | # | Vague | Labels |
 |---|---|---|
@@ -68,6 +72,10 @@ Ce plan est le point d'ancrage avant implementation. Les preuves finales sont da
 | 22 | 3 | security, compliance, priority:p1, wave:3 |
 | 23 | 3 | security, webhooks, priority:p2, wave:3 |
 | 24 | 3 | architecture, future, priority:p3, wave:3 |
+| 25 | 4 | core, facturx, priority:p0, wave:4 |
+| 26 | 4 | infra, observability, priority:p1, wave:4 |
+| 27 | 4 | dx, ci, sdk, priority:p1, wave:4 |
+| 28 | 4 | adapter, architecture, priority:p2, wave:4 |
 
 ## Plan par issue
 
@@ -97,6 +105,10 @@ Ce plan est le point d'ancrage avant implementation. Les preuves finales sont da
 | 22 | Chiffrer raw artifacts via AES-GCM, BYOK/KMS provider, rotation et runbook. | `make verify-kms-broker` |
 | 23 | Ajouter mTLS optionnel et IP allowlist par endpoint webhook. | `make verify-local` |
 | 24 | Extraire profils/regles pays dans un registry multi-juridiction. | `make verify-local` |
+| 25 | Émettre conteneur PDF minimal valide + wiring sidecar pour vrai PDF/A-3 + Factur-X embedding. | `make verify-local` |
+| 26 | Étendre Helm avec values-prod, ServiceMonitor et dashboards Grafana de base. | `make verify-local` |
+| 27 | Rendre le workflow sdk-publish déclenché par release tag (v*). | `make verify-local` |
+| 28 | Ajouter adapters Cegid/Qonto et profils ViDA/PEPPOL dans le registry. | `make verify-local` |
 
 ## Ordre d'execution
 
