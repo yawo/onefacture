@@ -61,13 +61,65 @@ func (a *Adapter) HealthCheck(ctx context.Context) error {
 }
 
 func (a *Adapter) Submit(ctx context.Context, inv *invoice.Invoice) (*adapters.SubmitResult, error) {
-	return a.client.Submit(ctx, inv)
+	res, err := a.client.Submit(ctx, inv)
+	if err != nil {
+		return nil, a.mapChorusError("submit", err)
+	}
+	if res != nil {
+		res.Status = invoice.Status(NormalizeLifecycleStatus(string(res.Status)))
+	}
+	return res, nil
 }
 
 func (a *Adapter) GetStatus(ctx context.Context, paRef string) (*adapters.LifecycleEvent, error) {
-	return a.client.GetStatus(ctx, paRef)
+	ev, err := a.client.GetStatus(ctx, paRef)
+	if err != nil {
+		return nil, a.mapChorusError("get_status", err)
+	}
+	if ev != nil {
+		ev.Status = invoice.Status(NormalizeLifecycleStatus(string(ev.Status)))
+	}
+	return ev, nil
 }
 
 func (a *Adapter) Webhook(ctx context.Context, payload []byte) (*adapters.WebhookEvent, error) {
 	return a.client.Webhook(ctx, payload)
+}
+
+func (a *Adapter) mapChorusError(operation string, err error) error {
+	var paErr *adapters.PAError
+	if errors.As(err, &paErr) {
+		switch paErr.Code {
+		case "20001", "GDP_MSG_01.001":
+			paErr.Code = "CHORUS_INVALID_FORMAT"
+			paErr.Message = "Format de flux invalide (PDF/A-3 ou XML CII requis)"
+			paErr.Remediation = "Vérifiez le conteneur Factur-X, la signature et la taille (<10Mo)"
+		case "401", "403", "4":
+			paErr.Code = "CHORUS_AUTH_ERROR"
+			paErr.Remediation = "Vérifiez les variables ONEFACTURE_CHORUS_* (client_id/secret ou cpro-account)"
+		case "429":
+			paErr.Code = "CHORUS_RATE_LIMIT"
+			paErr.Remediation = "Respectez les quotas PISTE ; retry avec backoff"
+		}
+		paErr.Platform = "chorus"
+		paErr.Operation = operation
+		return paErr
+	}
+	return err
+}
+
+func NormalizeLifecycleStatus(chorusStatus string) string {
+	s := strings.ToUpper(strings.TrimSpace(chorusStatus))
+	switch s {
+	case "DEPOSEE", "DEPOSITED", "SOUMISE", "ENREGISTREE":
+		return "SUBMITTED"
+	case "MISE_A_DISPOSITION", "MIS_A_DISPO", "ACCEPTED", "VALIDATED", "MISEADISPO":
+		return "ACCEPTED"
+	case "REJETEE", "REJECTED", "REFUSEE", "REJET":
+		return "REJECTED"
+	case "EN_COURS", "EN_TRAITEMENT", "PENDING", "SUSPENDUE":
+		return "SUBMITTED"
+	default:
+		return "SUBMITTED"
+	}
 }

@@ -3,6 +3,7 @@ package facturx
 import (
 	"encoding/base64"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -17,13 +18,21 @@ func TestPackagePDFA3_DelegatesToSidecar(t *testing.T) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		var req struct {
-			InvoiceNumber string `json:"invoice_number"`
+			InvoiceNumber string  `json:"invoice_number"`
+			TotalHT       float64 `json:"total_ht"`
+			Lines         []struct {
+				Description string `json:"description"`
+			} `json:"lines"`
 		}
 		json.NewDecoder(r.Body).Decode(&req)
 		if req.InvoiceNumber == "" {
 			req.InvoiceNumber = "INV-SIDECAR-001"
 		}
-		content := "%PDF-1.7\n%% onefacture\n/Title (Facture " + req.InvoiceNumber + ")\n/pdfaid:part 3\n/pdfaid:conformance A\n factur-x.xml\n" + req.InvoiceNumber + "\n%%EOF\n"
+		line0 := ""
+		if len(req.Lines) > 0 {
+			line0 = req.Lines[0].Description
+		}
+		content := "%PDF-1.7\n%% onefacture\n/Title (Facture " + req.InvoiceNumber + ")\n/pdfaid:part 3\n/pdfaid:conformance A\n factur-x.xml\n" + req.InvoiceNumber + "\nTotalHT:" + fmt.Sprintf("%.2f", req.TotalHT) + "\nLine0:" + line0 + "\n%%EOF\n"
 		fakePDF := base64.StdEncoding.EncodeToString([]byte(content))
 		w.Write([]byte(`{"pdf_base64":"` + fakePDF + `","filename":"test.pdf"}`))
 	}))
@@ -49,4 +58,6 @@ func TestPackagePDFA3_DelegatesToSidecar(t *testing.T) {
 	require.Contains(t, s, "INV-SIDECAR-001")
 	require.Contains(t, s, "pdfaid:part")
 	require.Contains(t, s, "factur-x.xml")
+	require.Contains(t, s, "TotalHT:1500.00")
+	require.Contains(t, s, "Line0:Consulting")
 }

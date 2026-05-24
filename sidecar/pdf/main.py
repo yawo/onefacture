@@ -53,7 +53,10 @@ async def generate_facturx_pdf(req: GeneratePDFRequest):
         c.drawString(50, y, "Lignes de facture")
         y -= 20
         c.setFont("Helvetica", 9)
-        for i, line in enumerate(req.lines[:5]):  # max 5 lines for micro
+        for i, line in enumerate(req.lines):
+            if y < 80:
+                c.showPage()
+                y = height - 50
             c.drawString(50, y, f"{i+1}. {line.description[:40]} x{line.quantity} @ {line.unit_price:.2f} = {line.total:.2f} €")
             y -= 15
         if not req.lines:
@@ -68,6 +71,9 @@ async def generate_facturx_pdf(req: GeneratePDFRequest):
         y -= 15
         c.setFont("Helvetica", 9)
         for tb in req.tax_breakdown:
+            if y < 80:
+                c.showPage()
+                y = height - 50
             c.drawString(50, y, f"  {tb.rate}% base {tb.taxable_base:.2f} TVA {tb.tax_amount:.2f}")
             y -= 12
 

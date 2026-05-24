@@ -2,12 +2,17 @@ package chorus
 
 import (
 	"context"
+	"encoding/json"
+	"net/http"
+	"net/http/httptest"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 
 	"github.com/yawo/onefacture/internal/adapters"
+	"github.com/yawo/onefacture/internal/adapters/sandbox"
 	"github.com/yawo/onefacture/internal/core/invoice"
 )
 
@@ -128,4 +133,28 @@ func TestEnvOr(t *testing.T) {
 			require.Equal(t, tt.expected, result)
 		})
 	}
+}
+
+func TestChorusIntegrationNormalizeLifecycle(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		if r.URL.Path == "/invoices" {
+			_ = json.NewEncoder(w).Encode(adapters.SubmitResult{PARef: "cpp-123", Status: "DEPOSEE"})
+			return
+		}
+		if strings.HasSuffix(r.URL.Path, "/status") {
+			_ = json.NewEncoder(w).Encode(adapters.LifecycleEvent{PARef: "cpp-123", Status: "MISE_A_DISPOSITION"})
+			return
+		}
+		http.NotFound(w, r)
+	}))
+	defer server.Close()
+	c := sandbox.Client{Name: "chorus", BaseURL: server.URL, SubmitPath: "/invoices", StatusPath: "/invoices/{pa_ref}/status", Auth: sandbox.Auth{Token: "t"}, HTTP: server.Client()}
+	a := &Adapter{client: c}
+	res, err := a.Submit(context.Background(), &invoice.Invoice{Number: "i1"})
+	require.NoError(t, err)
+	require.Equal(t, invoice.StatusSubmitted, res.Status)
+	ev, err := a.GetStatus(context.Background(), "cpp-123")
+	require.NoError(t, err)
+	require.Equal(t, invoice.StatusAccepted, ev.Status)
 }
