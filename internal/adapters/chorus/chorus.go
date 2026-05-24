@@ -90,16 +90,22 @@ func (a *Adapter) mapChorusError(operation string, err error) error {
 	var paErr *adapters.PAError
 	if errors.As(err, &paErr) {
 		switch paErr.Code {
-		case "20001", "GDP_MSG_01.001":
+		case "20001", "GDP_MSG_01.001", "20002", "GDP_MSG_01.002":
 			paErr.Code = "CHORUS_INVALID_FORMAT"
 			paErr.Message = "Format de flux invalide (PDF/A-3 ou XML CII requis)"
 			paErr.Remediation = "Vérifiez le conteneur Factur-X, la signature et la taille (<10Mo)"
+		case "20003", "20004", "20005":
+			paErr.Code = "CHORUS_SIZE_OR_ATTACHMENT_ERROR"
+			paErr.Remediation = "Réduisez la taille du fichier ou des pièces jointes"
 		case "401", "403", "4":
 			paErr.Code = "CHORUS_AUTH_ERROR"
 			paErr.Remediation = "Vérifiez les variables ONEFACTURE_CHORUS_* (client_id/secret ou cpro-account)"
 		case "429":
 			paErr.Code = "CHORUS_RATE_LIMIT"
 			paErr.Remediation = "Respectez les quotas PISTE ; retry avec backoff"
+		case "500", "502", "503", "504":
+			paErr.Code = "CHORUS_SERVER_ERROR"
+			paErr.Remediation = "Erreur technique Chorus Pro ; réessayez plus tard"
 		}
 		paErr.Platform = "chorus"
 		paErr.Operation = operation

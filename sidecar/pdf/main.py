@@ -30,24 +30,25 @@ class GeneratePDFRequest(BaseModel):
     lines: list[LineItem] = []
     tax_breakdown: list[TaxBreakdown] = []
 
+def _draw_header(c, height, req):
+    c.setFont("Helvetica-Bold", 16)
+    c.drawString(50, height - 50, f"Facture {req.invoice_number}")
+    c.setFont("Helvetica", 12)
+    c.drawString(50, height - 80, f"Profil: {req.profile}")
+    c.drawString(50, height - 100, f"Vendeur: {req.seller_name}")
+    c.drawString(50, height - 120, f"Acheteur: {req.buyer_name}")
+
 @app.post("/generate")
 async def generate_facturx_pdf(req: GeneratePDFRequest):
     try:
         xml_bytes = base64.b64decode(req.xml_base64)
 
-        # Create a minimal visual PDF
         buffer = BytesIO()
         c = canvas.Canvas(buffer, pagesize=A4)
         width, height = A4
 
-        c.setFont("Helvetica-Bold", 16)
-        c.drawString(50, height - 50, f"Facture {req.invoice_number}")
-        c.setFont("Helvetica", 12)
-        c.drawString(50, height - 80, f"Profil: {req.profile}")
-        c.drawString(50, height - 100, f"Vendeur: {req.seller_name}")
-        c.drawString(50, height - 120, f"Acheteur: {req.buyer_name}")
+        _draw_header(c, height, req)
 
-        # Render actual lines if provided
         y = height - 170
         c.setFont("Helvetica-Bold", 11)
         c.drawString(50, y, "Lignes de facture")
@@ -56,7 +57,8 @@ async def generate_facturx_pdf(req: GeneratePDFRequest):
         for i, line in enumerate(req.lines):
             if y < 80:
                 c.showPage()
-                y = height - 50
+                _draw_header(c, height, req)
+                y = height - 170
             c.drawString(50, y, f"{i+1}. {line.description[:40]} x{line.quantity} @ {line.unit_price:.2f} = {line.total:.2f} €")
             y -= 15
         if not req.lines:
@@ -73,7 +75,8 @@ async def generate_facturx_pdf(req: GeneratePDFRequest):
         for tb in req.tax_breakdown:
             if y < 80:
                 c.showPage()
-                y = height - 50
+                _draw_header(c, height, req)
+                y = height - 170
             c.drawString(50, y, f"  {tb.rate}% base {tb.taxable_base:.2f} TVA {tb.tax_amount:.2f}")
             y -= 12
 

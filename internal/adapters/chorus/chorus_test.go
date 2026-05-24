@@ -157,4 +157,9 @@ func TestChorusIntegrationNormalizeLifecycle(t *testing.T) {
 	ev, err := a.GetStatus(context.Background(), "cpp-123")
 	require.NoError(t, err)
 	require.Equal(t, invoice.StatusAccepted, ev.Status)
+
+	require.Equal(t, "SUBMITTED", NormalizeLifecycleStatus("DEPOSEE"))
+	require.Equal(t, "ACCEPTED", NormalizeLifecycleStatus("MISE_A_DISPOSITION"))
+	require.Equal(t, "REJECTED", NormalizeLifecycleStatus("REJETEE"))
+	require.Equal(t, "SUBMITTED", NormalizeLifecycleStatus("SUSPENDUE"))
 }
