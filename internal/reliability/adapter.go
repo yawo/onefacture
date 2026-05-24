@@ -85,6 +85,10 @@ func NewAdapter(inner adapters.PAAdapter, breaker *CircuitBreaker, policy RetryP
 func (a *Adapter) Name() string { return a.inner.Name() }
 
 func (a *Adapter) Submit(ctx context.Context, inv *invoice.Invoice) (*adapters.SubmitResult, error) {
+	start := time.Now()
+	defer func() {
+		metrics.AdapterCallDuration.WithLabelValues(a.inner.Name(), "submit").Observe(time.Since(start).Seconds())
+	}()
 	attempts := a.policy.MaxAttempts
 	if attempts <= 0 {
 		attempts = 1
@@ -115,14 +119,40 @@ func (a *Adapter) Submit(ctx context.Context, inv *invoice.Invoice) (*adapters.S
 }
 
 func (a *Adapter) GetStatus(ctx context.Context, paRef string) (*adapters.LifecycleEvent, error) {
-	return a.inner.GetStatus(ctx, paRef)
+	start := time.Now()
+	ev, err := a.inner.GetStatus(ctx, paRef)
+	metrics.AdapterCallDuration.WithLabelValues(a.inner.Name(), "get_status").Observe(time.Since(start).Seconds())
+	if err != nil {
+		metrics.AdapterCallsTotal.WithLabelValues(a.inner.Name(), "get_status", "error").Inc()
+		return nil, err
+	}
+	metrics.AdapterCallsTotal.WithLabelValues(a.inner.Name(), "get_status", "success").Inc()
+	return ev, nil
 }
 
 func (a *Adapter) Webhook(ctx context.Context, payload []byte) (*adapters.WebhookEvent, error) {
-	return a.inner.Webhook(ctx, payload)
+	start := time.Now()
+	ev, err := a.inner.Webhook(ctx, payload)
+	metrics.AdapterCallDuration.WithLabelValues(a.inner.Name(), "webhook").Observe(time.Since(start).Seconds())
+	if err != nil {
+		metrics.AdapterCallsTotal.WithLabelValues(a.inner.Name(), "webhook", "error").Inc()
+		return nil, err
+	}
+	metrics.AdapterCallsTotal.WithLabelValues(a.inner.Name(), "webhook", "success").Inc()
+	return ev, nil
 }
 
-func (a *Adapter) HealthCheck(ctx context.Context) error { return a.inner.HealthCheck(ctx) }
+func (a *Adapter) HealthCheck(ctx context.Context) error {
+	start := time.Now()
+	err := a.inner.HealthCheck(ctx)
+	metrics.AdapterCallDuration.WithLabelValues(a.inner.Name(), "health").Observe(time.Since(start).Seconds())
+	if err != nil {
+		metrics.AdapterCallsTotal.WithLabelValues(a.inner.Name(), "health", "error").Inc()
+		return err
+	}
+	metrics.AdapterCallsTotal.WithLabelValues(a.inner.Name(), "health", "success").Inc()
+	return nil
+}
 
 func jitteredDelay(policy RetryPolicy, attempt int) time.Duration {
 	delay := policy.BaseDelay

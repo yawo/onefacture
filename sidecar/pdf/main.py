@@ -8,6 +8,17 @@ from reportlab.lib.pagesizes import A4
 
 app = FastAPI(title="onefacture-pdf-sidecar")
 
+class LineItem(BaseModel):
+    description: str
+    quantity: float = 1.0
+    unit_price: float
+    total: float
+
+class TaxBreakdown(BaseModel):
+    rate: float
+    taxable_base: float
+    tax_amount: float
+
 class GeneratePDFRequest(BaseModel):
     invoice_number: str
     profile: str
@@ -16,6 +27,8 @@ class GeneratePDFRequest(BaseModel):
     buyer_name: str = "Buyer"
     total_ht: float = 0.0
     total_ttc: float = 0.0
+    lines: list[LineItem] = []
+    tax_breakdown: list[TaxBreakdown] = []
 
 @app.post("/generate")
 async def generate_facturx_pdf(req: GeneratePDFRequest):
@@ -34,13 +47,29 @@ async def generate_facturx_pdf(req: GeneratePDFRequest):
         c.drawString(50, height - 100, f"Vendeur: {req.seller_name}")
         c.drawString(50, height - 120, f"Acheteur: {req.buyer_name}")
 
-        # Simple line items placeholder
+        # Render actual lines if provided
+        y = height - 170
         c.setFont("Helvetica-Bold", 11)
-        c.drawString(50, height - 170, "Lignes de facture (exemple)")
-        c.setFont("Helvetica", 10)
-        c.drawString(50, height - 190, "1. Prestation de service ................ 1 200,00 €")
-        c.drawString(50, height - 205, "2. Frais de dossier ......................  80,00 €")
-        c.drawString(50, height - 230, f"Total HT: {req.total_ht:.2f} € | Total TTC: {req.total_ttc:.2f} €")
+        c.drawString(50, y, "Lignes de facture")
+        y -= 20
+        c.setFont("Helvetica", 9)
+        for i, line in enumerate(req.lines[:5]):  # max 5 lines for micro
+            c.drawString(50, y, f"{i+1}. {line.description[:40]} x{line.quantity} @ {line.unit_price:.2f} = {line.total:.2f} €")
+            y -= 15
+        if not req.lines:
+            c.drawString(50, y, "(lignes non fournies - placeholder)")
+            y -= 15
+        y -= 10
+        c.setFont("Helvetica-Bold", 10)
+        c.drawString(50, y, f"Total HT: {req.total_ht:.2f} € | Total TTC: {req.total_ttc:.2f} €")
+        y -= 20
+        c.setFont("Helvetica-Bold", 10)
+        c.drawString(50, y, "TVA Breakdown")
+        y -= 15
+        c.setFont("Helvetica", 9)
+        for tb in req.tax_breakdown:
+            c.drawString(50, y, f"  {tb.rate}% base {tb.taxable_base:.2f} TVA {tb.tax_amount:.2f}")
+            y -= 12
 
         c.drawString(50, height - 270, "[Factur-X XML attaché - généré par sidecar]")
 

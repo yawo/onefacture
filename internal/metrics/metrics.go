@@ -90,4 +90,28 @@ var (
 			Help: "Total status poll ticks by the worker",
 		},
 	)
+
+	StatusPollResults = promauto.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "onefacture_status_poll_results_total",
+			Help: "Status poll results per PA (updated, error, no_change)",
+		},
+		[]string{"pa_id", "result"},
+	)
+
+	AdapterCallDuration = promauto.NewHistogramVec(
+		prometheus.HistogramOpts{
+			Name:    "onefacture_adapter_call_duration_seconds",
+			Help:    "Duration of adapter calls to PA",
+			Buckets: prometheus.DefBuckets,
+		},
+		[]string{"pa_id", "operation"},
+	)
+
+	InFlightInvoices = promauto.NewGauge(
+		prometheus.GaugeOpts{
+			Name: "onefacture_in_flight_invoices",
+			Help: "Number of invoices currently in flight (SUBMITTED or RECEIVED)",
+		},
+	)
 )

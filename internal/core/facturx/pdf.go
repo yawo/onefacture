@@ -40,13 +40,28 @@ func PackagePDFA3(inv *invoice.Invoice, xml []byte) ([]byte, error) {
 }
 
 type pdfSidecarRequest struct {
-	InvoiceNumber string  `json:"invoice_number"`
-	Profile       string  `json:"profile"`
-	XMLBase64     string  `json:"xml_base64"`
-	SellerName    string  `json:"seller_name"`
-	BuyerName     string  `json:"buyer_name"`
-	TotalHT       float64 `json:"total_ht,omitempty"`
-	TotalTTC      float64 `json:"total_ttc,omitempty"`
+	InvoiceNumber string               `json:"invoice_number"`
+	Profile       string               `json:"profile"`
+	XMLBase64     string               `json:"xml_base64"`
+	SellerName    string               `json:"seller_name"`
+	BuyerName     string               `json:"buyer_name"`
+	TotalHT       float64              `json:"total_ht,omitempty"`
+	TotalTTC      float64              `json:"total_ttc,omitempty"`
+	Lines         []SidecarLineItem    `json:"lines,omitempty"`
+	TaxBreakdown  []SidecarTaxSubtotal `json:"tax_breakdown,omitempty"`
+}
+
+type SidecarLineItem struct {
+	Description string  `json:"description"`
+	Quantity    float64 `json:"quantity"`
+	UnitPrice   float64 `json:"unit_price"`
+	Total       float64 `json:"total"`
+}
+
+type SidecarTaxSubtotal struct {
+	Rate        float64 `json:"rate"`
+	TaxableBase float64 `json:"taxable_base"`
+	TaxAmount   float64 `json:"tax_amount"`
 }
 
 type pdfSidecarResponse struct {
@@ -64,6 +79,18 @@ func callPDFSidecar(baseURL string, inv *invoice.Invoice, xml []byte) ([]byte, e
 		BuyerName:     inv.Buyer.Name,
 		TotalHT:       inv.Totals.TaxExclusiveAmount,
 		TotalTTC:      inv.Totals.TaxInclusiveAmount,
+		Lines: func() (ls []SidecarLineItem) {
+			for _, l := range inv.Lines {
+				ls = append(ls, SidecarLineItem{Description: l.Description, Quantity: l.Quantity, UnitPrice: l.UnitPrice, Total: l.NetAmount})
+			}
+			return
+		}(),
+		TaxBreakdown: func() (ts []SidecarTaxSubtotal) {
+			for _, t := range inv.Totals.TaxBreakdown {
+				ts = append(ts, SidecarTaxSubtotal{Rate: t.Rate, TaxableBase: t.TaxableBase, TaxAmount: t.TaxAmount})
+			}
+			return
+		}(),
 	}
 
 	body, _ := json.Marshal(req)

@@ -56,7 +56,9 @@ WHERE status IN ('SUBMITTED','RECEIVED') AND pa_ref IS NOT NULL LIMIT 100`
 		return
 	}
 	defer rows.Close()
+	inFlight := 0
 	for rows.Next() {
+		inFlight++
 		var id, orgID uuid.UUID
 		var paID, paRef, status string
 		if err := rows.Scan(&id, &orgID, &paID, &paRef, &status); err != nil {
@@ -69,12 +71,15 @@ WHERE status IN ('SUBMITTED','RECEIVED') AND pa_ref IS NOT NULL LIMIT 100`
 		}
 		ev, err := adapter.GetStatus(ctx, paRef)
 		if err != nil {
+			metrics.StatusPollResults.WithLabelValues(paID, "error").Inc()
 			p.logger.Debug("get status", "err", err, "pa_ref", paRef)
 			continue
 		}
 		if ev.Status == "" || string(ev.Status) == status {
+			metrics.StatusPollResults.WithLabelValues(paID, "no_change").Inc()
 			continue
 		}
+		metrics.StatusPollResults.WithLabelValues(paID, "updated").Inc()
 		if err := p.store.Invoices.UpdateStatus(ctx, orgID, id, ev.Status); err != nil {
 			p.logger.Warn("update status", "err", err)
 			continue
@@ -93,4 +98,5 @@ WHERE status IN ('SUBMITTED','RECEIVED') AND pa_ref IS NOT NULL LIMIT 100`
 			Type: "invoice." + string(ev.Status), OrganizationID: orgID.String(), InvoiceID: id.String(),
 		})
 	}
+	metrics.InFlightInvoices.Set(float64(inFlight))
 }
