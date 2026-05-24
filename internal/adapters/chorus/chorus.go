@@ -7,7 +7,9 @@ package chorus
 
 import (
 	"context"
+	"errors"
 	"os"
+	"strings"
 
 	"github.com/yawo/onefacture/internal/adapters"
 	"github.com/yawo/onefacture/internal/adapters/sandbox"
