@@ -71,7 +71,8 @@ async def generate_facturx_pdf(req: GeneratePDFRequest):
             c.drawString(50, y, f"  {tb.rate}% base {tb.taxable_base:.2f} TVA {tb.tax_amount:.2f}")
             y -= 12
 
-        c.drawString(50, height - 270, "[Factur-X XML attaché - généré par sidecar]")
+        y -= 20
+        c.drawString(50, y, "[Factur-X XML attaché - généré par sidecar]")
 
         # Basic PDF/A-3 metadata (XMP-like via reportlab)
         c.setTitle(f"Facture {req.invoice_number}")

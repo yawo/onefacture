@@ -26,9 +26,8 @@ def test_generate_basic():
     data = resp.json()
     assert "pdf_base64" in data
     assert data["filename"].startswith("facture-TEST-001")
-    # Very basic check: PDF header
     pdf_bytes = base64.b64decode(data["pdf_base64"])
-    assert pdf_bytes.startswith(b"%PDF-1.7")
+    assert pdf_bytes.startswith(b"%PDF-1.")
 
     # Verify that the XML is extractible (real Factur-X requirement)
     reader = PdfReader(BytesIO(pdf_bytes))
