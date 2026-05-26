@@ -29,22 +29,36 @@ func New() *Adapter {
 		clientSecret: os.Getenv("ONEFACTURE_CHORUS_CLIENT_SECRET"),
 		baseURL:      envOr("ONEFACTURE_CHORUS_BASE_URL", "https://sandbox-api.piste.gouv.fr/cpro"),
 	}
-	a.client = sandbox.Client{
-		Name:       "chorus",
-		BaseURL:    a.baseURL,
-		SubmitPath: envOr("ONEFACTURE_CHORUS_SUBMIT_PATH", "/invoices"),
-		StatusPath: envOr("ONEFACTURE_CHORUS_STATUS_PATH", "/invoices/{pa_ref}/status"),
-		WebhookKey: os.Getenv("ONEFACTURE_CHORUS_WEBHOOK_KEY"),
-		Auth: sandbox.Auth{
-			Scheme:       "Bearer",
-			Token:        os.Getenv("ONEFACTURE_CHORUS_ACCESS_TOKEN"),
-			TokenURL:     envOr("ONEFACTURE_CHORUS_TOKEN_URL", "https://sandbox-oauth.piste.gouv.fr/api/oauth/token"),
-			ClientID:     a.clientID,
-			ClientSecret: a.clientSecret,
-			Scope:        os.Getenv("ONEFACTURE_CHORUS_SCOPE"),
-		},
-	}
-	return a
+ a.client = sandbox.Client{
+  Name:       "chorus",
+  BaseURL:    a.baseURL,
+  SubmitPath: envOr("ONEFACTURE_CHORUS_SUBMIT_PATH", "/invoices"),
+  StatusPath: envOr("ONEFACTURE_CHORUS_STATUS_PATH", "/invoices/{pa_ref}/status"),
+  WebhookKey: os.Getenv("ONEFACTURE_CHORUS_WEBHOOK_KEY"),
+  Auth: sandbox.Auth{
+   Scheme:       "Bearer",
+   Token:        os.Getenv("ONEFACTURE_CHORUS_ACCESS_TOKEN"),
+   TokenURL:     envOr("ONEFACTURE_CHORUS_TOKEN_URL", "https://sandbox-oauth.piste.gouv.fr/api/oauth/token"),
+   ClientID:     a.clientID,
+   ClientSecret: a.clientSecret,
+   Scope:        os.Getenv("ONEFACTURE_CHORUS_SCOPE"),
+  },
+ }
+ if strings.Contains(a.baseURL, "api.piste.gouv.fr") && !strings.Contains(strings.ToLower(a.baseURL), "sandbox") {
+  if a.client.StatusMethod == "" {
+   a.client.StatusMethod = "POST"
+  }
+  if a.client.StatusBodyTemplate == "" {
+   a.client.StatusBodyTemplate = `{"identifiantFactureCPP":"{pa_ref}"}`
+  }
+  if a.client.SubmitPath == "/invoices" {
+   a.client.SubmitPath = "/cpro/factures/v1/soumettre"
+  }
+  if a.client.StatusPath == "/invoices/{pa_ref}/status" {
+   a.client.StatusPath = "/cpro/factures/v1/consulter/fournisseur"
+  }
+ }
+ return a
 }
 
 func envOr(k, def string) string {

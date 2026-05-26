@@ -28,8 +28,10 @@ type Client struct {
 	Name       string
 	BaseURL    string
 	SubmitPath string
-	StatusPath string
-	WebhookKey string
+	StatusPath         string
+	StatusMethod       string
+	StatusBodyTemplate string
+	WebhookKey         string
 	Auth       Auth
 	HTTP       *http.Client
 }
@@ -109,9 +111,22 @@ func (c Client) GetStatus(ctx context.Context, paRef string) (*adapters.Lifecycl
 	if !c.Ready() {
 		return nil, adapters.ErrNotImplemented
 	}
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.url(strings.ReplaceAll(c.StatusPath, "{pa_ref}", paRef)), nil)
+	method := c.StatusMethod
+	if method == "" {
+		method = http.MethodGet
+	}
+	u := c.url(strings.ReplaceAll(c.StatusPath, "{pa_ref}", paRef))
+	var body io.Reader
+	if method == http.MethodPost && c.StatusBodyTemplate != "" {
+		bstr := strings.ReplaceAll(c.StatusBodyTemplate, "{pa_ref}", paRef)
+		body = strings.NewReader(bstr)
+	}
+	req, err := http.NewRequestWithContext(ctx, method, u, body)
 	if err != nil {
 		return nil, fmt.Errorf("%s status request: %w", c.Name, err)
+	}
+	if body != nil {
+		req.Header.Set("Content-Type", "application/json")
 	}
 	if err := c.authorize(ctx, req); err != nil {
 		return nil, err

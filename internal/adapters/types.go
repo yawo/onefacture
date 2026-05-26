@@ -4,6 +4,7 @@ package adapters
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -67,4 +68,45 @@ func (e *PAError) Error() string {
 		return fmt.Sprintf("%s %s failed: %s (%s)", e.Platform, e.Operation, e.Message, e.Code)
 	}
 	return fmt.Sprintf("%s %s failed: %s", e.Platform, e.Operation, e.Message)
+}
+
+func (s *SubmitResult) UnmarshalJSON(data []byte) error {
+	type Alias SubmitResult
+	aux := &struct {
+		*Alias
+		IdentifiantFactureCPP interface{} `json:"identifiantFactureCPP"`
+		StatutFacture         string      `json:"statutFacture"`
+	}{Alias: (*Alias)(s)}
+	if err := json.Unmarshal(data, aux); err != nil {
+		return err
+	}
+	if s.PARef == "" && aux.IdentifiantFactureCPP != nil {
+		s.PARef = fmt.Sprintf("%v", aux.IdentifiantFactureCPP)
+	}
+	if s.Status == "" && aux.StatutFacture != "" {
+		s.Status = invoice.Status(aux.StatutFacture)
+	}
+	return nil
+}
+
+func (e *LifecycleEvent) UnmarshalJSON(data []byte) error {
+	type Alias LifecycleEvent
+	aux := &struct {
+		*Alias
+		IdentifiantFactureCPP interface{} `json:"identifiantFactureCPP"`
+		StatutFacture         string      `json:"statutFacture"`
+		StatutCourantCode     string      `json:"statutCourantCode"`
+	}{Alias: (*Alias)(e)}
+	if err := json.Unmarshal(data, aux); err != nil {
+		return err
+	}
+	if e.PARef == "" && aux.IdentifiantFactureCPP != nil {
+		e.PARef = fmt.Sprintf("%v", aux.IdentifiantFactureCPP)
+	}
+	if e.Status == "" && aux.StatutFacture != "" {
+		e.Status = invoice.Status(aux.StatutFacture)
+	} else if e.Status == "" && aux.StatutCourantCode != "" {
+		e.Status = invoice.Status(aux.StatutCourantCode)
+	}
+	return nil
 }
