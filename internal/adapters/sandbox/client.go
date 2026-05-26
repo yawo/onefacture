@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"mime/multipart"
 	"net/http"
 	"net/url"
 	"strings"
@@ -13,6 +14,12 @@ import (
 
 	"github.com/yawo/onefacture/internal/adapters"
 	"github.com/yawo/onefacture/internal/core/invoice"
+	"github.com/yawo/onefacture/internal/metrics"
+)
+
+var (
+	AdapterCallDuration = metrics.AdapterCallDuration
+	AdapterCallsTotal   = metrics.AdapterCallsTotal
 )
 
 type Auth struct {
@@ -25,15 +32,15 @@ type Auth struct {
 }
 
 type Client struct {
-	Name       string
-	BaseURL    string
-	SubmitPath string
+	Name               string
+	BaseURL            string
+	SubmitPath         string
 	StatusPath         string
 	StatusMethod       string
 	StatusBodyTemplate string
 	WebhookKey         string
-	Auth       Auth
-	HTTP       *http.Client
+	Auth               Auth
+	HTTP               *http.Client
 }
 
 func (c Client) Ready() bool {
@@ -74,26 +81,53 @@ func (c Client) Submit(ctx context.Context, inv *invoice.Invoice) (*adapters.Sub
 	if !c.Ready() {
 		return nil, adapters.ErrNotImplemented
 	}
-	body, err := json.Marshal(inv)
-	if err != nil {
-		return nil, fmt.Errorf("%s marshal invoice: %w", c.Name, err)
+	start := time.Now()
+	defer func() {
+		AdapterCallDuration.WithLabelValues(c.Name, "submit").Observe(time.Since(start).Seconds())
+	}()
+	var req *http.Request
+	var err error
+	if strings.Contains(strings.ToLower(c.Name), "chorus") && len(inv.RawPDF) > 0 {
+		var b bytes.Buffer
+		mw := multipart.NewWriter(&b)
+		var meta = *inv
+		meta.RawPDF = nil
+		meta.RawXML = nil
+		metaBytes, _ := json.Marshal(meta)
+		_ = mw.WriteField("invoice", string(metaBytes))
+		fw, _ := mw.CreateFormFile("file", "invoice.pdf")
+		_, _ = fw.Write(inv.RawPDF)
+		_ = mw.Close()
+		req, err = http.NewRequestWithContext(ctx, http.MethodPost, c.url(c.SubmitPath), &b)
+		if err != nil {
+			return nil, fmt.Errorf("%s submit request: %w", c.Name, err)
+		}
+		req.Header.Set("Content-Type", mw.FormDataContentType())
+	} else {
+		body, err := json.Marshal(inv)
+		if err != nil {
+			return nil, fmt.Errorf("%s marshal invoice: %w", c.Name, err)
+		}
+		req, err = http.NewRequestWithContext(ctx, http.MethodPost, c.url(c.SubmitPath), bytes.NewReader(body))
+		if err != nil {
+			return nil, fmt.Errorf("%s submit request: %w", c.Name, err)
+		}
+		req.Header.Set("Content-Type", "application/json")
 	}
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.url(c.SubmitPath), bytes.NewReader(body))
-	if err != nil {
-		return nil, fmt.Errorf("%s submit request: %w", c.Name, err)
-	}
-	req.Header.Set("Content-Type", "application/json")
 	if err := c.authorize(ctx, req); err != nil {
 		return nil, err
 	}
 	resp, err := c.http().Do(req)
 	if err != nil {
+		AdapterCallsTotal.WithLabelValues(c.Name, "submit", "error").Inc()
 		return nil, fmt.Errorf("%s submit: %w", c.Name, err)
 	}
 	defer func() { _ = resp.Body.Close() }()
 	if resp.StatusCode >= 400 {
+		AdapterCallsTotal.WithLabelValues(c.Name, "submit", "error").Inc()
 		return nil, c.paError("submit", resp)
 	}
+	AdapterCallsTotal.WithLabelValues(c.Name, "submit", "ok").Inc()
 	var out adapters.SubmitResult
 	if err := json.NewDecoder(resp.Body).Decode(&out); err != nil {
 		return nil, fmt.Errorf("%s submit decode: %w", c.Name, err)

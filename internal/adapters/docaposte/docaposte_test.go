@@ -2,11 +2,16 @@ package docaposte
 
 import (
 	"context"
+	"encoding/json"
+	"net/http"
+	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 
 	"github.com/yawo/onefacture/internal/adapters"
+	"github.com/yawo/onefacture/internal/adapters/sandbox"
 	"github.com/yawo/onefacture/internal/core/invoice"
 )
 
@@ -64,4 +69,33 @@ func TestWebhook(t *testing.T) {
 	event, err := adapter.Webhook(context.Background(), []byte("{}"))
 	require.Nil(t, event)
 	require.Equal(t, adapters.ErrNotImplemented, err)
+}
+
+func TestDocaposteIntegrationSubmitAndGetStatus(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		require.Equal(t, "Bearer token", r.Header.Get("Authorization"))
+		switch {
+		case r.URL.Path == "/invoices" && r.Method == "POST":
+			var inv invoice.Invoice
+			require.NoError(t, json.NewDecoder(r.Body).Decode(&inv))
+			require.Equal(t, "test-inv", inv.Number)
+			_ = json.NewEncoder(w).Encode(adapters.SubmitResult{PARef: "doc-789", Status: invoice.StatusSubmitted})
+		case strings.HasSuffix(r.URL.Path, "/status"):
+			_ = json.NewEncoder(w).Encode(adapters.LifecycleEvent{PARef: "doc-789", Status: invoice.StatusAccepted})
+		default:
+			http.NotFound(w, r)
+		}
+	}))
+	defer server.Close()
+	c := sandbox.Client{Name: "docaposte", BaseURL: server.URL, SubmitPath: "/invoices", StatusPath: "/invoices/{pa_ref}/status", Auth: sandbox.Auth{Token: "token"}, HTTP: server.Client()}
+	a := &Adapter{client: c}
+	res, err := a.Submit(context.Background(), &invoice.Invoice{Number: "test-inv"})
+	require.NoError(t, err)
+	require.Equal(t, "doc-789", res.PARef)
+	require.Equal(t, invoice.StatusSubmitted, res.Status)
+	ev, err := a.GetStatus(context.Background(), "doc-789")
+	require.NoError(t, err)
+	require.Equal(t, "doc-789", ev.PARef)
+	require.Equal(t, invoice.StatusAccepted, ev.Status)
 }

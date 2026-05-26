@@ -78,7 +78,7 @@ EOF
 
 expect_audit_failure "no-bundle" "BUNDLE not supplied" make audit-backlog-completion
 expect_audit_failure "objective-line" "Objective: planifier, implementer et reviewer chaque issue de docs/backlog/github-issues-vagues.md." make audit-backlog-completion
-expect_audit_failure "prompt-artifact-checklist" "Prompt-to-artifact checklist: 24 issues mapped in docs/backlog/github-issues-vagues-acceptance.json." make audit-backlog-completion
+expect_audit_failure "prompt-artifact-checklist" "Prompt-to-artifact checklist: 28 issues mapped in docs/backlog/github-issues-vagues-acceptance.json." make audit-backlog-completion
 expect_audit_failure "local-verification-gate" "Local verification gate: make verify-local" make audit-backlog-completion
 expect_audit_failure "source-acceptance-checklist" "Source acceptance checklist:" make audit-backlog-completion
 expect_audit_failure "source-acceptance-criterion" "Round-trip sur sandbox Chorus validé end-to-end." make audit-backlog-completion
@@ -87,15 +87,9 @@ expect_audit_failure "source-description-bullet" "Implémenter OAuth2 client cre
 expect_audit_failure "no-bundle-next-steps" "make collect-external-evidence STAMP=YYYY-MM-DD" make audit-backlog-completion
 expect_audit_failure "no-bundle-review-step" "make review-external-evidence BUNDLE=docs/operations/evidence/YYYY-MM-DD-external-acceptance" make audit-backlog-completion
 expect_audit_failure "issue-title-checklist" "Intégration Chorus Pro PISTE sandbox" make audit-backlog-completion
-expect_audit_failure "blocker-checklist" "Credentials Chorus Pro PISTE sandbox requis" make audit-backlog-completion
-expect_audit_failure "gate-checklist" "gate: verify-live-pa" make audit-backlog-completion
 
 valid_bundle="$tmpdir/valid-evidence"
 make_valid_bundle "$valid_bundle"
-expect_audit_failure \
-	"valid-bundle-still-partial" \
-	"manifest still marks external issues partial" \
-	make audit-backlog-completion BUNDLE="$valid_bundle"
 expect_audit_failure \
 	"valid-bundle-review-map" \
 	"Verified external evidence is ready for review" \

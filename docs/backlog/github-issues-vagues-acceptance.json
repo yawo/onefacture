@@ -3,7 +3,7 @@
   "issues": [
     {
       "number": 1,
-      "title": "Int\u00e9gration Chorus Pro PISTE sandbox (round-trip complet)",
+      "title": "Intégration Chorus Pro PISTE sandbox (round-trip complet)",
       "status": "covered_external",
       "artifacts": [
         "internal/adapters/chorus",
@@ -15,17 +15,19 @@
         "make verify-live-pa"
       ],
       "external_gate": "verify-live-pa",
-      "external_blockers": [],
+      "external_blockers": [
+
+      ],
       "reviewed_evidence": {
         "bundle": "docs/operations/evidence/2026-05-23-external-acceptance",
-        "commit_sha": "c7b4e60af213e1b38ffda895cce6870e6524b330",
+        "commit_sha": null,
         "reviewed_at": "2026-05-23T08:25:00Z",
         "reviewed_by": "yawo"
       }
     },
     {
       "number": 2,
-      "title": "Int\u00e9gration Docaposte sandbox (submit/status/webhook)",
+      "title": "Intégration Docaposte sandbox (submit/status/webhook)",
       "status": "covered_external",
       "artifacts": [
         "internal/adapters/docaposte",
@@ -37,17 +39,19 @@
         "make verify-live-pa"
       ],
       "external_gate": "verify-live-pa",
-      "external_blockers": [],
+      "external_blockers": [
+
+      ],
       "reviewed_evidence": {
         "bundle": "docs/operations/evidence/2026-05-23-external-acceptance",
-        "commit_sha": "c7b4e60af213e1b38ffda895cce6870e6524b330",
+        "commit_sha": null,
         "reviewed_at": "2026-05-23T08:25:00Z",
         "reviewed_by": "yawo"
       }
     },
     {
       "number": 3,
-      "title": "Int\u00e9gration Pennylane sandbox (submit/status/webhook)",
+      "title": "Intégration Pennylane sandbox (submit/status/webhook)",
       "status": "covered_external",
       "artifacts": [
         "internal/adapters/pennylane",
@@ -59,10 +63,12 @@
         "make verify-live-pa"
       ],
       "external_gate": "verify-live-pa",
-      "external_blockers": [],
+      "external_blockers": [
+
+      ],
       "reviewed_evidence": {
         "bundle": "docs/operations/evidence/2026-05-23-external-acceptance",
-        "commit_sha": "c7b4e60af213e1b38ffda895cce6870e6524b330",
+        "commit_sha": null,
         "reviewed_at": "2026-05-23T08:25:00Z",
         "reviewed_by": "yawo"
       }
@@ -94,7 +100,7 @@
     },
     {
       "number": 6,
-      "title": "DLQ pour soumissions et \u00e9v\u00e9nements non d\u00e9livrables",
+      "title": "DLQ pour soumissions et événements non délivrables",
       "status": "covered_local",
       "artifacts": [
         "internal/events/bus.go",
@@ -131,7 +137,7 @@
     },
     {
       "number": 9,
-      "title": "Sandbox publique onefacture (multi-tenant, PA mock\u00e9es)",
+      "title": "Sandbox publique onefacture (multi-tenant, PA mockées)",
       "status": "covered_external",
       "artifacts": [
         "deploy/helm/onefacture/values-sandbox.yaml",
@@ -143,17 +149,19 @@
         "make verify-public-sandbox"
       ],
       "external_gate": "verify-public-sandbox",
-      "external_blockers": [],
+      "external_blockers": [
+
+      ],
       "reviewed_evidence": {
         "bundle": "docs/operations/evidence/2026-05-23-external-acceptance",
-        "commit_sha": "c7b4e60af213e1b38ffda895cce6870e6524b330",
+        "commit_sha": null,
         "reviewed_at": "2026-05-23T08:25:00Z",
         "reviewed_by": "yawo"
       }
     },
     {
       "number": 10,
-      "title": "Onboarding \u201c5 minutes to first invoice\u201d",
+      "title": "Onboarding “5 minutes to first invoice”",
       "status": "covered_external",
       "artifacts": [
         "docs/onboarding/5-minutes-first-invoice.md",
@@ -166,10 +174,12 @@
         "make verify-public-sandbox"
       ],
       "external_gate": "verify-public-sandbox",
-      "external_blockers": [],
+      "external_blockers": [
+
+      ],
       "reviewed_evidence": {
         "bundle": "docs/operations/evidence/2026-05-23-external-acceptance",
-        "commit_sha": "c7b4e60af213e1b38ffda895cce6870e6524b330",
+        "commit_sha": null,
         "reviewed_at": "2026-05-23T08:25:00Z",
         "reviewed_by": "yawo"
       }
@@ -189,10 +199,12 @@
         "make verify-sdk-registries"
       ],
       "external_gate": "verify-sdk-registries",
-      "external_blockers": [],
+      "external_blockers": [
+
+      ],
       "reviewed_evidence": {
         "bundle": "docs/operations/evidence/2026-05-23-external-acceptance",
-        "commit_sha": "c7b4e60af213e1b38ffda895cce6870e6524b330",
+        "commit_sha": null,
         "reviewed_at": "2026-05-23T08:25:00Z",
         "reviewed_by": "yawo"
       }
@@ -213,10 +225,12 @@
         "make verify-sdk-registries"
       ],
       "external_gate": "verify-sdk-registries",
-      "external_blockers": [],
+      "external_blockers": [
+
+      ],
       "reviewed_evidence": {
         "bundle": "docs/operations/evidence/2026-05-23-external-acceptance",
-        "commit_sha": "c7b4e60af213e1b38ffda895cce6870e6524b330",
+        "commit_sha": null,
         "reviewed_at": "2026-05-23T08:25:00Z",
         "reviewed_by": "yawo"
       }
@@ -234,7 +248,7 @@
     },
     {
       "number": 14,
-      "title": "Trace ID dans toutes les r\u00e9ponses API",
+      "title": "Trace ID dans toutes les réponses API",
       "status": "covered_local",
       "artifacts": [
         "internal/gateway/middleware",
@@ -281,7 +295,7 @@
     },
     {
       "number": 18,
-      "title": "Pack d\u2019exemples m\u00e9tier (avoir, correction, rejet)",
+      "title": "Pack d’exemples métier (avoir, correction, rejet)",
       "status": "covered_local",
       "artifacts": [
         "docs/examples/business-scenarios.md",
@@ -296,7 +310,7 @@
     },
     {
       "number": 19,
-      "title": "Pr\u00e9-validation bulk avant \u00e9mission",
+      "title": "Pré-validation bulk avant émission",
       "status": "covered_local",
       "artifacts": [
         "internal/gateway/routes"
@@ -307,7 +321,7 @@
     },
     {
       "number": 20,
-      "title": "Score qualit\u00e9 de conformit\u00e9 par tenant",
+      "title": "Score qualité de conformité par tenant",
       "status": "covered_local",
       "artifacts": [
         "internal/gateway/routes"
@@ -328,10 +342,12 @@
         "make verify-outcome-metrics"
       ],
       "external_gate": "verify-outcome-metrics",
-      "external_blockers": [],
+      "external_blockers": [
+
+      ],
       "reviewed_evidence": {
         "bundle": "docs/operations/evidence/2026-05-23-external-acceptance",
-        "commit_sha": "c7b4e60af213e1b38ffda895cce6870e6524b330",
+        "commit_sha": null,
         "reviewed_at": "2026-05-23T08:25:00Z",
         "reviewed_by": "yawo"
       }
@@ -350,10 +366,12 @@
         "make verify-kms-broker"
       ],
       "external_gate": "verify-kms-broker",
-      "external_blockers": [],
+      "external_blockers": [
+
+      ],
       "reviewed_evidence": {
         "bundle": "docs/operations/evidence/2026-05-23-external-acceptance",
-        "commit_sha": "c7b4e60af213e1b38ffda895cce6870e6524b330",
+        "commit_sha": null,
         "reviewed_at": "2026-05-23T08:25:00Z",
         "reviewed_by": "yawo"
       }

@@ -3,6 +3,7 @@ package chorus
 import (
 	"context"
 	"encoding/json"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -161,31 +162,75 @@ func TestChorusIntegrationNormalizeLifecycle(t *testing.T) {
 	require.Equal(t, "SUBMITTED", NormalizeLifecycleStatus("DEPOSEE"))
 	require.Equal(t, "ACCEPTED", NormalizeLifecycleStatus("MISE_A_DISPOSITION"))
 	require.Equal(t, "REJECTED", NormalizeLifecycleStatus("REJETEE"))
- require.Equal(t, "SUBMITTED", NormalizeLifecycleStatus("SUSPENDUE"))
+	require.Equal(t, "SUBMITTED", NormalizeLifecycleStatus("SUSPENDUE"))
 }
 
 func TestChorusIntegrationRealPISTEShapes(t *testing.T) {
- server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-  w.Header().Set("Content-Type", "application/json")
-  if r.URL.Path == "/cpro/factures/v1/soumettre" {
-   _ = json.NewEncoder(w).Encode(map[string]any{"identifiantFactureCPP": 504114, "statutFacture": "DEPOSEE", "numeroFacture": "INV-001"})
-   return
-  }
-  if r.URL.Path == "/cpro/factures/v1/consulter/fournisseur" {
-   _ = json.NewEncoder(w).Encode(map[string]any{"identifiantFactureCPP": 504114, "statutFacture": "MISE_A_DISPOSITION"})
-   return
-  }
-  http.NotFound(w, r)
- }))
- defer server.Close()
- c := sandbox.Client{Name: "chorus", BaseURL: server.URL, SubmitPath: "/cpro/factures/v1/soumettre", StatusPath: "/cpro/factures/v1/consulter/fournisseur", StatusMethod: "POST", StatusBodyTemplate: `{"identifiantFactureCPP":"{pa_ref}"}`, Auth: sandbox.Auth{Token: "t"}, HTTP: server.Client()}
- a := &Adapter{client: c}
- res, err := a.Submit(context.Background(), &invoice.Invoice{Number: "i1"})
- require.NoError(t, err)
- require.Equal(t, "504114", res.PARef)
- require.Equal(t, invoice.StatusSubmitted, res.Status)
- ev, err := a.GetStatus(context.Background(), "504114")
- require.NoError(t, err)
- require.Equal(t, "504114", ev.PARef)
- require.Equal(t, invoice.StatusAccepted, ev.Status)
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		if r.URL.Path == "/cpro/factures/v1/soumettre" {
+			_ = json.NewEncoder(w).Encode(map[string]any{"identifiantFactureCPP": 504114, "statutFacture": "DEPOSEE", "numeroFacture": "INV-001"})
+			return
+		}
+		if r.URL.Path == "/cpro/factures/v1/consulter/fournisseur" {
+			_ = json.NewEncoder(w).Encode(map[string]any{"identifiantFactureCPP": 504114, "statutFacture": "MISE_A_DISPOSITION"})
+			return
+		}
+		http.NotFound(w, r)
+	}))
+	defer server.Close()
+	c := sandbox.Client{Name: "chorus", BaseURL: server.URL, SubmitPath: "/cpro/factures/v1/soumettre", StatusPath: "/cpro/factures/v1/consulter/fournisseur", StatusMethod: "POST", StatusBodyTemplate: `{"identifiantFactureCPP":"{pa_ref}"}`, Auth: sandbox.Auth{Token: "t"}, HTTP: server.Client()}
+	a := &Adapter{client: c}
+	res, err := a.Submit(context.Background(), &invoice.Invoice{Number: "i1"})
+	require.NoError(t, err)
+	require.Equal(t, "504114", res.PARef)
+	require.Equal(t, invoice.StatusSubmitted, res.Status)
+	ev, err := a.GetStatus(context.Background(), "504114")
+	require.NoError(t, err)
+	require.Equal(t, "504114", ev.PARef)
+	require.Equal(t, invoice.StatusAccepted, ev.Status)
+}
+
+func TestChorusSubmitWithPDFMultipart(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/cpro/factures/v1/soumettre" {
+			http.NotFound(w, r)
+			return
+		}
+		contentType := r.Header.Get("Content-Type")
+		require.Contains(t, contentType, "multipart/form-data")
+		mr, err := r.MultipartReader()
+		require.NoError(t, err)
+		var invoicePart string
+		for {
+			part, err := mr.NextPart()
+			if err == io.EOF {
+				break
+			}
+			require.NoError(t, err)
+			if part.FormName() == "invoice" {
+				b, _ := io.ReadAll(part)
+				invoicePart = string(b)
+			}
+			if part.FormName() == "file" {
+				b, _ := io.ReadAll(part)
+				require.Equal(t, []byte("PDFBYTES"), b)
+			}
+		}
+		require.NotEmpty(t, invoicePart)
+		var meta map[string]any
+		require.NoError(t, json.Unmarshal([]byte(invoicePart), &meta))
+		// respond with PISTE shaped JSON
+		w.Header().Set("Content-Type", "application/json")
+		_ = json.NewEncoder(w).Encode(map[string]any{"identifiantFactureCPP": 9001, "statutFacture": "DEPOSEE"})
+	}))
+	defer server.Close()
+	c := sandbox.Client{Name: "chorus", BaseURL: server.URL, SubmitPath: "/cpro/factures/v1/soumettre", Auth: sandbox.Auth{Token: "t"}, HTTP: server.Client()}
+	a := &Adapter{client: c}
+	inv := &invoice.Invoice{Number: "i-pdf"}
+	inv.RawPDF = []byte("PDFBYTES")
+	res, err := a.Submit(context.Background(), inv)
+	require.NoError(t, err)
+	require.Equal(t, "9001", res.PARef)
+	require.Equal(t, invoice.StatusSubmitted, res.Status)
 }

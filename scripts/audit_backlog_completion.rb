@@ -97,9 +97,34 @@ source_descriptions.sort.each do |number, descriptions|
   end
 end
 
+bundle = ENV["BUNDLE"].to_s.strip
+if bundle.empty?
+  puts "BUNDLE not supplied. Provide BUNDLE=docs/operations/evidence/YYYY-MM-DD-external-acceptance after collecting live evidence."
+  puts "External evidence next steps:"
+  puts "- make check-external-env"
+  puts "- make collect-external-evidence STAMP=YYYY-MM-DD"
+  puts "- make review-external-evidence BUNDLE=docs/operations/evidence/YYYY-MM-DD-external-acceptance"
+  puts "- make audit-backlog-completion BUNDLE=docs/operations/evidence/YYYY-MM-DD-external-acceptance"
+  exit 1
+end
+
+bundle_path = Pathname.new(bundle)
+bundle_path = root.join(bundle_path) unless bundle_path.absolute?
+stdout, stderr, status = Open3.capture3("bash", evidence_verifier.to_s, bundle_path.to_s)
+unless status.success?
+  warn stderr unless stderr.empty?
+  warn stdout unless stdout.empty?
+  warn "Completion audit: incomplete; evidence bundle failed verification."
+  exit 1
+end
+
+puts stdout unless stdout.empty?
+puts "Verified external evidence is ready for review: #{bundle_path}"
+puts "Review command: make review-external-evidence BUNDLE=#{bundle_path}"
+
+current_commit = run_or_fail("git", "rev-parse", "HEAD").strip
+verified_bundles = {}
 unless reviewed_external.empty?
-  current_commit = run_or_fail("git", "rev-parse", "HEAD").strip
-  verified_bundles = {}
   puts "Reviewed external evidence:"
   reviewed_external.each do |issue|
     evidence = issue.fetch("reviewed_evidence")
@@ -149,37 +174,19 @@ partials.each do |issue|
   )
 end
 
-bundle = ENV["BUNDLE"].to_s.strip
-if bundle.empty?
-  puts "BUNDLE not supplied. Provide BUNDLE=docs/operations/evidence/YYYY-MM-DD-external-acceptance after collecting live evidence."
-  puts "External evidence next steps:"
-  puts "- make check-external-env"
-  puts "- make collect-external-evidence STAMP=YYYY-MM-DD"
-  puts "- make review-external-evidence BUNDLE=docs/operations/evidence/YYYY-MM-DD-external-acceptance"
-  puts "- make audit-backlog-completion BUNDLE=docs/operations/evidence/YYYY-MM-DD-external-acceptance"
-  exit 1
-end
-
-bundle_path = Pathname.new(bundle)
-bundle_path = root.join(bundle_path) unless bundle_path.absolute?
-stdout, stderr, status = Open3.capture3("bash", evidence_verifier.to_s, bundle_path.to_s)
-unless status.success?
-  warn stderr unless stderr.empty?
-  warn stdout unless stdout.empty?
-  warn "Completion audit: incomplete; evidence bundle failed verification."
-  exit 1
-end
-
-puts stdout unless stdout.empty?
-puts "Verified external evidence is ready for review: #{bundle_path}"
-puts "Review command: make review-external-evidence BUNDLE=#{bundle_path}"
+partial_numbers = partials.map { |issue| issue.fetch("number") }
+puts "Completion audit: incomplete; external evidence is still required for issues #{partial_numbers.join(", ")}."
+puts "External blocker checklist:"
 partials.each do |issue|
+  blockers = issue.fetch("external_blockers", [])
   puts format(
-    "- #%<number>02d %<title>s | verified gate: %<gate>s",
+    "- #%<number>02d %<title>s | gate: %<gate>s | blockers: %<blockers>s",
     number: issue.fetch("number"),
     title: issue.fetch("title"),
-    gate: issue.fetch("external_gate")
+    gate: issue.fetch("external_gate"),
+    blockers: blockers.join("; ")
   )
 end
+
 warn "Completion audit: evidence bundle is valid, but manifest still marks external issues partial. Update manifest/review/audit after reviewing evidence."
 exit 1

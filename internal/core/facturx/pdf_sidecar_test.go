@@ -46,8 +46,8 @@ func TestPackagePDFA3_DelegatesToSidecar(t *testing.T) {
 		Profile: invoice.ProfileEN16931,
 		Seller:  invoice.Party{Name: "Seller"},
 		Buyer:   invoice.Party{Name: "Buyer"},
-		Lines: []invoice.Line{{Description: "Consulting", Quantity: 10, UnitPrice: 150, NetAmount: 1500}},
-		Totals: invoice.Totals{TaxExclusiveAmount: 1500, TaxInclusiveAmount: 1800, TaxBreakdown: []invoice.TaxSubtotal{{Rate: 20, TaxableBase: 1500, TaxAmount: 300}}},
+		Lines:   []invoice.Line{{Description: "Consulting", Quantity: 10, UnitPrice: 150, NetAmount: 1500}},
+		Totals:  invoice.Totals{TaxExclusiveAmount: 1500, TaxInclusiveAmount: 1800, TaxBreakdown: []invoice.TaxSubtotal{{Rate: 20, TaxableBase: 1500, TaxAmount: 300}}},
 	}
 	xml := []byte(`<?xml version="1.0"?><CrossIndustryInvoice></CrossIndustryInvoice>`)
 
