@@ -1,8 +1,4 @@
 // Package chorus is the Chorus Pro / PPF adapter (PISTE OAuth2).
-//
-// The real implementation lives in chorus_real.go (build tag: piste). Without
-// that tag, the adapter operates in stub mode: every call returns
-// ErrNotImplemented so callers can surface a graceful 501.
 package chorus
 
 import (

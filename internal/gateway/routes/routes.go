@@ -143,7 +143,10 @@ func CreateSandboxCredentials(deps Dependencies) http.HandlerFunc {
 	}
 	return func(w http.ResponseWriter, r *http.Request) {
 		var req request
-		_ = json.NewDecoder(io.LimitReader(r.Body, 8192)).Decode(&req)
+		if err := json.NewDecoder(io.LimitReader(r.Body, 8192)).Decode(&req); err != nil && !errors.Is(err, io.EOF) {
+			problem.BadRequest(w, r, "invalid JSON: "+err.Error())
+			return
+		}
 		if strings.TrimSpace(req.Name) == "" {
 			req.Name = "Sandbox organization"
 		}
@@ -403,7 +406,7 @@ func GetInvoice(deps Dependencies) http.HandlerFunc {
 	}
 }
 
-// ListInvoices lists invoices for the organisation.
+// ListInvoices lists invoices for the organization.
 func ListInvoices(deps Dependencies) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		orgID, _ := middleware.OrgID(r.Context())
@@ -1192,7 +1195,7 @@ func GDPRExport(deps Dependencies) http.HandlerFunc {
 	}
 }
 
-// GDPRErase soft-deletes organisation data (GDPR Article 17).
+// GDPRErase soft-deletes organization data (GDPR Article 17).
 func GDPRErase(deps Dependencies) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		orgID, _ := middleware.OrgID(r.Context())
@@ -1255,7 +1258,9 @@ func writeIdempotentJSON(w http.ResponseWriter, r *http.Request, deps Dependenci
 func writeJSON(w http.ResponseWriter, status int, body any) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
-	_ = json.NewEncoder(w).Encode(body)
+	if err := json.NewEncoder(w).Encode(body); err != nil {
+		slog.Error("encode json", "err", err)
+	}
 }
 
 func atoiDefault(s string, def int) int {
