@@ -7,8 +7,8 @@ info:
     onefacture abstracts the dozens of PDP (Plateformes de Dématérialisation Partenaires)
     behind a single REST API.
   license:
-    name: Apache-2.0
-    url: https://www.apache.org/licenses/LICENSE-2.0.html
+    name: SSPL-1.0
+    url: https://www.mongodb.com/licensing/server-side-public-license
 servers:
   - url: http://localhost:8080
     description: Local dev

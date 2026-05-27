@@ -17,7 +17,8 @@
   <a href="#-démarrage-rapide--quickstart">Démarrage rapide</a> •
   <a href="#-cas-dusage-métier--payloads-réels">Cas Métier</a> •
   <a href="#-preuves-dacceptation-externes-external-acceptance">Preuves Externes</a> •
-  <a href="#-roadmap--cycle-de-développement">Roadmap</a>
+  <a href="#-roadmap--cycle-de-développement">Roadmap</a> •
+  <a href="#-licence-license">Licence</a>
 </p>
 
 ---
@@ -33,7 +34,7 @@ Pour les éditeurs d'ERP, les plateformes SaaS et les systèmes d'information in
 
 ---
 
-## 🚀 Solution : onefacture
+##  Solution : onefacture
 
 **onefacture** est une API Gateway unifiée et open source qui abstrait l'intégralité de la complexité de l'écosystème de facturation électronique français.
 
@@ -46,7 +47,7 @@ Au lieu de développer des dizaines d'intégrations point-à-point, votre applic
 
 ---
 
-## 🏗️ Architecture Cible
+##  Architecture 
 
 `onefacture` est conçu pour offrir un haut débit, une faible latence et une fiabilité à toute épreuve, en respectant les standards de connectivité **AFNOR XP Z12-013**.
 
@@ -85,7 +86,7 @@ Au lieu de développer des dizaines d'intégrations point-à-point, votre applic
 
 ---
 
-## 📊 Modèle de Données Core (Unified Invoice)
+##  Modèle de Données Core (Unified Invoice)
 
 L'Invoice est la ressource centrale, basée sur la norme **Factur-X 1.08 / EN 16931**.
 
@@ -112,7 +113,7 @@ type Invoice struct {
 
 ---
 
-## 🔌 Endpoints API REST (OpenAPI 3.1)
+##  Endpoints API REST (OpenAPI 3.1)
 
 ### Invoices & Réception
 | Méthode | Route | Description |
@@ -137,7 +138,7 @@ type Invoice struct {
 
 ---
 
-## 🔌 Interface des Adaptateurs PA (`PAAdapter`)
+##  Interface des Adaptateurs PA (`PAAdapter`)
 
 Chaque plateforme partenaire (PA) ou PDP est connectée via une interface Go unifiée :
 
@@ -159,7 +160,7 @@ type PAAdapter interface {
 
 ---
 
-## 🛡️ Pipeline de Validation & Génération
+##  Pipeline de Validation & Génération
 
 `onefacture` garantit la conformité stricte grâce à un traitement structuré en plusieurs couches :
 
@@ -173,7 +174,7 @@ type PAAdapter interface {
 
 ---
 
-## 🔒 Sécurité, KMS & BYOK (Workload Encryption)
+##  Sécurité, KMS & BYOK (Workload Encryption)
 
 Afin de protéger les données fiscales hautement sensibles, `onefacture` chiffre les artefacts `raw_xml` et `raw_pdf` at-rest à l'aide d'enveloppes cryptographiques AES-256-GCM.
 
@@ -197,7 +198,7 @@ L'API Gateway appelle ensuite les endpoints :
 
 ---
 
-## ⚡ Démarrage Rapide (Quickstart)
+##  Démarrage Rapide (Quickstart)
 
 ### Prérequis
 *   **Go 1.23+**
@@ -229,7 +230,7 @@ make verify-local  # Exécute tous les gates d'acceptance locaux, smoke tests et
 
 ---
 
-## 💼 Cas d'usage Métier & Payloads Réels
+##  Cas d'usage Métier & Payloads Réels
 
 ### Avoir (Type `381`)
 ```json
@@ -293,7 +294,7 @@ curl -X POST "http://localhost:8080/v1/invoices/{invoice_id}/retry" \
 
 ---
 
-## 🎯 Preuves d'Acceptation Externes (External Acceptance)
+##  Preuves d'Acceptation Externes (External Acceptance)
 
 Afin de valider le fonctionnement bout-en-bout face aux sandboxes réelles et aux registres tiers, nous utilisons des **Acceptance Gates externes**.
 
@@ -320,7 +321,7 @@ make verify-external-evidence BUNDLE=docs/operations/evidence/2026-05-27-externa
 
 ---
 
-## 🗺️ Feuille de Route (Roadmap & Cycle de Développement)
+##  Feuille de Route (Roadmap & Cycle de Développement)
 
 *   **Phase 0 : Spécifications & Normes (AFNOR, XSD, Schematron)** - 🟢 Terminé
 *   **Phase 1 : Fondations Core (Modèles Go, DB, Sidecar Python)** - 🟢 Terminé
@@ -331,6 +332,8 @@ make verify-external-evidence BUNDLE=docs/operations/evidence/2026-05-27-externa
 
 ---
 
-## 📄 Licence
+##  Licence (License)
 
-Ce projet est distribué sous licence **Apache 2.0**. Voir le fichier `LICENSE` pour plus de détails.
+Ce projet est distribué sous licence **Server Side Public License (SSPL)**. Voir le fichier `LICENSE` pour plus de détails.
+
+This project is licensed under the **Server Side Public License (SSPL)**. See the `LICENSE` file for details.

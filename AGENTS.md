@@ -201,7 +201,7 @@ Les erreurs doivent être structurées :
 
 ## 9. Sécurité & Gouvernance
 
-- **Licence** : Apache 2.0.
+- **Licence** : Server Side Public License (SSPL).
 - **Multi-tenancy** : Isolation stricte par `organization_id`.
 - **Audit Log** : Chaque transition de statut doit être immuable en base.
 - **GDPR** : Endpoints de suppression et d'export dédiés.

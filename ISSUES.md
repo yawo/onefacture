@@ -17,7 +17,7 @@ Ce fichier est le backlog officiel. Chaque issue est conçue pour être créée 
 **Description** :
 - Initialiser `go.mod` et la structure : `cmd/api`, `internal/core`, `internal/gateway`, `internal/adapters`, `pkg/`.
 - Configurer `Makefile` (build, test, lint, dev).
-- Créer `.editorconfig`, `.gitignore` et `LICENSE` (Apache 2.0).
+- Créer `.editorconfig`, `.gitignore` et `LICENSE` (SSPL).
 - Configurer `golangci-lint` avec des règles strictes.
 **Critères d'acceptation** : `make test` et `make lint` passent. `go run cmd/api/main.go` démarre un serveur minimal.
 
