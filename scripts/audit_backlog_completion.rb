@@ -130,6 +130,14 @@ unless reviewed_external.empty?
     evidence = issue.fetch("reviewed_evidence")
     bundle_path = Pathname.new(evidence.fetch("bundle"))
     bundle_path = root.join(bundle_path) unless bundle_path.absolute?
+    puts format(
+      "- #%<number>02d %<title>s | gate: %<gate>s | bundle: %<bundle>s | commit: %<commit>s",
+      number: issue.fetch("number"),
+      title: issue.fetch("title"),
+      gate: issue.fetch("external_gate"),
+      bundle: evidence.fetch("bundle"),
+      commit: evidence.fetch("commit_sha")
+    )
     unless evidence.fetch("commit_sha") == current_commit
       warn "Completion audit: incomplete; reviewed evidence commit for issue #{issue.fetch("number")} does not match HEAD."
       exit 1
@@ -144,14 +152,6 @@ unless reviewed_external.empty?
       end
       verified_bundles[bundle_path.to_s] = true
     end
-    puts format(
-      "- #%<number>02d %<title>s | gate: %<gate>s | bundle: %<bundle>s | commit: %<commit>s",
-      number: issue.fetch("number"),
-      title: issue.fetch("title"),
-      gate: issue.fetch("external_gate"),
-      bundle: evidence.fetch("bundle"),
-      commit: evidence.fetch("commit_sha")
-    )
   end
 end
 

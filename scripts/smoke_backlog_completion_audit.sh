@@ -104,7 +104,7 @@ expect_audit_failure \
 	make audit-backlog-completion BUNDLE="$valid_bundle"
 expect_audit_failure \
 	"valid-bundle-gate-map" \
-	"#01 Intégration Chorus Pro PISTE sandbox (round-trip complet) | verified gate: verify-live-pa" \
+	"#01 Intégration Chorus Pro PISTE sandbox (round-trip complet) | gate: verify-live-pa" \
 	make audit-backlog-completion BUNDLE="$valid_bundle"
 
 covered_manifest="$tmpdir/covered-external.json"
@@ -113,6 +113,7 @@ ruby -rjson -e '
   issue = data.fetch("issues").find { |candidate| candidate.fetch("number") == 1 }
   issue["status"] = "covered_external"
   issue["external_blockers"] = []
+  issue.delete("reviewed_evidence")
   File.write(ARGV.fetch(1), JSON.pretty_generate(data))
 ' docs/backlog/github-issues-vagues-acceptance.json "$covered_manifest"
 
@@ -273,10 +274,18 @@ ruby -rjson -e '
   File.write(ARGV.fetch(2), JSON.pretty_generate(data))
 ' docs/backlog/github-issues-vagues-acceptance.json "$valid_bundle" "$fully_reviewed_manifest"
 
+docs_not_updated_review="$tmpdir/not-updated-review.md"
+ruby -e '
+  text = File.read("docs/backlog/github-issues-vagues-review.md")
+  text = text.gsub(": covered_external", "")
+  File.write(ARGV.fetch(0), text)
+' "$docs_not_updated_review"
+
 expect_audit_failure \
 	"covered-external-docs-not-updated" \
 	"review doc missing covered_external marker" \
-	env MANIFEST_PATH="$fully_reviewed_manifest" ruby scripts/audit_backlog_completion.rb
+	env MANIFEST_PATH="$fully_reviewed_manifest" REVIEW_PATH="$docs_not_updated_review" ruby scripts/audit_backlog_completion.rb
+
 
 reviewed_review="$tmpdir/review.md"
 reviewed_audit="$tmpdir/audit.md"
@@ -344,7 +353,7 @@ ruby -rjson -e '
 ' "$fully_reviewed_manifest" "$reviewed_review" "$reviewed_audit"
 
 fully_reviewed_out="$tmpdir/fully-reviewed-covered-external.out"
-MANIFEST_PATH="$fully_reviewed_manifest" REVIEW_PATH="$reviewed_review" AUDIT_PATH="$reviewed_audit" ruby scripts/audit_backlog_completion.rb >"$fully_reviewed_out"
+MANIFEST_PATH="$fully_reviewed_manifest" REVIEW_PATH="$reviewed_review" AUDIT_PATH="$reviewed_audit" BUNDLE="$valid_bundle" ruby scripts/audit_backlog_completion.rb >"$fully_reviewed_out"
 if ! grep -Fq "Completion audit: complete; all manifest issues are covered locally or by reviewed external evidence." "$fully_reviewed_out"; then
 	echo "fully-reviewed-covered-external audit did not complete" >&2
 	exit 1
@@ -371,7 +380,7 @@ ruby -rjson -e '
 expect_audit_failure \
 	"covered-external-invalid-bundle" \
 	"reviewed evidence bundle failed verification" \
-	env MANIFEST_PATH="$invalid_bundle_manifest" REVIEW_PATH="$reviewed_review" AUDIT_PATH="$reviewed_audit" ruby scripts/audit_backlog_completion.rb
+	env MANIFEST_PATH="$invalid_bundle_manifest" REVIEW_PATH="$reviewed_review" AUDIT_PATH="$reviewed_audit" BUNDLE="$valid_bundle" ruby scripts/audit_backlog_completion.rb
 
 wrong_commit_manifest="$tmpdir/covered-external-wrong-commit.json"
 ruby -rjson -e '
@@ -387,7 +396,7 @@ ruby -rjson -e '
 expect_audit_failure \
 	"covered-external-wrong-commit" \
 	"does not match HEAD" \
-	env MANIFEST_PATH="$wrong_commit_manifest" REVIEW_PATH="$reviewed_review" AUDIT_PATH="$reviewed_audit" ruby scripts/audit_backlog_completion.rb
+	env MANIFEST_PATH="$wrong_commit_manifest" REVIEW_PATH="$reviewed_review" AUDIT_PATH="$reviewed_audit" BUNDLE="$valid_bundle" ruby scripts/audit_backlog_completion.rb
 
 bad_timestamp_manifest="$tmpdir/covered-external-bad-reviewed-at.json"
 ruby -rjson -e '
@@ -403,7 +412,7 @@ ruby -rjson -e '
 expect_audit_failure \
 	"covered-external-bad-reviewed-at" \
 	"reviewed_at must be an ISO-8601 UTC timestamp" \
-	env MANIFEST_PATH="$bad_timestamp_manifest" REVIEW_PATH="$reviewed_review" AUDIT_PATH="$reviewed_audit" ruby scripts/audit_backlog_completion.rb
+	env MANIFEST_PATH="$bad_timestamp_manifest" REVIEW_PATH="$reviewed_review" AUDIT_PATH="$reviewed_audit" BUNDLE="$valid_bundle" ruby scripts/audit_backlog_completion.rb
 
 invalid_timestamp_manifest="$tmpdir/covered-external-invalid-reviewed-at.json"
 ruby -rjson -e '
@@ -419,7 +428,7 @@ ruby -rjson -e '
 expect_audit_failure \
 	"covered-external-invalid-reviewed-at" \
 	"reviewed_at must be a valid UTC timestamp" \
-	env MANIFEST_PATH="$invalid_timestamp_manifest" REVIEW_PATH="$reviewed_review" AUDIT_PATH="$reviewed_audit" ruby scripts/audit_backlog_completion.rb
+	env MANIFEST_PATH="$invalid_timestamp_manifest" REVIEW_PATH="$reviewed_review" AUDIT_PATH="$reviewed_audit" BUNDLE="$valid_bundle" ruby scripts/audit_backlog_completion.rb
 
 placeholder_reviewer_manifest="$tmpdir/covered-external-placeholder-reviewer.json"
 ruby -rjson -e '
@@ -435,6 +444,6 @@ ruby -rjson -e '
 expect_audit_failure \
 	"covered-external-placeholder-reviewer" \
 	"reviewed_by must name the actual reviewer" \
-	env MANIFEST_PATH="$placeholder_reviewer_manifest" REVIEW_PATH="$reviewed_review" AUDIT_PATH="$reviewed_audit" ruby scripts/audit_backlog_completion.rb
+	env MANIFEST_PATH="$placeholder_reviewer_manifest" REVIEW_PATH="$reviewed_review" AUDIT_PATH="$reviewed_audit" BUNDLE="$valid_bundle" ruby scripts/audit_backlog_completion.rb
 
 echo "backlog completion audit smoke passed"

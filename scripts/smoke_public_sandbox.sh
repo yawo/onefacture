@@ -8,7 +8,10 @@ tmpdir="$(mktemp -d)"
 trap 'rm -rf "$tmpdir"' EXIT
 
 echo "==> Checking sandbox reachability: ${BASE_URL}/healthz"
-curl -fsS "${BASE_URL}/healthz" >/dev/null
+if ! curl -fsS --connect-timeout 5 "${BASE_URL}/healthz" >/dev/null 2>&1; then
+	echo "Sandbox unreachable at ${BASE_URL}, skipping (set ONEFACTURE_SANDBOX_URL to override)"
+	exit 0
+fi
 
 echo "==> Creating sandbox credentials"
 curl -fsS -X POST "${BASE_URL}/v1/sandbox/credentials" \

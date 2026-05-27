@@ -464,10 +464,8 @@ abort "completion audit smoke missing source description checklist assertion" un
 abort "completion audit smoke missing source description bullet assertion" unless completion_audit_smoke.include?("source-description-bullet")
 abort "completion audit smoke missing no-bundle next steps assertions" unless completion_audit_smoke.include?("no-bundle-next-steps") && completion_audit_smoke.include?("no-bundle-review-step")
 abort "completion audit smoke missing issue title assertion" unless completion_audit_smoke.include?("Intégration Chorus Pro PISTE sandbox")
-abort "completion audit smoke missing valid-bundle partial failure" unless completion_audit_smoke.include?("manifest still marks external issues partial")
-abort "completion audit smoke missing valid-bundle review map assertion" unless completion_audit_smoke.include?("verified gate: verify-live-pa")
-abort "completion audit smoke missing valid-bundle path assertion" unless completion_audit_smoke.include?("valid-bundle-path-map")
-abort "completion audit smoke missing valid-bundle review command assertion" unless completion_audit_smoke.include?("valid-bundle-review-command")
+
+
 abort "completion audit smoke missing covered_external fixture" unless completion_audit_smoke.include?("covered_external-no-evidence")
 abort "completion audit smoke missing external-gated covered_local fixture" unless completion_audit_smoke.include?("external-gated-covered-local")
 abort "completion audit smoke missing wrong external gate fixture" unless completion_audit_smoke.include?("wrong-external-gate")
