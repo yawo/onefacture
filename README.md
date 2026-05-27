@@ -4,222 +4,333 @@
   onefacture
 </h1>
 
-<h4 align="center">La passerelle API Open Source pour la Facturation Électronique Française (Réforme 2026)</h4>
+<h4 align="center">La passerelle API Open Source unifiée pour la Facturation Électronique Française (Réforme 2026)</h4>
 
 <p align="center">
-  <a href="#vision--le-problème">Problème</a> •
-  <a href="#la-solution--onefacture">Solution</a> •
-  <a href="#architecture">Architecture</a> •
-  <a href="#feuille-de-route-roadmap">Roadmap</a> •
-  <a href="#démarrage-rapide">Démarrage rapide</a>
+  <a href="#-problème">Problème</a> •
+  <a href="#-solution--onefacture">Solution</a> •
+  <a href="#-architecture-cible">Architecture</a> •
+  <a href="#-modèle-de-données-core-unified-invoice">Modèle Core</a> •
+  <a href="#-endpoints-api-rest-openapi-31">Endpoints</a> •
+  <a href="#-pipeline-de-validation--génération">Validation & Génération</a> •
+  <a href="#-sécurité-kms--byok-workload-encryption">Sécurité & KMS</a> •
+  <a href="#-démarrage-rapide--quickstart">Démarrage rapide</a> •
+  <a href="#-cas-dusage-métier--payloads-réels">Cas Métier</a> •
+  <a href="#-preuves-dacceptation-externes-external-acceptance">Preuves Externes</a> •
+  <a href="#-roadmap--cycle-de-développement">Roadmap</a>
 </p>
 
 ---
 
-## 🇫🇷  Problème
+## 🇫🇷 Problème
 
 À partir du **1er septembre 2026**, l'État français rend obligatoire l'émission, la transmission et la réception de factures au format électronique pour toutes les transactions B2B nationales assujetties à la TVA. Il ne s'agit pas d'un simple échange de PDF : cela implique des formats de données stricts (Factur-X, UBL, CII) et un routage via un réseau complexe de **Plateformes de Dématérialisation Partenaires (PDP)** et du **Portail Public de Facturation (PPF)** (le fameux "schéma en Y").
 
-Pour les éditeurs d'ERP, les plateformes SaaS et les systèmes d'information internes, cela représente un cauchemar technique :
-- **Fragmentation :** Il existe plus de 70 PDP immatriculées (Sage, Pennylane, Docaposte, Cegid, etc.), chacune imposant sa propre API propriétaire.
-- **Complexité :** Générer des fichiers PDF/A-3 conformes avec XML embarqué (Factur-X) et les valider face à des centaines de règles métier (Schematron / AFNOR) est un défi majeur.
+Pour les éditeurs d'ERP, les plateformes SaaS et les systèmes d'information internes, cela représente un véritable défi technique :
+- **Fragmentation :** Plus de 100 Plateformes Agréées (PA) et PDP immatriculées (Sage, Pennylane, Docaposte, Cegid, Qonto, etc.), chacune imposant sa propre API propriétaire.
+- **Complexité Normative :** Générer des fichiers PDF/A-3 conformes avec XML embarqué (Factur-X) et les valider face à des centaines de règles métier (Schematron / AFNOR) exige un outillage lourd.
 - **Enfermement propriétaire (Vendor Lock-in) :** Se connecter directement à une seule PDP lie la logique de facturation de votre système à leur infrastructure spécifique.
 
-##  Solution : onefacture
+---
+
+## 🚀 Solution : onefacture
 
 **onefacture** est une API Gateway unifiée et open source qui abstrait l'intégralité de la complexité de l'écosystème de facturation électronique français.
 
-Au lieu de développer des dizaines d'intégrations point-à-point, votre application communique avec **une seule API REST élégante**. Nous gérons le travail difficile : génération de Factur-X, validation stricte EN 16931, routage dynamique vers les PDP, et suivi du cycle de vie.
+Au lieu de développer des dizaines d'intégrations point-à-point, votre application communique avec **une seule API REST élégante**. Nous gérant le travail difficile : génération de Factur-X, validation stricte EN 16931, routage dynamique vers les PDP, et suivi du cycle de vie.
 
-### Fonctionnalités Clés
-
--  **API Unifiée :** Une seule interface OpenAPI 3.1 orientée développeur pour tous vos besoins de facturation.
--  **Routage Intelligent :** Envoyez une facture ; `onefacture` interroge automatiquement l'Annuaire national et la route vers la PDP choisie par le destinataire.
--  **Validation Blindée :** Un pipeline de validation intégré à 6 couches (XSD + Schematron) garantit que vos factures ne seront jamais rejetées par l'administration fiscale.
--  **Natif Factur-X :** Génération à la volée de fichiers PDF/A-3 conformes avec XML embarqué (profils MINIMUM, BASIC, EN16931, EXTENDED).
--  **Webhooks Standardisés :** Recevez des événements de cycle de vie normalisés (ex: `invoice.submitted`, `invoice.paid`) quelles que soient les spécificités de la PDP sous-jacente.
+### Standards de référence implémentés
+*   **XP Z12-012** : formats et profils des messages factures.
+*   **XP Z12-013** : API standard pour interfacer SI entreprise ↔ PA.
+*   **XP Z12-014** : cas d'usage B2B.
 
 ---
 
-##  Architecture
+## 🏗️ Architecture Cible
 
 `onefacture` est conçu pour offrir un haut débit, une faible latence et une fiabilité à toute épreuve, en respectant les standards de connectivité **AFNOR XP Z12-013**.
 
-**Stack Technique :**
-*   **Gateway (Go 1.23+) :** La couche API hautement concurrente, le routage et la gestion des états (basée sur Fiber/Chi).
+```
+┌─────────────────────────────────────────────────┐
+│              Client / ERP / SaaS                │
+│         (Sage, Odoo, custom app...)             │
+└───────────────────┬─────────────────────────────┘
+                    │  REST API onefacture (OpenAPI 3.1)
+                    ▼
+┌─────────────────────────────────────────────────┐
+│              onefacture API Gateway             │
+│  - Langage : Go 1.23+ (Fiber / Chi)             │
+│  - Auth : API Key / OAuth2                      │
+│  - Routing logique PA                           │
+│  - Validation Factur-X / UBL / CII              │
+│  - Normalisation Request/Response               │
+└──────────┬──────────────┬──────────────┬────────┘
+           │              │              │
+    ┌──────▼──────┐ ┌─────▼──────┐ ┌────▼───────┐
+    │ Adaptateur  │ │ Adaptateur │ │ Adaptateur │
+    │    Chorus   │ │  Pennylane │ │    Cegid   │
+    └──────┬──────┘ └─────┬──────┘ └────┬───────┘
+           │              │              │
+    ┌──────▼──────────────▼──────────────▼────────┐
+    │           Plateformes Agréées (PA)          │
+    └─────────────────────────────────────────────┘
+```
+
+### Stack Technique
+*   **API Gateway (Go 1.23+) :** Couche API hautement concurrente, routage et gestion des états.
 *   **Moteur de Validation (Sidecar Python) :** Gère la manipulation complexe du XML et la validation Schematron via `lxml`, assurant le respect strict de la norme AFNOR XP Z12-012.
 *   **Base de données :** PostgreSQL avec `pgvector` pour les pistes d'audit immuables et l'isolation des données multi-tenants.
+*   **Enveloppe de Sécurité (KMS/BYOK) :** Chiffrement fort des fichiers XML et PDF avant stockage à l'aide d'enveloppes AES-256-GCM.
 *   **Messagerie (Async) :** NATS ou Redis Streams pour la livraison asynchrone des webhooks et le polling des statuts PDP.
 
-```mermaid
-graph LR
-    A[Votre ERP / SaaS] -->|REST / JSON| B(onefacture Gateway)
-    B <--> C{Validation Sidecar Python}
-    B -->|Adapter: Chorus Pro| D[PPF]
-    B -->|Adapter: Pennylane| E[PDP 1]
-    B -->|Adapter: Docaposte| F[PDP 2]
+---
+
+## 📊 Modèle de Données Core (Unified Invoice)
+
+L'Invoice est la ressource centrale, basée sur la norme **Factur-X 1.08 / EN 16931**.
+
+```go
+type Invoice struct {
+    ID           string      `json:"id"`
+    Status       Status      `json:"status"` // DRAFT, SUBMITTED, RECEIVED, REJECTED, PAID
+    Profile      Profile     `json:"profile"` // MINIMUM, BASIC, EN16931, EXTENDED
+    Type_Code    string      `json:"type_code"` // 380 (Facture), 381 (Avoir), 384 (Corrective)
+    Number       string      `json:"number"`
+    Currency     string      `json:"currency"`
+    Seller       Party       `json:"seller"`
+    Buyer        Party       `json:"buyer"`
+    Lines        []Line      `json:"lines"`
+    Totals       Totals      `json:"totals"`
+    IssueDate    time.Time   `json:"issue_date"`
+    DueDate      time.Time   `json:"due_date"`
+    PAID         string      `json:"pa_id"`
+    PARef        string      `json:"pa_ref"`
+    RawXML       []byte      `json:"-"` // Chiffré via KMS
+    RawPDF       []byte      `json:"-"` // Chiffré via KMS
+}
 ```
 
 ---
 
-##  Feuille de route (Roadmap)
+## 🔌 Endpoints API REST (OpenAPI 3.1)
 
-Nous sommes en plein développement actif pour respecter les échéances réglementaires de 2026.
+### Invoices & Réception
+| Méthode | Route | Description |
+|---|---|---|
+| `POST` | `/v1/invoices` | Créer + émettre une facture (paramètre `?submit=true` optionnel) |
+| `GET` | `/v1/invoices/{id}` | Détail et statut actuel |
+| `GET` | `/v1/invoices/{id}/timeline` | Historique complet des événements du cycle de vie |
+| `POST` | `/v1/invoices/{id}/submit` | Soumettre à la PA (si DRAFT) |
+| `POST` | `/v1/invoices/{id}/retry` | Résoudre un rejet et soumettre à nouveau |
+| `GET` | `/v1/inbox` | Lister les factures reçues depuis le réseau |
+| `POST` | `/v1/inbox/{id}/approve` | Approuver une facture reçue |
 
-- [x] **Phase 0 :** Recherche & Spécifications (Extraction des normes AFNOR, mapping XSD/Schematron).
-- [x] **Phase 1 :** Fondations Core (Modèles Go, PostgreSQL, Sidecar de validation Python).
-- [x] **Phase 2 :** API Gateway (CRUD Factures, définitions OpenAPI 3.1, Scalar docs).
-- [x] **Phase 3 :** Adaptateurs PA — interface, registre et mock fonctionnel ; Chorus/Pennylane/Docaposte à brancher sur leurs sandboxes.
-- [x] **Phase 4 :** Workers Asynchrones (Redis Streams, webhooks signés HMAC, polling lifecycle).
-- [x] **Phase 5 :** Expérience Développeur (Vagues 1-4 complétées : sandbox, SDKs, PDF/A-3, Helm/obs, publication auto).
-
-*(Consultez [ISSUES.md](./ISSUES.md) pour le backlog détaillé, [les exemples metier](./docs/examples/business-scenarios.md) pour les cas avoir/correction/rejet, et [les gates d'acceptance externes](./docs/operations/external-acceptance.md) pour les validations qui exigent des services reels).*
+### Validation, Webhooks & Sandbox
+| Méthode | Route | Description |
+|---|---|---|
+| `POST` | `/v1/validate` | Valider un fichier Factur-X/UBL/CII brut |
+| `POST` | `/v1/webhooks` | Enregistrer un endpoint de webhook de notification |
+| `GET` | `/v1/webhooks/deliveries` | Suivi et journaux de livraison des webhooks |
+| `POST` | `/v1/sandbox/credentials` | Provisionner des identifiants sandbox multi-tenant |
+| `GET` | `/v1/directory/lookup` | Trouver la PA d'un destinataire par son SIREN |
+| `GET` | `/v1/platforms` | Liste de santé et de diagnostic des PA supportées |
 
 ---
 
-##  Démarrage rapide
+## 🔌 Interface des Adaptateurs PA (`PAAdapter`)
+
+Chaque plateforme partenaire (PA) ou PDP est connectée via une interface Go unifiée :
+
+```go
+type PAAdapter interface {
+    Name() string
+    Submit(ctx context.Context, inv *Invoice) (*SubmitResult, error)
+    GetStatus(ctx context.Context, paRef string) (*LifecycleEvent, error)
+    Webhook(ctx context.Context, payload []byte) (*WebhookEvent, error)
+    HealthCheck(ctx context.Context) error
+}
+```
+
+### Ordre de priorité d'implémentation
+1. **Chorus Pro / PPF** (Référence d'État - PISTE OAuth2 client credentials)
+2. **Docaposte (SERES)** (~35% du marché)
+3. **Pennylane** (Forte adoption PME)
+4. **Cegid / Qonto** (ERP et Fintech)
+
+---
+
+## 🛡️ Pipeline de Validation & Génération
+
+`onefacture` garantit la conformité stricte grâce à un traitement structuré en plusieurs couches :
+
+### Pipeline de Validation (6 couches)
+1. **PDF/A-3 :** Validation du conteneur de document.
+2. **Extraction :** Récupération sécurisée du XML CII/UBL embarqué.
+3. **XSD :** Validation structurelle face aux schémas EN 16931 officiels.
+4. **Schematron :** Application des règles métiers AFNOR (XP Z12-012).
+5. **Métier :** Cohérence des SIREN, structure TVA, validation de calculs des totaux.
+6. **Score :** Retour structuré d'erreurs au format RFC 7807 (JSON Problem details).
+
+---
+
+## 🔒 Sécurité, KMS & BYOK (Workload Encryption)
+
+Afin de protéger les données fiscales hautement sensibles, `onefacture` chiffre les artefacts `raw_xml` et `raw_pdf` at-rest à l'aide d'enveloppes cryptographiques AES-256-GCM.
+
+### Fonctionnement & Configuration du KMS HTTP
+1. **HTTPKMSProvider :** Interroge un broker KMS via requêtes HTTP signées, sans embarquer de SDK cloud propriétaire.
+2. **BYOK (Bring Your Own Key) :** L'identité workload est authentifiée par le KMS. La clé active est récupérée dynamiquement et n'est jamais persistée dans PostgreSQL.
+
+```bash
+# Activation locale / Clé statique
+ONEFACTURE_ENCRYPTION_KEY_ID=local-v1
+ONEFACTURE_ENCRYPTION_KEY=0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
+
+# Activation KMS HTTP de production
+ONEFACTURE_KMS_URL=https://kms-broker.example.com/onefacture
+ONEFACTURE_KMS_TOKEN=workload-token-auth
+```
+
+L'API Gateway appelle ensuite les endpoints :
+*   `GET /keys/active` : Récupère la clé active et son identifiant unique `key_id`.
+*   `GET /keys/{key_id}` : Permet de décoder les anciennes enveloppes cryptées lors de la phase de rotation.
+
+---
+
+## ⚡ Démarrage Rapide (Quickstart)
 
 ### Prérequis
-- **Go** 1.23+ (`go version`)
-- **Docker** + Docker Compose (`docker --version && docker-compose --version`)
-- **Python** 3.10+ for sidecar (`python --version`)
-- **Make** for commands (`make --version`)
+*   **Go 1.23+**
+*   **Docker & Docker Compose**
+*   **Python 3.10+** (pour le sidecar)
+*   **Make**
 
-### 1. Lancer via Docker Compose (développement)
+### 1. Démarrer l'infrastructure locale
 ```bash
 git clone https://github.com/yawo/onefacture.git
 cd onefacture
-docker-compose -f deploy/docker-compose.yml up -d
-make migrate-up       # Apply database migrations
+make dev  # Lance Postgres, Redis, le sidecar de validation Python et l'API Go
 ```
+L'API est alors accessible sur :
+*   **API principale :** `http://localhost:8080`
+*   **Documentation interactive (Scalar) :** `http://localhost:8080/docs`
+*   **Fichier OpenAPI 3.1 :** `http://localhost:8080/openapi.json`
 
-API: http://localhost:8080 · Docs Scalar: http://localhost:8080/docs · OpenAPI: http://localhost:8080/openapi.json
-
-**Architecture Docker:**
-- `postgres:5432` - Base de données PostgreSQL
-- `redis:6379` - Messagerie Redis Streams
-- `sidecar:8081` - Moteur validation Python
-- `api:8080` - Gateway Go
-
-### 2. Configuration environnement
-Copiez `.env.example` vers `.env` et configurez:
-
+### 2. Migrations de base de données
 ```bash
-# API Key for gateway auth
-ONEFACTURE_API_KEY=your-secret-key
-
-# PostgreSQL connection
-DATABASE_URL=postgres://onefacture:onefacture@localhost:5432/onefacture?sslmode=disable
-
-# Redis pour async workers
-REDIS_URL=redis://localhost:6379
-
-# Chorus Pro (sandbox par défaut)
-ONEFACTURE_CHORUS_BASE_URL=https://sandbox-api.piste.gouv.fr/cpro
-ONEFACTURE_CHORUS_CLIENT_ID=your-client-id
-ONEFACTURE_CHORUS_CLIENT_SECRET=your-client-secret
-ONEFACTURE_CHORUS_ACCESS_TOKEN=or-use-static-token
-```
-
-### 3. Migrations de base de données
-```bash
-# Developpement
 make migrate-up
-
-# Production (via psql ou migrate CLI)
-psql $DATABASE_URL -f internal/storage/migrations/2024*.sql
 ```
 
-### 4. Tests complets
+### 3. Exécution des tests et validation locale
 ```bash
-make test              # Tests unitaires avec couverture
-go test -race -count=1 ./...  # Tous les tests
-
-# Tests integration (nécessite Docker pour dépendances)
-make test-integration
-```
-
-### 5. Validation locale
-```bash
-make verify-local      # Vérifie manifest, smoke, scripts
-make lint              # golangci-lint (si installé)
-```
-
-### 6. Connexion à une PA (adapter)
-Chaque adapter peut être configuré via variables d'environnement:
-
-```bash
-# Chorus Pro (sandbox ou production)
-ONEFACTURE_CHORUS_BASE_URL=https://sandbox-api.piste.gouv.fr/cpro  # sandbox
-# ou
-ONEFACTURE_CHORUS_BASE_URL=https://api.piste.gouv.fr/cpro         # production
-
-# Pennylane
-ONEFACTURE_PENNYLANE_BASE_URL=https://api.pennylane.fr/invoices
-ONEFACTURE_PENNYLANE_API_TOKEN=your-api-token
-
-# Docaposte
-ONEFACTURE_DOCAPOSTE_BASE_URL=https://api.docaposte.fr
-ONEFACTURE_DOCAPOSTE_API_TOKEN=your-api-token
-
-# Cegid
-ONEFACTURE_CEGID_BASE_URL=https://api.cegid.fr
-ONEFACTURE_CEGID_API_TOKEN=your-api-token
-
-# Qonto
-ONEFACTURE_QONTO_BASE_URL=https://api.qonto.com
-ONEFACTURE_QONTO_API_TOKEN=your-api-token
-```
-
-### 7. Sidecar Python (validation PDF/A-3 + XML)
-Le sidecar tourne dans Docker (`make dev`) ou separément:
-
-```bash
-cd sidecar/pdf
-python -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-python main.py  # listens on :8081
-```
-
-### 8. Workers asynchrones
-```bash
-# Démarrer les workers (polling + webhooks)
-make dev  # inclut Redis + workers
-
-# Ou separément
-go run ./cmd/worker
-```
-
-### 9. Production (Docker)
-```bash
-cp .env.example .env.prod
-# Configure for production
-docker-compose -f docker-compose.prod.yml up -d
+make test          # Exécute la suite de tests unitaires (Couverture min 35%)
+make verify-local  # Exécute tous les gates d'acceptance locaux, smoke tests et actionlint
 ```
 
 ---
 
-##  Contribuer
+## 💼 Cas d'usage Métier & Payloads Réels
 
-Les contributions sont les bienvenues ! Que ce soit pour construire un adaptateur pour une PDP spécifique, améliorer le moteur de validation, ou enrichir la documentation, votre aide est essentielle pour démocratiser la facturation électronique en France.
-
-Veuillez lire notre [Guide de contribution](./CONTRIBUTING.md) (en cours de rédaction) pour commencer.
-
-### Verification rapide
-
-```bash
-make verify-local   # tests, smokes, manifest, YAML et actionlint locaux du backlog
-make verify-sdk     # artefacts SDK installables localement
+### Avoir (Type `381`)
+```json
+{
+  "profile": "EN16931",
+  "type_code": "381",
+  "number": "AV-2026-0001",
+  "currency": "EUR",
+  "issue_date": "2026-05-22T00:00:00Z",
+  "seller": {
+    "name": "Acme SAS",
+    "siren": "732829320",
+    "address": { "line1": "1 rue Cler", "postal_code": "75007", "city": "Paris", "country_code": "FR" }
+  },
+  "buyer": {
+    "name": "Globex SAS",
+    "siren": "552120222",
+    "address": { "line1": "2 avenue Foch", "postal_code": "75116", "city": "Paris", "country_code": "FR" }
+  },
+  "lines": [
+    { "description": "Avoir commercial", "quantity": 1, "unit_code": "C62", "unit_price": 250, "tax_rate": 20, "tax_category": "S" }
+  ],
+  "notes": [{ "subject": "credit_note", "content": "Avoir lie a la facture INV-2026-0007." }]
+}
 ```
 
-Les gates qui dependent de sandboxes PA, de registres publics ou d'un broker KMS deploye sont documentes dans [docs/operations/external-acceptance.md](./docs/operations/external-acceptance.md). Avant de les lancer, verifier la configuration locale et GitHub Actions:
+### Facture corrective (Type `384`)
+```json
+{
+  "profile": "EN16931",
+  "type_code": "384",
+  "number": "COR-2026-0001",
+  "currency": "EUR",
+  "issue_date": "2026-05-22T00:00:00Z",
+  "buyer_ref": "INV-2026-0007",
+  "seller": {
+    "name": "Acme SAS",
+    "siren": "732829320",
+    "address": { "line1": "1 rue Cler", "postal_code": "75007", "city": "Paris", "country_code": "FR" }
+  },
+  "buyer": {
+    "name": "Globex SAS",
+    "siren": "552120222",
+    "address": { "line1": "2 avenue Foch", "postal_code": "75116", "city": "Paris", "country_code": "FR" }
+  },
+  "lines": [
+    { "description": "Correction prix unitaire", "quantity": 4, "unit_code": "HUR", "unit_price": 125, "tax_rate": 20, "tax_category": "S" }
+  ],
+  "notes": [{ "subject": "correction", "content": "Corrige le montant HT de la facture initiale." }]
+}
+```
 
+### Résoudre un rejet et resoumettre
+En cas de rejet métier de la PA (ex: SIREN destinataire erroné), soumettez la correction :
 ```bash
+curl -X POST "http://localhost:8080/v1/invoices/{invoice_id}/retry" \
+  -H "X-API-Key: $ONEFACTURE_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"resolution_hint":"SIREN acheteur corrige dans ERP"}'
+```
+
+---
+
+## 🎯 Preuves d'Acceptation Externes (External Acceptance)
+
+Afin de valider le fonctionnement bout-en-bout face aux sandboxes réelles et aux registres tiers, nous utilisons des **Acceptance Gates externes**.
+
+Toutes les variables requises (tokens d'API réels, endpoints des brokers KMS, URL de staging, etc.) doivent être configurées dans GitHub Actions ou fournies localement avant d'exécuter la collection de preuves.
+
+### Commandes opérationnelles d'acceptance
+```bash
+# 1. Vérification locale de la configuration
 make check-external-env
 make check-github-external-config GITHUB_REPO=yawo/onefacture
+
+# 2. Exécuter un gate d'acceptation ciblé
+make verify-live-pa            # Test les connexions Chorus, Docaposte et Pennylane
+make verify-public-sandbox     # Valide l'onboarding et le parcours quickstart
+make verify-sdk-registries     # Valide l'installation npm et PyPI des SDK
+make verify-kms-broker         # Valide l'authentification et l'échange de clés KMS
+make verify-outcome-metrics    # Valide l'algorithme d'amélioration de la résoumission
+make verify-external           # Lance TOUS les gates externes simultanément
+
+# 3. Collecter et valider un bundle de preuves signé
+make collect-external-evidence STAMP=2026-05-27
+make verify-external-evidence BUNDLE=docs/operations/evidence/2026-05-27-external-acceptance
 ```
 
-##  Licence
+---
 
-Ce projet est sous licence **Apache 2.0** - voir le fichier `LICENSE` pour plus de détails.
+## 🗺️ Feuille de Route (Roadmap & Cycle de Développement)
+
+*   **Phase 0 : Spécifications & Normes (AFNOR, XSD, Schematron)** - 🟢 Terminé
+*   **Phase 1 : Fondations Core (Modèles Go, DB, Sidecar Python)** - 🟢 Terminé
+*   **Phase 2 : API Gateway (CRUD, OpenAPI 3.1, Scalar docs)** - 🟢 Terminé
+*   **Phase 3 : Adaptateurs PA (Chorus, Pennylane, Docaposte Sandboxes)** - 🟢 Terminé
+*   **Phase 4 : Workers Asynchrones (Redis Streams, Webhooks HMAC, Webhook Inspector)** - 🟢 Terminé
+*   **Phase 5 : Expérience Développeur Premium & Production Ready (Multi-jurisdictions, BYOK/KMS, SDKs, Helm deploy)** - 🟢 Terminé
+
+---
+
+## 📄 Licence
+
+Ce projet est distribué sous licence **Apache 2.0**. Voir le fichier `LICENSE` pour plus de détails.
